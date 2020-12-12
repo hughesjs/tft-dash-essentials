@@ -168,6 +168,129 @@ int connectTPMSInterface ()
 }
 
 
+void* pollTPMSInterface2 (void *arg) // Poll the interface of the cheaper eBay TPMS Interface
+{
+
+	char appendbuf [256];
+	
+	char read_buf [256];
+	bool quit = false;
+	int appendpointer = 0;
+
+	connectTPMSInterface();
+
+	while (quit == false) {		
+		memset(&read_buf, '\0', sizeof(read_buf));
+		int num_bytes = read(tpms_serial_port, &read_buf, sizeof(read_buf));
+
+		// n is the number of bytes read. n may be 0 if no bytes were received, and can also be -1 to signal an error.
+		if (num_bytes < 0) {
+		    printf("Error reading: %s\n", strerror(errno));
+		    close (tpms_serial_port);
+		    connectTPMSInterface();
+		} else {
+			fprintf(stderr, "Num bytes: %i\n", num_bytes); 
+		}
+
+
+		for (int r=0;r<num_bytes;r++) {
+			
+			if (read_buf[r] == 85) {
+				if (r < (num_bytes-1)) {
+					if (read_buf[r+1] == -86) {
+						fprintf(stderr, "\n");
+						
+						appendpointer = 0;
+						memset (appendbuf, 0, 256);
+						appendbuf[appendpointer] = read_buf[r];
+						appendpointer++;				
+					}
+				}
+				
+			} else {
+				if (appendpointer < 256) {
+					appendbuf[appendpointer] = read_buf[r];
+					appendpointer++;
+				}
+			}
+
+			fprintf(stderr, "%i ", read_buf[r]);
+		}
+
+
+
+		if (appendbuf[0] == 85 && appendpointer > 5 && appendbuf[1] == -86) {
+			
+
+			int sensornum = -1;
+			//int sensornum = appendbuf[3];
+			// Sensor Number. 0 = Left Front, 1 = Right Front, 16 = Back Left, 17 = Back Right
+
+			if (appendbuf[3] == 0) {sensornum = 1;}
+			if (appendbuf[3] == 1) {sensornum = 2;}
+			if (appendbuf[3] == 16) {sensornum = 3;}
+			if (appendbuf[3] == 17) {sensornum = 4;}			
+
+			int tpbyte1 = appendbuf[4];			
+			int tempbyte = appendbuf[5];
+			int statebyte = appendbuf[6];
+			int sensorstate = 0;
+
+			double psi = (double) (((tpbyte1 & 255) * 3.44));
+			double bar = psi / 14.5;
+
+			//double d = (double) (frame[4] & 255); tiresState.AirPressure = (int) (d * 3.44d);
+
+			//double psi = bar * 14.5;
+			
+			int celcius = (tempbyte & 255) - 50;
+			sensorstate = NORMAL;
+
+			if (sensornum == 1) {
+				gSensor1bar = bar;
+				gSensor1psi = psi;
+				gSensor1temp = celcius;
+				gSensor1state = sensorstate;
+			}
+
+			if (sensornum == 2) {
+				gSensor2bar = bar;
+				gSensor2psi = psi;
+				gSensor2temp = celcius;
+				gSensor2state = sensorstate;
+			}
+
+			if (sensornum == 3) {
+				gSensor3bar = bar;
+				gSensor3psi = psi;
+				gSensor3temp = celcius;
+				gSensor3state = sensorstate;
+			}
+
+			if (sensornum == 4) {
+				gSensor4bar = bar;
+				gSensor4psi = psi;
+				gSensor4temp = celcius;
+				gSensor4state = sensorstate;
+			}
+			
+
+			fprintf (stderr, "\nPSI: S1: %f, S2: %f, S3: %f, S4: %f\n", gSensor1psi, gSensor2psi, gSensor3psi, gSensor4psi);
+			fprintf (stderr, "TMP: S1: %i, S2: %i, S3: %i, S4: %i\n", gSensor1temp, gSensor2temp, gSensor3temp, gSensor4temp);
+			fprintf (stderr, "STATE: S1: %s, S2: %s, S3: %s, S4: %s\n", stringSensorstate(gSensor1state), stringSensorstate(gSensor2state), stringSensorstate(gSensor3state), stringSensorstate(gSensor4state));
+			
+			appendpointer = 0;
+			memset (appendbuf, 0, 256);
+		}		
+		
+	}
+	
+
+	close(tpms_serial_port);
+
+	return 0;
+}
+
 void* pollTPMSInterface(void *arg)
 {
 
@@ -316,7 +439,7 @@ int main(int argc, char* args[]) {
 	*/
 
 	int err;
-	err = pthread_create(&(tpms_tid[0]), NULL, &pollTPMSInterface, NULL);
+	err = pthread_create(&(tpms_tid[0]), NULL, &pollTPMSInterface2, NULL);
     if (err != 0)
         printf("\ncan't create TPMS thread :[%s]", strerror(err));
     else

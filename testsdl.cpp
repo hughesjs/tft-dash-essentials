@@ -57,6 +57,18 @@ Red - 360, 96 from Night
 //28/02/2020 - Changed the trip time to display 0:00 when under 10 minutes trip time as it looked wrong
 //30/04/2020 - Custom changes made to read Oil Pressure and Oil Temperature for a customer with Oil gauges installed
 
+/*
+NAV TO DO
+- Account for Accent characters - done - On iPhone
+- Straighten up the fonts in the graphics - done
+- Nav graphics in different themes - done
+- Sort out compiler warnings - done
+- Account for units in Km and Miles - done
+- Account for Driving on Left or Right - done
+- Turn off Navigation mode if no destination set - done
+- Sort out left indicator icon overlapping Nav display - done
+*/
+
 //#include <SDL.h> // Windows
 //#include <string.h> // Windows only - for strlen to work
 //#include "/Library/Frameworks/SDL2.framework/Headers/SDL.h" // OSX only
@@ -84,6 +96,37 @@ Red - 360, 96 from Night
 #define LOWPRESSURE 	3
 #define HIGHTEMP 		4
 #define LOWBATTERY 		5
+
+//MUT  EXITL   EXITR  TNR   TNL  SLL  SLR  RB2L  RB3L  RB4L  RB5L RB1R RB3R RB4R RB5R KPL KPR CON ARV RB1L RB2R MUTR MILE YARD KM METRE ONTO TWRDS
+
+#define MUT			0
+#define EXITL		1
+#define EXITR		2
+#define TNR			3
+#define TNL			4
+#define SLL			5
+#define SLR			6
+#define RB2L		7
+#define RB3L		8
+#define RB4L		9
+#define RB5L		10
+#define RB1R		11
+#define RB3R		12
+#define RB4R		13
+#define RB5R		14
+#define KPL			15
+#define KPR			16
+#define CON			17
+#define ARV			18
+#define RB1L		19
+#define RB2R		20
+#define MUTR		21
+#define MILE		22
+#define YARD		23
+#define KM			24
+#define METRE		25
+#define ONTO		26
+#define TWRDS		27
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
@@ -197,6 +240,8 @@ SDL_Surface *gOdoerror2 = NULL;
 SDL_Surface *gSprocketsetup = NULL;
 SDL_Surface *gCoolantfantemp = NULL;
 SDL_Surface *gGear = NULL;
+SDL_Surface *gNavbg = NULL;
+SDL_Surface *gNavicons = NULL;
 
 // Surface Rects
 // Rev counter
@@ -217,12 +262,71 @@ SDL_Rect grevline;
 SDL_Rect grrevwhite;
 SDL_Point gwhitepoint;
 
+/*
+MUT
+MEX
+TNR
+TNL
+SLL
+SLR
+RB1
+RB2
+RB3
+RB4
+RB5
+LNR
+LNL
+CON
+ARV
+*/
+
+// Navigation symbols texture mapping
+int gNaviconsrctexloc[4][28] = {
+	//MUT  EXITL   EXITR  TNR   TNL  SLL  SLR  RB2L  RB3L  RB4L  RB5L RB1R RB3R RB4R RB5R KPL KPR CON ARV RB1L RB2R MUTR MILE YARD KM METRE ONTO TWRDS
+	{21,   169,    317,   449,  628, 809, 1002,17,   163,  312,  460, 598, 771, 937, 1092,6,  174,333,491,642, 823, 983, 11,  106,215,280,  404, 456  }, // X pos
+	{12,   11,     12,    20,   19,  22,  22,  184,  216,  217,  217, 214, 217, 216, 216, 383,385,384,394,387, 364, 385, 549, 550,550,549,  556, 557  }, // Y pos
+	{112,  112,    112,   157,  147, 158, 176, 115,  134,  114,  110, 131, 131, 131, 131, 141,150,131,112,138, 116, 108, 81,  87,  42,105,  45,  76   }, // Width
+	{150,  150,    150,   146,  150, 144, 146, 167,  134,  135,  135, 137, 134, 134, 134, 140,138,138,129,135, 167, 145, 24,  21,  22,22,   16,  14   }  // Height
+};
+
+char gNavLargeUpperLetterref[40] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9',',','.','(',')'};
+char gNavLargeLowerLetterref[40] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9',',','.','(',')'};
+
+
+int gNavletterslargesrctexloc[4][40] = {
+// 	A,  B,  C,  D,  E,  F,  G,  H,  I,  J,  K,  L,  M,  N,  O,  P,  Q,  R,  S,  T,  U,  V,  W,  X,  Y,  Z,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  COM, STP,  (,  ) 
+   {15, 46, 75, 106,137,165,190,222,253,268,295,325,351,386,416,449,476,509,537,565,593,622,649,686,714,743,771,797,821,846,871,896,921,946,970,996,1022,1039,1055,1079 },
+   {602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602, 602, 602, 602  },
+   {22, 19, 20, 20, 17, 16, 22, 19, 5,  15, 20, 16, 24, 19, 22, 18, 22, 18, 19, 18, 19, 19, 29, 20, 21, 19, 16, 11, 16, 16, 16, 16, 16, 15, 17, 16, 5,   5,   9,   8,   },
+   {22, 22, 23, 21, 21, 21, 23, 21, 21, 22, 21, 21, 21, 21, 23, 22, 24, 22, 23, 21, 22, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 21, 21, 21, 21, 22, 27,  22,  27,  27,  }
+};
+
+int gNavletterssmallsrctexloc[4][40] = {
+	
+// 	A,  B,  C,  D,  E,  F,  G,  H,  I,  J,  K,  L,  M,  N,  O,  P,  Q,  R,  S,  T,  U,  V,  W,  X,  Y,  Z,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  COM, STP,  (,  ) 
+   {17, 42, 65, 90, 114,137,157,182,207,219,241,265,286,314,337,364,386,412,435,457,479,502,524,553,576,599,622,643,662,681,701,721,742,762,781,802,822, 836, 849, 861 },
+   {778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778,778, 778, 778, 778 },
+   {18, 15, 17, 16, 14, 13, 17,16,  4,  13, 16, 13, 19, 16,	18,	14, 18, 15, 15, 15, 16, 16, 24, 18, 17, 15, 13, 8,  13, 14, 14, 14, 13, 12,	14, 13,	5,	 5,	  7,   7   },
+   {17, 17, 17, 17, 17, 17, 17,17,  17, 17, 17, 17, 17, 17,	17,	17, 19, 17, 18, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 18,	18, 21,	 18,  22,  22  }
+
+};
+
+int gNavnumbersref[11] = {'0','1','2','3','4','5','6','7','8','9','.'};
+int gNavnumberssrctexloc[4][11] = {
+	
+//   0,  1,  2,  3,  4,  5,  6,  7,  8,  9,     .
+	{10, 115,209,310,409,509,611,711,809,910, 447},
+	{660,661,660,661,661,661,660,660,660,660, 734},
+	{68, 46, 69, 66, 68, 67, 66, 63, 68, 66,  17},
+	{93, 93, 93, 93, 90, 91, 92, 91, 92, 92, 15 }
+};
+
 
 // Large speedometer numbers - texture mapping
 int gSpeedsrctexloc[4][10] = {
 //    0    1    2    3    4    5    6    7    8     9		// The digit in the bitmap
-	{ 0  , 143, 255, 396, 530, 669, 808, 939, 1080, 1211 }, // X position
-	{ 1  , 1  , 1  , 1  , 1  , 1  , 1  , 1  , 1   , 1 },    // Y position
+	{ 0  , 143, 255, 396, 530, 669, 808, 939, 1080, 1211 }, // X position from Top Left
+	{ 1  , 1  , 1  , 1  , 1  , 1  , 1  , 1  , 1   , 1 },    // Y position from Top Left
 	{ 135, 107, 142, 134, 139, 138, 131, 141, 131 , 137 },  // Width of digit
 	{ 172, 172, 166, 172, 172, 172, 172, 172, 172 , 172 }   // Height of digit
 };
@@ -323,6 +427,7 @@ int gRPMlookup[53][2] = {
 char gNumref[16] = { '0','1','2','3','4','5','6','7','8','9',':','+','-','.','c','f'};
 char gSmallNumref[11] = { '0','1','2','3','4','5','6','7','8','9','.'};
 char gLargeNumref[10] = { '1','2','3','4','5','6','7','8','9','0'};
+
 
 // Destination rect for speedo numbers
 SDL_Rect spdDigitone;
@@ -428,9 +533,10 @@ SDL_Texture *gLowtyrebadgetex = NULL;
 SDL_Texture *gReartyrelowtex = NULL;
 SDL_Texture *gFronttyrelowtex = NULL;
 SDL_Texture *gBothtyrelowtex = NULL;
+SDL_Texture *gNavbgtex = NULL;
+SDL_Texture *gNaviconstex = NULL;
 
-
-char gszCommsmsg[255];
+char gszCommsmsg[1024];
 int serial_port;
 pthread_t tid[2];
 
@@ -461,6 +567,7 @@ int maxspeed = 40;
 int triptimehour = 0;
 int triptimemin = 0;
 int usingkm = 0;
+int drivingleft = 1;
 int usingfh = 0;
 int usingbar = 0;
 int rpm = 5000;
@@ -545,6 +652,7 @@ char strTrip1[16];
 char strTrip2[16];
 char strOdo[16];
 char strTime[16];
+char strNav[255];
 char strMpg[16];
 char strRpm[16];
 char strFuel[16];
@@ -559,10 +667,28 @@ char strOiltemp[16];
 char strLightswitchvalue[16];
 char strCurrentlightlevel[16];
 
+char strNavSymbol[16];
+char strNavRoad[255];
+char strNavTowards[255];
+char strNavExit[16];
+char strNavYards[16];
+char strNavMiles[16];
+char strNavDestMiles[16];
+char strNavDestKm[16];
+
+char strNavMetres[16];
+char strNavKm[16];
+
+int navYards = 0;
+double navMiles = 0;
+bool navActive = false;
+double navDestdistance = 0;
+
 bool fuelwarning = false;
 bool overheatwarning = false;
 bool enginerunning = false;
 bool warningbadgeactive = false;
+bool warningbadgecancelled = false;
 
 int currenttheme = 0; // Current theme we are on
 bool quit = false;
@@ -640,6 +766,14 @@ int barohms[11];
 int tempnum[6];
 int tempohms[6];
 
+char szFindparking[] = "FIND PARKING";
+char szTakeFerry[] = "TAKE THE FERRY";
+char szNoNavData[] = "No Navigation Data";
+char szSmartphoneapp[] = "launch smartphone app";
+char szSetdestination[] = "and set a destination";
+char szArrivein[] = "arv";
+char szMls[] = "mls";
+char szKm[] = "km";
 
 int cycledigit (int value, int max) {
 	int t = value;
@@ -716,8 +850,13 @@ void choice() { // Pressed the choice button
 void select() { // Pressed the select button
 
 	if (choicestate == 0) {
-		if (infomode == 2) {
+		if (infomode == 3) {
 			infomode = 0;
+			return;
+		}
+		
+		if (infomode == 2) {
+			infomode = 3;
 			return;
 		}		
 
@@ -1435,6 +1574,12 @@ int loadsurfaces(const char *theme)
 
 	gGear = Loadsurface(gGear, "Gear.bmp", theme);
 	if (gGear == NULL) { fprintf(stderr, "could not load gGear: %s\n", SDL_GetError()); return 1; }	
+
+	gNavbg = Loadsurface(gNavbg, "Navbg.bmp", theme);
+	if (gNavbg == NULL) { fprintf(stderr, "could not load gNavbg: %s\n", SDL_GetError()); return 1; }
+
+	gNavicons = Loadsurface(gNavicons, "Navgfx.bmp", theme);
+	if (gNavicons == NULL) { fprintf(stderr, "could not load gNavicons: %s\n", SDL_GetError()); return 1; }
 
 	return 0;
 }
@@ -2155,6 +2300,22 @@ int inittextures()
 		return 1;
 	}
 
+	if (gNavbgtex != NULL) {SDL_DestroyTexture (gNavbgtex);}
+	gNavbgtex = SDL_CreateTextureFromSurface(renderer, gNavbg);
+	if (gNavbgtex == NULL) {
+		fprintf(stderr, "could not convert gNavbg to texture: %s\n", SDL_GetError());
+		return 1;
+	}
+
+	if (gNaviconstex != NULL) {SDL_DestroyTexture (gNaviconstex);}
+	gNaviconstex = SDL_CreateTextureFromSurface(renderer, gNavicons);
+	if (gNavicons == NULL) {
+		fprintf(stderr, "could not convert gNavicons to texture: %s\n", SDL_GetError());
+		return 1;
+	}
+
+	//gNaviconstex
+
 	return 0;
 }
 
@@ -2518,6 +2679,145 @@ void drawMediumstring (char* digits, int xpos, int ypos)
 	}		
 }
 
+void drawNavLargeString (char *digits, int xpos, int ypos) {
+	int xoffset = 0;
+
+	for (int s=0;s<strlen (digits);s++) {
+
+		char digit = digits[s];
+		
+		if (digit == 32 || digit == '-') {
+			xoffset+=7;
+		}
+
+		for (int d=0;d<40;d++) {
+
+			if (xpos + xoffset < 412) {
+				if (digit == gNavLargeLowerLetterref[d] || digit == gNavLargeUpperLetterref[d]) {
+
+					SDL_Rect gSrcrect;
+					gSrcrect.x = gNavletterslargesrctexloc[0][d];
+					gSrcrect.y = gNavletterslargesrctexloc[1][d];
+					gSrcrect.w = gNavletterslargesrctexloc[2][d];
+					gSrcrect.h = gNavletterslargesrctexloc[3][d];
+
+					SDL_Rect gDstrect;
+					gDstrect.x = xpos + xoffset;
+					gDstrect.y = ypos;
+					gDstrect.w = gSrcrect.w;
+					gDstrect.h = gSrcrect.h;
+
+					SDL_RenderCopy(renderer, gNaviconstex, &gSrcrect, &gDstrect);
+
+					xoffset+=gSrcrect.w + 2;				
+				}
+			}
+		}		
+	}
+}
+
+void drawNavSmallString (char *digits, int xpos, int ypos) {
+	int xoffset = 0;
+
+	for (int s=0;s<strlen (digits);s++) {
+
+		char digit = digits[s];
+		
+		if (digit == 32 || digit == '-') {
+			xoffset+=7;
+		}
+
+		for (int d=0;d<40;d++) {
+
+			if (xpos + xoffset < 412) {
+				if (digit == gNavLargeLowerLetterref[d] || digit == gNavLargeUpperLetterref[d]) {
+
+					SDL_Rect gSrcrect;
+					gSrcrect.x = gNavletterssmallsrctexloc[0][d];
+					gSrcrect.y = gNavletterssmallsrctexloc[1][d];
+					gSrcrect.w = gNavletterssmallsrctexloc[2][d];
+					gSrcrect.h = gNavletterssmallsrctexloc[3][d];
+
+					SDL_Rect gDstrect;
+					gDstrect.x = xpos + xoffset;
+					gDstrect.y = ypos;
+					gDstrect.w = gSrcrect.w;
+					gDstrect.h = gSrcrect.h;
+
+					SDL_RenderCopy(renderer, gNaviconstex, &gSrcrect, &gDstrect);
+
+					xoffset+=gSrcrect.w + 2;				
+				}
+			}
+		}		
+	}
+}
+
+void drawNavDigits (char *digits, int xpos, int ypos) {
+	int xoffset = 0;
+
+	for (int s=0;s<strlen (digits);s++) {
+
+		char digit = digits[s];
+		
+		if (digit == 32) {
+			xoffset+=7;
+		}
+
+		for (int d=0;d<11;d++) {
+
+			if (digit == gNavnumbersref[d]) {
+
+				SDL_Rect gSrcrect;
+				gSrcrect.x = gNavnumberssrctexloc[0][d];
+				gSrcrect.y = gNavnumberssrctexloc[1][d];
+				gSrcrect.w = gNavnumberssrctexloc[2][d];
+				gSrcrect.h = gNavnumberssrctexloc[3][d];
+
+				SDL_Rect gDstrect;
+				gDstrect.x = xpos + xoffset;
+				gDstrect.y = ypos;
+				gDstrect.w = gSrcrect.w;
+				gDstrect.h = gSrcrect.h;
+
+				if (digit == '.') {
+					gDstrect.y = ypos + 71;
+				}
+
+				SDL_RenderCopy(renderer, gNaviconstex, &gSrcrect, &gDstrect);
+
+				xoffset+=gSrcrect.w + 2;				
+			}
+
+		}		
+	}
+}
+
+void drawNavNumbers (int num, int xpos, int ypos) {
+	char szDigit[5];
+	memset (szDigit, 0, 5);
+	sprintf (szDigit, "%d", num);
+
+	drawNavDigits (szDigit, xpos, ypos);
+}
+
+void drawNavSymbol (int sym, int xpos, int ypos)
+{
+	SDL_Rect gSrcrect;
+	gSrcrect.x = gNaviconsrctexloc[0][sym];
+	gSrcrect.y = gNaviconsrctexloc[1][sym];
+	gSrcrect.w = gNaviconsrctexloc[2][sym];
+	gSrcrect.h = gNaviconsrctexloc[3][sym];
+
+	SDL_Rect gDstrect;
+	gDstrect.x = xpos;
+	gDstrect.y = ypos;
+	gDstrect.w = gSrcrect.w;
+	gDstrect.h = gSrcrect.h;
+
+	SDL_RenderCopy(renderer, gNaviconstex, &gSrcrect, &gDstrect);
+}
+
 void drawMediumnum (int singledigit, int xpos, int ypos) {
 	char szDigit[4];
 	memset (szDigit, 0, 4);
@@ -2762,6 +3062,98 @@ void UnpackMenuMessage() {
 
 }
 
+void UnpackNavMessage () {
+
+	// Just a routine to unpack the delimited Nav message handed to us via BLE from a Phone
+	char szCurrent[255];
+	int messagenumber = 0;
+	int currentpointer = 0;
+
+	memset (szCurrent, 0, 255);
+
+	for (int c=0;c<strlen (strNav);c++) {
+
+		if (strNav[c] == '%') {
+
+			if (messagenumber == 1) { // Nav Symbol
+				//fprintf(stderr, "Nav MSG 1: %s\n", szCurrent);
+				memset (strNavSymbol, 0, 16);
+				strcpy (strNavSymbol, szCurrent);
+			}
+
+			if (messagenumber == 2) { // Onto Roadname
+				//fprintf(stderr, "Nav MSG 2: %s\n", szCurrent);
+				memset (strNavRoad, 0, 255);
+				strcpy (strNavRoad, szCurrent);
+			}
+
+			if (messagenumber == 3) { // Towards Placename
+				//fprintf(stderr, "Nav MSG 3: %s\n", szCurrent);
+				memset (strNavTowards, 0, 255);
+				strcpy (strNavTowards, szCurrent);
+			}
+
+			if (messagenumber == 4) { // Motorway Exit Number
+				//fprintf(stderr, "Nav MSG 4: %s\n", szCurrent);
+				memset (strNavExit, 0, 16);
+				strcpy (strNavExit, szCurrent);
+			}
+
+			if (messagenumber == 5) { // Yards Away
+				//fprintf(stderr, "Nav MSG 5: %s\n", szCurrent);
+				memset (strNavYards, 0, 16);
+				strcpy (strNavYards, szCurrent);
+				navYards = atoi (strNavYards);
+
+				memset (strNavMetres, 0, 16);
+				double navmeters = (double)navYards / 1.094;
+				sprintf( strNavMetres, "%d", (int)navmeters);				
+			}			
+
+			if (messagenumber == 6) { // Miles Away 
+				//fprintf(stderr, "Nav MSG 6: %s\n", szCurrent);
+				memset (strNavMiles, 0, 16);
+				strcpy (strNavMiles, szCurrent);
+				navMiles = atof (strNavMiles);
+
+				memset (strNavKm, 0, 16);
+				double navkm = navMiles * 1.609;
+				sprintf( strNavKm, "%.1f", navkm);
+			}
+
+			if (messagenumber == 7) { // Driving on the left
+				if (atoi (szCurrent) == 1) {
+					drivingleft = 1;
+				} else {
+					drivingleft = 0;
+				}
+			}
+
+			if (messagenumber == 8) { // Distance to Destination
+				memset (strNavDestMiles, 0, 16);
+				strcpy (strNavDestMiles, szCurrent);
+				navDestdistance = atof (strNavDestMiles);
+
+				memset (strNavDestKm, 0, 16);
+				double navdestkm = navDestdistance * 1.609;
+				sprintf( strNavDestKm, "%.1f", navdestkm);
+			}
+
+			memset(szCurrent, 0, 255);
+			currentpointer = 0;
+			messagenumber++;
+
+		} else {
+			if (currentpointer < 255) {
+				szCurrent[currentpointer] = strNav[c];
+				currentpointer++;
+			}
+		}
+
+	}
+
+}
+
 void UnpackMessage () {
 
 	//char gszCommsmsg[255];
@@ -2791,11 +3183,11 @@ void UnpackMessage () {
 */
 
 
-	char szCurrent[16];
+	char szCurrent[255];
 	int messagenumber = 0;
 	int currentpointer = 0;
 
-	memset(szCurrent, 0, 16);
+	memset(szCurrent, 0, 255);
 
 	for (int c=0;c<strlen(gszCommsmsg);c++) {
 
@@ -2973,11 +3365,30 @@ void UnpackMessage () {
 			}
 
 			if (messagenumber == 35) { // Rear pressure low setting
-				rearpressurelow = atoi (szCurrent);
+				rearpressurelow = atoi (szCurrent);				
+			}
+
+			if (messagenumber == 36) { // Nav Message from Phone
+				memset (strNav, 0, 255);
+				strcpy (strNav, szCurrent);
+
+				if (strlen (strNav) > 0) {
+					//fprintf(stderr, "%s\n", strNav);
+					UnpackNavMessage ();
+					navActive = true;
+				}
+
+				
+				//fprintf(stderr, "%i\n", strlen (strNav));
+				//printf(szCurrent);
+				//printf (strlen (strNav));
+				//rearpressurelow = atoi (szCurrent);
+
+				//fprintf(stderr, szCurrent); 
 			}
 
 			//fprintf(stderr, "%s\n", szCurrent);
-			memset(szCurrent, 0, 16);
+			memset(szCurrent, 0, 255);
 			currentpointer = 0;
 
 
@@ -2986,7 +3397,7 @@ void UnpackMessage () {
 
 
 		} else {
-			if (currentpointer < 16) {
+			if (currentpointer < 255) {
 				szCurrent[currentpointer] = gszCommsmsg[c];
 				currentpointer++;
 			}
@@ -3007,9 +3418,9 @@ int connectInterface ()
 		if (file_exists ("/dev/cu.usbmodem14301")) {		
 			serial_port = open("/dev/cu.usbmodem14301", O_RDWR);
 		} else {
-			if (file_exists ("/dev/cu.usbmodem14101")) {		
+			if (file_exists ("/dev/cu.usbmodem1101")) {		
 				//fprintf(stderr, "Bike interface connected!"); 
-				serial_port = open("/dev/cu.usbmodem14101", O_RDWR);
+				serial_port = open("/dev/cu.usbmodem1101", O_RDWR);
 			} else {
 
 				if (file_exists ("/dev/ttyACM0")) {
@@ -3096,9 +3507,9 @@ void* pollInterface(void *arg)
 	return 0;
 	*/
 
-	char appendbuf [256];
+	char appendbuf [1024];
 	
-	char read_buf [256];
+	char read_buf [1024];
 	bool quit = false;
 	int appendpointer = 0;
 
@@ -3128,13 +3539,13 @@ void* pollInterface(void *arg)
 
 		for (int r=0;r<num_bytes;r++) {
 			// S marks the beginning of a live data message, and M marks the beginning of a menu data message
-			if (read_buf[r] == 'S' || read_buf[r] == 'M') {
+			if (read_buf[r] == '{' || read_buf[r] == '[') {
 				appendpointer = 0;
-				memset (appendbuf, 0, 256);
+				memset (appendbuf, 0, 1024);
 				appendbuf[appendpointer] = read_buf[r];
 				appendpointer++;
 			} else {
-				if (appendpointer < 256) {
+				if (appendpointer < 1024) {
 					appendbuf[appendpointer] = read_buf[r];
 					appendpointer++;
 				}
@@ -3143,16 +3554,19 @@ void* pollInterface(void *arg)
 		}
 
 		//if (appendbuf[0] == 'S' && strlen(appendbuf) == 107 && appendbuf[106] == 'E') {
-		if (appendbuf[0] == 'S' && strlen(appendbuf) > 90 && strlen (appendbuf) < 130) {
+		if (appendbuf[0] == '{' && strlen(appendbuf) > 90 && strlen (appendbuf) < 400) {
 			//printf("%s\n", appendbuf);
-			memset (gszCommsmsg, 0, 255);
+			memset (gszCommsmsg, 0, 1024);
 			strcpy (gszCommsmsg, appendbuf);
+
+			//fprintf(stderr, "Data: %s\n", gszCommsmsg);
+
 			UnpackMessage();
 		} else {
 			//if (appendbuf[0] == 'M' && strlen(appendbuf) == 59 && appendbuf[58] == 'N') {
-			if (appendbuf[0] == 'M' && strlen(appendbuf) == 95 && appendbuf[94] == 'N') {
+			if (appendbuf[0] == '[' && strlen(appendbuf) == 95 && appendbuf[94] == ']') {
 
-				memset (gszCommsmsg, 0, 255);
+				memset (gszCommsmsg, 0, 1024);
 				strcpy (gszCommsmsg, appendbuf);
 				UnpackMenuMessage();
 			}
@@ -4451,6 +4865,68 @@ void Animateinfomode() {
 		infoanimationreverse = true;
 	}
 
+	if (infomode == 3 && currentinfomode == 2) {
+		
+		if (infoanimationreverse == false) {
+			RenderTexture(gTyretoptex, 0-infoanimationcount, 176, 510, 97);
+			RenderTexture(gTyrebottomtex, 0-infoanimationcount, 273, 454, 125);
+		}
+
+		if (infoanimationreverse == true) {
+			RenderTexture(gNavbgtex, 0 - infoanimationcount, 158, 434, 268);
+			//RenderTexture(gInfobottomdiagtex, 0 - infoanimationcount, 273, 454, 125);
+		}
+
+		if (infoanimationcount <= 0 && infoanimationreverse == true) {
+			currentinfomode = 3;
+			infoanimationinprogress = false;
+		}
+		return;
+	}
+
+	if (infomode == 3 && currentinfomode == 1) {
+		
+		if (infoanimationreverse == false) {
+			RenderTexture(gInfotopdiagtex, 0 - infoanimationcount, 176, 510, 97);
+			RenderTexture(gInfobottomdiagtex, 0 - infoanimationcount, 273, 454, 125);
+		}
+
+		if (infoanimationreverse == true) {
+			RenderTexture(gNavbgtex, 0 - infoanimationcount, 158, 434, 268);
+			//RenderTexture(gInfobottomdiagtex, 0 - infoanimationcount, 273, 454, 125);
+		}
+
+		if (infoanimationcount <= 0 && infoanimationreverse == true) {
+			currentinfomode = 3;
+			infoanimationinprogress = false;
+		}
+		return;
+	}
+
+	if (infomode == 3 && currentinfomode == 0) {
+		
+		if (infoanimationreverse == false) {
+			if (usingkm) {
+				RenderTexture(gInfotopKMtex, 0 - infoanimationcount, 176, 510, 97);
+			} else {
+				RenderTexture(gInfotoptex, 0 - infoanimationcount, 176, 510, 97);	
+			}
+			
+			RenderTexture(gInfobottomtex, 0 - infoanimationcount, 273, 454, 125);
+		}
+
+		if (infoanimationreverse == true) {
+			RenderTexture(gNavbgtex, 0 - infoanimationcount, 158, 434, 268);
+			//RenderTexture(gInfobottomdiagtex, 0 - infoanimationcount, 273, 454, 125);
+		}
+
+		if (infoanimationcount <= 0 && infoanimationreverse == true) {
+			currentinfomode = 3;
+			infoanimationinprogress = false;
+		}
+		return;
+	}
+
 	if (infomode == 2 && currentinfomode == 1) {
 		
 		if (infoanimationreverse == false) {
@@ -4494,12 +4970,39 @@ void Animateinfomode() {
 		return;
 	}
 
-	if (infomode == 0 && currentinfomode == 2) {
+	if (infomode == 0 && currentinfomode == 3) {
 		if (infoanimationreverse == false) {
-			RenderTexture(gInfotopdiagtex, 0 - infoanimationcount, 176, 510, 97);
-			RenderTexture(gInfobottomdiagtex, 0 - infoanimationcount, 273, 454, 125);
+			//RenderTexture(gInfotopdiagtex, 0 - infoanimationcount, 176, 510, 97);
+			//RenderTexture(gInfobottomdiagtex, 0 - infoanimationcount, 273, 454, 125);
+			RenderTexture(gNavbgtex, 0 - infoanimationcount, 158, 434, 268);
 		}
 
+		if (infoanimationreverse == true) {
+			if (usingkm) {
+				RenderTexture(gInfotopKMtex, 0- infoanimationcount, 176, 510, 97);
+			} else {
+				RenderTexture(gInfotoptex, 0- infoanimationcount, 176, 510, 97);	
+			}
+			
+			RenderTexture(gInfobottomtex, 0- infoanimationcount, 273, 454, 125);
+		}
+
+		if (infoanimationcount <= 0 && infoanimationreverse == true) {
+			currentinfomode = 0;
+			infoanimationinprogress = false;
+		}
+		return;
+	}
+
+	if (infomode == 0 && currentinfomode == 2) {
+		
+		// This one goes away
+		if (infoanimationreverse == false) {
+			RenderTexture(gTyretoptex, 0-infoanimationcount, 176, 510, 97);
+			RenderTexture(gTyrebottomtex, 0-infoanimationcount, 273, 454, 125);
+		}
+
+		// This one comes in
 		if (infoanimationreverse == true) {
 			if (usingkm) {
 				RenderTexture(gInfotopKMtex, 0- infoanimationcount, 176, 510, 97);
@@ -4523,6 +5026,11 @@ void Drawdashboard () {
 	if (flashcount > 50) {
 		flashcount = 0;
 		flash = !flash;
+	}
+
+	if ((infomode != currentinfomode && warningbadgeactive)) {		
+		warningbadgecancelled = true;
+		warningbadgeactive = false;
 	}
 
 	if (theme == 0 || theme == 7) {
@@ -4562,16 +5070,33 @@ void Drawdashboard () {
 	RenderTexture (gmileinfotex, 0, 434, 435, 169);
 
 	// Fuel Gauge
-	RenderTexture (gfuelgaugetex, 676, 294, 316, 44);
-	RenderTexture (gfuelgaugewhitetex, 714+GetFuelRevealFromBars (GetNumFuelBars(fuelfloat)), 303, 274, 28);
-
-	// Coolant Temp
-	if (usingfh) {
-		RenderTexture (gCoolantFtex, 808, 196, 209, 80);
+	if (fuelwarning == true && enginerunning == true) {
+		if (flash) 
+		{
+			RenderTexture (gfuelgaugetex, 676, 294, 316, 44);
+			RenderTexture (gfuelgaugewhitetex, 714+GetFuelRevealFromBars (GetNumFuelBars(fuelfloat)), 303, 274, 28);
+		}
 	} else {
-		RenderTexture (gCoolanttex, 808, 196, 209, 80);	
+		RenderTexture (gfuelgaugetex, 676, 294, 316, 44);
+		RenderTexture (gfuelgaugewhitetex, 714+GetFuelRevealFromBars (GetNumFuelBars(fuelfloat)), 303, 274, 28);
 	}
-	
+	// Coolant Temp
+	if (overheatwarning == true && enginerunning == true) {
+		if (flash) {
+			if (usingfh) {
+				RenderTexture (gCoolantFtex, 808, 196, 209, 80);
+			} else {
+				RenderTexture (gCoolanttex, 808, 196, 209, 80);	
+			}	
+		}
+	} else {
+		if (usingfh) {
+			RenderTexture (gCoolantFtex, 808, 196, 209, 80);
+		} else {
+			RenderTexture (gCoolanttex, 808, 196, 209, 80);	
+		}
+	}
+
 	RenderTexture (gCoolanticontex, 772, 221, 41, 39);
 
 	// Top light icons (Neutral, Oil, Indicator, High beam)
@@ -4632,6 +5157,12 @@ void Drawdashboard () {
 		} 
 	}
 
+	if (infomode == 3 && !warningbadgeactive) {
+		if (infoanimationinprogress == false) {			
+			RenderTexture(gNavbgtex, 0, 158, 434, 268);
+		} 
+	}
+
 	if ((infomode != currentinfomode && !warningbadgeactive)) {		
 		if (infoanimationinprogress == false) {
 			infoanimationcount = 0;
@@ -4669,61 +5200,64 @@ void Drawdashboard () {
 	}
 
 	// Warning badges
-	if (fronttyrewarningtriggered || reartyrewarningtriggered) {
-		
-		warningbadgeactive = true;
-		RenderTexture (gLowtyrebadgetex, 0, 163, 444, 249);
-
-		if (flash) {
-			if (fronttyrewarningtriggered && !reartyrewarningtriggered) {
-				// Front only
-				RenderTexture (gFronttyrelowtex, 168, 244, 257, 76);
-			}
-
-			if (reartyrewarningtriggered && !fronttyrewarningtriggered) {
-				// Rear only
-				RenderTexture (gReartyrelowtex, 168, 244, 257, 76);
-			}
-
-			if (reartyrewarningtriggered && fronttyrewarningtriggered) {
-				// Front and Rear
-				RenderTexture (gBothtyrelowtex, 168, 244, 257, 76);
-			}
-
-		}
-
-	} else {
-		
-		if (oilwarning == true && enginerunning == true) { // Oil warning takes priority
+	if (!warningbadgecancelled) {
+		if (fronttyrewarningtriggered || reartyrewarningtriggered) {
 			
 			warningbadgeactive = true;
-			RenderTexture (gLowoilbadgetex, 0, 163, 444, 249);
-			
+			RenderTexture (gLowtyrebadgetex, 0, 163, 444, 249);
+
 			if (flash) {
-				RenderTexture (gLowoiltex, 222, 236, 134, 105);
+				if (fronttyrewarningtriggered && !reartyrewarningtriggered) {
+					// Front only
+					RenderTexture (gFronttyrelowtex, 168, 244, 257, 76);
+				}
+
+				if (reartyrewarningtriggered && !fronttyrewarningtriggered) {
+					// Rear only
+					RenderTexture (gReartyrelowtex, 168, 244, 257, 76);
+				}
+
+				if (reartyrewarningtriggered && fronttyrewarningtriggered) {
+					// Front and Rear
+					RenderTexture (gBothtyrelowtex, 168, 244, 257, 76);
+				}
+
 			}
 
 		} else {
 			
-			if (overheatwarning == true && enginerunning == true) { // Second priority is engine overheat warning
+			if (oilwarning == true && enginerunning == true) { // Oil warning takes priority
+				
 				warningbadgeactive = true;
-				RenderTexture(gOverheatbadgetex, 0, 163, 444, 249);
+				RenderTexture (gLowoilbadgetex, 0, 163, 444, 249);
+				
 				if (flash) {
-					RenderTexture(gEngineoverheattex, 189, 237, 212, 95);
+					RenderTexture (gLowoiltex, 222, 236, 134, 105);
 				}
+
 			} else {
-				if (fuelwarning == true && enginerunning == true) { // Third priority is fuel warning
+				
+				if (overheatwarning == true && enginerunning == true) { // Second priority is engine overheat warning
 					warningbadgeactive = true;
-					RenderTexture(gLowfuelbadgetex, 0, 163, 444, 249);
+					RenderTexture(gOverheatbadgetex, 0, 163, 444, 249);
 					if (flash) {
-						RenderTexture(gLowfueltex, 222, 236, 134, 105);
+						RenderTexture(gEngineoverheattex, 189, 237, 212, 95);
 					}
 				} else {
-					warningbadgeactive = false;
+					
+					if (fuelwarning == true && enginerunning == true && infomode != 3) { // Third priority is fuel warning
+						warningbadgeactive = true;
+						RenderTexture(gLowfuelbadgetex, 0, 163, 444, 249);
+						if (flash) {
+							RenderTexture(gLowfueltex, 222, 236, 134, 105);
+						}
+					} else {
+						warningbadgeactive = false;
+					}
 				}
-			}
 
-		}	
+			}	
+		}
 	}
 
 	// Units - either MPH or KM
@@ -4887,9 +5421,185 @@ void Drawdashboard () {
 		drawMediumstring (strSensor4temp, 246, 342);
 	}
 
+	if (infomode == 3 && infoanimationinprogress == false && !warningbadgeactive) {
+		
+
+		if (navActive == true) {
+			if (strlen (strNavRoad) > 0) {
+				drawNavSymbol (ONTO, 13, 350);
+			}
+
+			if (strlen (strNavRoad) > 0 && strlen (strNavRoad) <= 14) {
+				drawNavLargeString (strNavRoad, 69, 347);			
+			} else {
+				drawNavSmallString (strNavRoad, 69, 347);			
+			}
+			
+			if (strlen (strNavTowards) > 0) {
+				drawNavSymbol (TWRDS, 13, 391);
+			}
+
+			if (strlen (strNavTowards) > 0 && strlen (strNavTowards) <= 16) {			
+				drawNavLargeString (strNavTowards, 99, 386);
+			} else {			
+				drawNavSmallString (strNavTowards, 99, 386);
+			}
+			
+			drawNavSmallString (szArrivein, 14, 175);
+			
+			if (usingkm) {
+				drawNavLargeString (strNavDestKm, 77, 171);
+				drawNavSmallString (szKm, 165, 175);
+			} else {
+				drawNavLargeString (strNavDestMiles, 77, 171);
+				drawNavSmallString (szMls, 165, 175);
+			}
+			
+
+			if (navYards <= 300) {
+				//drawNavNumbers (87, 16, 191);				
+				if (usingkm) {
+					drawNavDigits (strNavMetres, 16, 211);
+					drawNavSymbol (METRE, 22, 308);
+				} else {
+					drawNavDigits (strNavYards, 16, 211);
+					drawNavSymbol (YARD, 22, 308);
+				}				
+			} else {
+				if (usingkm) {
+					drawNavDigits (strNavKm, 16, 211);
+					drawNavSymbol (KM, 22, 308);
+				} else {
+					drawNavDigits (strNavMiles, 16, 211);
+					drawNavSymbol (MILE, 22, 308);
+				}				
+			}
+			
+			if (strcmp (strNavSymbol, "MUT") == 0) {
+				if (drivingleft == 1) {
+					drawNavSymbol (MUT, 249, 180);
+				}
+
+				if (drivingleft == 0) {
+					drawNavSymbol (MUTR, 249, 180);
+				}
+			}
+
+			if (strcmp (strNavSymbol, "MEX") == 0) {
+				if (drivingleft == 1) {
+					drawNavSymbol (EXITL, 249, 180);
+				}
+
+				if (drivingleft == 0) {
+					drawNavSymbol (EXITR, 249, 180);
+				}
+
+				// Draw Exit number
+				drawNavLargeString (strNavExit, 344, 275);
+			}
+
+			if (strcmp (strNavSymbol, "TNR") == 0) {
+				drawNavSymbol (TNR, 249, 180);			
+			}
+
+			if (strcmp (strNavSymbol, "TNL") == 0) {
+				drawNavSymbol (TNL, 249, 180);			
+			}
+
+			if (strcmp (strNavSymbol, "SLL") == 0) {
+				drawNavSymbol (SLL, 249, 180);			
+			}
+
+			if (strcmp (strNavSymbol, "SLR") == 0) {
+				drawNavSymbol (SLR, 249, 180);			
+			}
+
+			if (strcmp (strNavSymbol, "RB1") == 0) {
+				if (drivingleft == 1) {
+					drawNavSymbol (RB1L, 249, 180);
+				}
+
+				if (drivingleft == 0) {
+					drawNavSymbol (RB1R, 249, 180);
+				}
+			}
+
+			if (strcmp (strNavSymbol, "RB2") == 0) {
+				if (drivingleft == 1) {
+					drawNavSymbol (RB2L, 255, 170);
+				}
+
+				if (drivingleft == 0) {
+					drawNavSymbol (RB2R, 255, 170);
+				}
+			}		
+
+			if (strcmp (strNavSymbol, "PRK") == 0) {
+				drawNavLargeString (szFindparking, 99, 386);
+			}
+
+			if (strcmp (strNavSymbol, "FRY") == 0) {
+				drawNavLargeString (szTakeFerry, 99, 386);
+			}
+
+			if (strcmp (strNavSymbol, "RB3") == 0) {
+				if (drivingleft == 1) {
+					drawNavSymbol (RB3L, 249, 180);
+				}
+
+				if (drivingleft == 0) {
+					drawNavSymbol (RB3R, 249, 180);
+				}
+			}		
+
+			if (strcmp (strNavSymbol, "RB4") == 0) {
+				if (drivingleft == 1) {
+					drawNavSymbol (RB4L, 249, 180);
+				}
+
+				if (drivingleft == 0) {
+					drawNavSymbol (RB4R, 249, 180);
+				}
+			}
+
+			if (strcmp (strNavSymbol, "RB5") == 0) {
+				if (drivingleft == 1) {
+					drawNavSymbol (RB5L, 249, 180);
+				}
+
+				if (drivingleft == 0) {
+					drawNavSymbol (RB5R, 249, 180);
+				}
+			}
+
+			if (strcmp (strNavSymbol, "LNR") == 0) {
+				drawNavSymbol (KPR, 249, 180);			
+			}
+
+			if (strcmp (strNavSymbol, "LNL") == 0) {
+				drawNavSymbol (KPL, 249, 180);			
+			}
+
+			if (strcmp (strNavSymbol, "CON") == 0) {
+				drawNavSymbol (CON, 249, 180);			
+			}
+
+			if (strcmp (strNavSymbol, "ARV") == 0) {
+				drawNavSymbol (ARV, 249, 180);			
+			}
+		} else {
+			drawNavLargeString (szNoNavData, 40, 265);
+			drawNavSmallString (szSmartphoneapp, 40, 350);
+			drawNavSmallString (szSetdestination, 56, 380);
+		}
+		
+
+	}
 
 	if (indicateleft && !warningbadgeactive) {		
-		RenderTexture (gIndicateleftfartex, 2, 186, 250, 98);
+		if (infomode == 0 || infomode == 1) {
+			RenderTexture (gIndicateleftfartex, 2, 186, 250, 98);
+		}		
 	}
 
 	if (indicateright && !warningbadgeactive) {		
@@ -5080,7 +5790,7 @@ int main(int argc, char* args[]) {
 			if (e.type == SDL_KEYUP) {
 				//fprintf (stderr, "choice");
 				//spinangle--;
-				fprintf (stderr, "Key: %d", e.key.keysym.scancode);
+				//fprintf (stderr, "Key: %d", e.key.keysym.scancode);
 
 				if (e.key.keysym.scancode == 229) {
 					choice();

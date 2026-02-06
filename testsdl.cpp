@@ -3411,32 +3411,45 @@ void UnpackMessage () {
 int connectInterface ()
 {
 // Open the serial port. Change device path as needed (currently set to an standard FTDI USB-UART cable type device)
+// Priority: Check simulator pipe first, then real hardware
 
+	// Try simulator pipe first (for development/testing with tft-dash-simulator)
+	if (file_exists ("/tmp/tft-dash-pipe")) {
+		fprintf(stderr, "Connecting to simulator pipe...\n");
+		serial_port = open("/tmp/tft-dash-pipe", O_RDONLY);
+		if (serial_port >= 0) {
+			fprintf(stderr, "Simulator connected!\n");
+			// No termios setup needed for pipe - just read raw data
+			return 0;
+		}
+	}
+
+	// Try real hardware serial ports
 	if (file_exists ("/dev/cu.usbserial-1430")) {
 		serial_port = open("/dev/cu.usbserial-1430", O_RDWR); // Nano board connected!
 	} else {
-		if (file_exists ("/dev/cu.usbmodem14301")) {		
+		if (file_exists ("/dev/cu.usbmodem14301")) {
 			serial_port = open("/dev/cu.usbmodem14301", O_RDWR);
 		} else {
-			if (file_exists ("/dev/cu.usbmodem1101")) {		
-				//fprintf(stderr, "Bike interface connected!"); 
+			if (file_exists ("/dev/cu.usbmodem1101")) {
+				//fprintf(stderr, "Bike interface connected!");
 				serial_port = open("/dev/cu.usbmodem1101", O_RDWR);
 			} else {
 
 				if (file_exists ("/dev/ttyACM0")) {
-					//fprintf(stderr, "Bike interface connected!"); 
+					//fprintf(stderr, "Bike interface connected!");
 					serial_port = open("/dev/ttyACM0", O_RDWR);
 				} else {
 					if (file_exists ("/dev/ttyACM1")) {
-						//fprintf(stderr, "Bike interface connected!"); 
+						//fprintf(stderr, "Bike interface connected!");
 						serial_port = open("/dev/ttyACM1", O_RDWR);
 					} else {
-						//fprintf(stderr, "Bike interface NOT connected!"); 
-						return 0;				
+						//fprintf(stderr, "Bike interface NOT connected!");
+						return 0;
 					}
 				}
-			}	
-		}	
+			}
+		}
 	}
 
 

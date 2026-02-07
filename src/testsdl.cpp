@@ -84,6 +84,9 @@ NAV TO DO
 #include <termios.h> // Contains POSIX terminal control definitions
 #include <unistd.h> // write(), read(), close()
 
+// Parser module
+#include "parser.h"
+
 #define STANDARDTPMS 100
 #define EBAYTPMS 200
 
@@ -3165,7 +3168,7 @@ void UnpackNavMessage () {
 
 }
 
-void UnpackMessage () {
+void UnpackMessageOld () {
 
 	//char gszCommsmsg[255];
 	//gszCommsmsg[255];
@@ -3416,6 +3419,73 @@ void UnpackMessage () {
 
 	}
 
+}
+
+void UnpackMessage() {
+	// Use new parser module - cleaner and faster than old if-ladder
+	DashboardState state = {0};
+
+	if (!parse_live_message(gszCommsmsg, &state)) {
+		fprintf(stderr, "Failed to parse live message\n");
+		return;
+	}
+
+	// Copy parsed values to globals
+	currentSpeed = state.currentSpeed;
+	rpm = state.rpm;
+	coolanttemp = state.coolanttemp;
+	batt = state.batt;
+	// Note: currenthour/currentminute don't exist as globals - we build strTime instead
+	fuelfloat = state.fuelfloat;
+	neutral = state.neutral;
+	oilwarning = state.oilwarning;
+	highbeam = state.highbeam;
+	indicateleft = state.indicateleft;
+	indicateright = state.indicateright;
+	choicestate = state.choicestate;
+	infomode = state.infomode;
+	trip1 = state.trip1;
+	trip2 = state.trip2;
+	odo = state.odo;
+	usingkm = state.usingkm;
+	spdcorrect = state.spdcorrect;
+	theme = state.theme;
+	ambientTemp = state.ambientTemp;
+	currentgear = state.currentgear;
+	mpg = state.mpg;
+	range = state.range;
+	maxspeed = state.maxspeed;
+	triptimehour = state.triptimehour;
+	triptimemin = state.triptimemin;
+	oilpressureavailable = state.oilpressureavailable;
+	oilpressureohms = state.oilpressureohms;
+	oiltempohms = state.oiltempohms;
+	usingfh = state.usingfh;
+	usingbar = state.usingbar;
+	frontsensorid = state.frontsensorid;
+	rearsensorid = state.rearsensorid;
+	frontpressurelow = state.frontpressurelow;
+	rearpressurelow = state.rearpressurelow;
+
+	// Build time string from hour/minute
+	memset(strTime, 0, 16);
+	sprintf(strTime, "%.2d:%.2d", state.currenthour, state.currentminute);
+
+	// Build trip time string
+	memset(strTriptime, 0, 16);
+	if (triptimemin < 10) {
+		sprintf(strTriptime, "%d:0%d", triptimehour, triptimemin);
+	} else {
+		sprintf(strTriptime, "%d:%d", triptimehour, triptimemin);
+	}
+
+	// Handle navigation message
+	if (strlen(state.strNav) > 0) {
+		memset(strNav, 0, 255);
+		strcpy(strNav, state.strNav);
+		UnpackNavMessage();
+		navActive = true;
+	}
 }
 
 

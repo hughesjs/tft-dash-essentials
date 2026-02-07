@@ -16,8 +16,9 @@ assets/
     ├── orange/        (81 files) - Orange theme
     ├── red/           (81 files) - Red theme
     ├── yellow/        (81 files) - Yellow theme
-    └── *thumb.bmp     (9 files)  - Theme preview thumbnails
 ```
+
+Each theme directory also contains its own `{theme_name}thumb.bmp` preview thumbnail.
 
 **Total: 751 BMP files**
 
@@ -41,7 +42,7 @@ Each theme directory contains bitmap assets for:
 1. Create a new directory: `themes/{theme_name}/`
 2. Copy BMP files from an existing theme
 3. Modify colours/contrast as needed
-4. Create a thumbnail: `{theme_name}thumb.bmp` at `themes/` root
+4. Create a thumbnail: `{theme_name}thumb.bmp` inside the theme directory
 5. Update `testsdl.cpp` to add theme selection logic
 
 ## File Format
@@ -67,10 +68,10 @@ SDL_Surface *surface = Loadsurface(existing, "filename.bmp", "blue");
 // Loads: assets/themes/blue/filename.bmp
 ```
 
-Thumbnails are loaded without a theme:
+Thumbnails are loaded with their theme name:
 ```c
-SDL_Surface *thumb = Loadsurface(existing, "bluethumb.bmp", NULL);
-// Loads: assets/themes/bluethumb.bmp
+SDL_Surface *thumb = Loadsurface(existing, "bluethumb.bmp", "blue");
+// Loads: assets/themes/blue/bluethumb.bmp
 ```
 
 ## Deployment

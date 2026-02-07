@@ -31,6 +31,13 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(testsdl);
 
+    // Copy assets alongside the binary
+    b.installDirectory(.{
+        .source_dir = b.path("assets/themes"),
+        .install_dir = .bin,
+        .install_subdir = "assets/themes",
+    });
+
     // --- Parser tests ---
     const test_parser = b.addExecutable(.{
         .name = "test_parser",
@@ -63,6 +70,7 @@ pub fn build(b: *std.Build) void {
 
     // 'zig build run' step - builds and runs the dashboard
     const run_dash = b.addRunArtifact(testsdl);
+    run_dash.setCwd(b.path("zig-out/bin"));
     if (b.args) |args| {
         run_dash.addArgs(args);
     }

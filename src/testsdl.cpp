@@ -1280,23 +1280,16 @@ SDL_Surface *Loadsurface (SDL_Surface *existing, const char *file, const char *t
 	char szFile[255];
 	memset(szFile, 0, 255);
 
-	// Check if this is a theme thumbnail (ends with "thumb.bmp")
-	if (strstr(file, "thumb.bmp") != NULL) {
-		// Thumbnails are at assets/themes/{file}
-		strcat (szFile, "assets/themes/");
-		strcat (szFile, file);
+	// Files are at assets/themes/{theme}/{file}
+	// Default theme if theme is NULL
+	strcat (szFile, "assets/themes/");
+	if (theme != NULL) {
+		strcat (szFile, theme);
 	} else {
-		// Regular files: assets/themes/{theme}/{file}
-		// Default theme if theme is NULL
-		strcat (szFile, "assets/themes/");
-		if (theme != NULL) {
-			strcat (szFile, theme);
-		} else {
-			strcat (szFile, "default");
-		}
-		strcat (szFile, "/");
-		strcat (szFile, file);
+		strcat (szFile, "default");
 	}
+	strcat (szFile, "/");
+	strcat (szFile, file);
 
 	return SDL_LoadBMP (szFile);
 }
@@ -1406,31 +1399,31 @@ int loadsurfaces(const char *theme)
 	gLightoptions = Loadsurface(gLightoptions, "Lightoptions.bmp", theme);
 	if (gLightoptions == NULL) { fprintf(stderr, "could not load gLightoptions: %s\n", SDL_GetError()); return 1; }
 
-	gWhitethumb = Loadsurface(gWhitethumb, "whitethumb.bmp", NULL);
+	gWhitethumb = Loadsurface(gWhitethumb, "whitethumb.bmp", "default");
 	if (gWhitethumb == NULL) { fprintf(stderr, "could not load gWhitethumb: %s\n", SDL_GetError()); return 1; }
 
-	gBrightthumb = Loadsurface(gBrightthumb, "brightthumb.bmp", NULL);
+	gBrightthumb = Loadsurface(gBrightthumb, "brightthumb.bmp", "bright");
 	if (gBrightthumb == NULL) { fprintf(stderr, "could not load gBrightthumb: %s\n", SDL_GetError()); return 1; }
 
-	gDarkthumb = Loadsurface(gDarkthumb, "darkthumb.bmp", NULL);
+	gDarkthumb = Loadsurface(gDarkthumb, "darkthumb.bmp", "dark");
 	if (gDarkthumb == NULL) { fprintf(stderr, "could not load gDarkthumb: %s\n", SDL_GetError()); return 1; }
 
-	gGreenthumb = Loadsurface(gGreenthumb, "greenthumb.bmp", NULL);
+	gGreenthumb = Loadsurface(gGreenthumb, "greenthumb.bmp", "green");
 	if (gGreenthumb == NULL) { fprintf(stderr, "could not load gGreenthumb: %s\n", SDL_GetError()); return 1; }
 
-	gRedthumb = Loadsurface(gRedthumb, "redthumb.bmp", NULL);
+	gRedthumb = Loadsurface(gRedthumb, "redthumb.bmp", "red");
 	if (gRedthumb == NULL) { fprintf(stderr, "could not load gRedthumb: %s\n", SDL_GetError()); return 1; }
 
-	gBluethumb = Loadsurface(gBluethumb, "bluethumb.bmp", NULL);
+	gBluethumb = Loadsurface(gBluethumb, "bluethumb.bmp", "blue");
 	if (gBluethumb == NULL) { fprintf(stderr, "could not load gBluethumb: %s\n", SDL_GetError()); return 1; }
 
-	gOrangethumb = Loadsurface(gOrangethumb, "orangethumb.bmp", NULL);
+	gOrangethumb = Loadsurface(gOrangethumb, "orangethumb.bmp", "orange");
 	if (gOrangethumb == NULL) { fprintf(stderr, "could not load gOrangethumb: %s\n", SDL_GetError()); return 1; }
 
-	gYellowthumb = Loadsurface(gYellowthumb, "yellowthumb.bmp", NULL);
+	gYellowthumb = Loadsurface(gYellowthumb, "yellowthumb.bmp", "yellow");
 	if (gYellowthumb == NULL) { fprintf(stderr, "could not load gYellowthumb: %s\n", SDL_GetError()); return 1; }
 
-	gNightthumb = Loadsurface(gNightthumb, "nightthumb.bmp", NULL);
+	gNightthumb = Loadsurface(gNightthumb, "nightthumb.bmp", "night");
 	if (gNightthumb == NULL) { fprintf(stderr, "could not load gNightthumb: %s\n", SDL_GetError()); return 1; }
 
 	gTPMSoptions = Loadsurface(gTPMSoptions, "TPMSsetup.bmp", theme);
@@ -2641,7 +2634,7 @@ void drawLargestring (char *digits, int xpos, int ypos)
 
 		char digit = digits[s];
 
-		for (int d = 0; d <= 10; d++) {
+		for (int d = 0; d < 10; d++) {
 			if (digit == gLargeNumref[d]) {
 				SDL_Rect gSrcrect;
 				gSrcrect.x = gLargenumberssrctexloc[0][d];
@@ -3658,7 +3651,7 @@ void* pollInterface(void *arg)
 			UnpackMessage();
 		} else {
 			//if (appendbuf[0] == 'M' && strlen(appendbuf) == 59 && appendbuf[58] == 'N') {
-			if (appendbuf[0] == '[' && strlen(appendbuf) == 95 && appendbuf[94] == ']') {
+			if (appendbuf[0] == '[' && strlen(appendbuf) > 78 && strlen(appendbuf) < 150) {
 
 				memset (gszCommsmsg, 0, 1024);
 				strcpy (gszCommsmsg, appendbuf);

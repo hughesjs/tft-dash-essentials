@@ -16,87 +16,87 @@ extern "C" {
 
 /* Live dashboard data from firmware */
 typedef struct {
-    int currentSpeed;
+    int current_speed;
     int rpm;
-    int coolanttemp;
+    int coolant_temp;
     float batt;
-    int currenthour;
-    int currentminute;
-    int fuelfloat;
+    int current_hour;
+    int current_minute;
+    int fuel_float;
     bool neutral;
-    bool oilwarning;
-    bool highbeam;
-    bool indicateleft;
-    bool indicateright;
-    int choicestate;
-    int infomode;
+    bool oil_warning;
+    bool high_beam;
+    bool indicate_left;
+    bool indicate_right;
+    int choice_state;
+    int info_mode;
     float trip1;
     float trip2;
     float odo;
-    int usingkm;
-    float spdcorrect;
+    int using_km;
+    float spd_correct;
     int theme;
-    int ambientTemp;
-    int currentgear;
+    int ambient_temp;
+    int current_gear;
     int mpg;
     int range;
-    int maxspeed;
-    int triptimehour;
-    int triptimemin;
-    bool oilpressureavailable;
-    int oilpressureohms;
-    int oiltempohms;
-    int usingfh;
-    int usingbar;
-    int frontsensorid;
-    int rearsensorid;
-    int frontpressurelow;
-    int rearpressurelow;
-    char strNav[255];
-} DashboardState;
+    int max_speed;
+    int trip_time_hour;
+    int trip_time_min;
+    bool oil_pressure_available;
+    int oil_pressure_ohms;
+    int oil_temp_ohms;
+    int using_fh;
+    int using_bar;
+    int front_sensor_id;
+    int rear_sensor_id;
+    int front_pressure_low;
+    int rear_pressure_low;
+    char nav_string[255];
+} dashboard_state;
 
 /* Menu configuration data from firmware */
 typedef struct {
-    int choicestate;
-    int ododigit1, ododigit2, ododigit3, ododigit4, ododigit5, ododigit6;
-    int odo2digit1, odo2digit2, odo2digit3, odo2digit4, odo2digit5, odo2digit6;
-    int odoerror;
-    int settimedigit0, settimedigit1, settimedigit2, settimedigit3;
-    int spcdigit0, spcdigit1, spcdigit2, spcdigit3;
-    int frontsprocket;
-    int rearsprocket;
-    int coolantfantemp;
-    int usingkm;
-    int usingfh;
-    int usingbar;
-    int frontsensorid;
-    int rearsensorid;
-    int frontpressurelow;
-    int rearpressurelow;
-    int controllayout;
-    int daytheme;
-    int nighttheme;
-    int currentlightlevel;
-    int lightswitchvalue;
-    int fanneutraloption;
-    int gearratiointerval;
-} MenuState;
+    int choice_state;
+    int odo_digit1, odo_digit2, odo_digit3, odo_digit4, odo_digit5, odo_digit6;
+    int odo2_digit1, odo2_digit2, odo2_digit3, odo2_digit4, odo2_digit5, odo2_digit6;
+    int odo_error;
+    int set_time_digit0, set_time_digit1, set_time_digit2, set_time_digit3;
+    int spc_digit0, spc_digit1, spc_digit2, spc_digit3;
+    int front_sprocket;
+    int rear_sprocket;
+    int coolant_fan_temp;
+    int using_km;
+    int using_fh;
+    int using_bar;
+    int front_sensor_id;
+    int rear_sensor_id;
+    int front_pressure_low;
+    int rear_pressure_low;
+    int control_layout;
+    int day_theme;
+    int night_theme;
+    int current_light_level;
+    int light_switch_value;
+    int fan_neutral_option;
+    int gear_ratio_interval;
+} menu_state;
 
 /* Navigation data from phone via BLE */
 typedef struct {
-    char strNavSymbol[16];
-    char strNavRoad[255];
-    char strNavTowards[255];
-    char strNavExit[16];
-    char strNavDistance[16];
-    char strNavDistanceUnits[16];
-    int navMetres;
-    int navYards;
-    double navMiles;
-    int navKM;
-    bool navActive;
-    double navDestdistance;
-} NavState;
+    char nav_symbol[16];
+    char nav_road[255];
+    char nav_towards[255];
+    char nav_exit[16];
+    char nav_distance[16];
+    char nav_distance_units[16];
+    int nav_metres;
+    int nav_yards;
+    double nav_miles;
+    int nav_km;
+    bool nav_active;
+    double nav_dest_distance;
+} nav_state;
 
 /*
  * Parse comma-delimited live data message from firmware.
@@ -104,7 +104,7 @@ typedef struct {
  *
  * Returns: true on success, false on parse error
  */
-bool parse_live_message(const char* msg, DashboardState* state);
+bool parse_live_message(const char* msg, dashboard_state* state);
 
 /*
  * Parse comma-delimited menu message from firmware.
@@ -112,7 +112,7 @@ bool parse_live_message(const char* msg, DashboardState* state);
  *
  * Returns: true on success, false on parse error
  */
-bool parse_menu_message(const char* msg, MenuState* state);
+bool parse_menu_message(const char* msg, menu_state* state);
 
 /*
  * Parse percent-delimited navigation message from phone.
@@ -120,7 +120,7 @@ bool parse_menu_message(const char* msg, MenuState* state);
  *
  * Returns: true on success, false on parse error
  */
-bool parse_nav_message(const char* msg, NavState* state);
+bool parse_nav_message(const char* msg, nav_state* state);
 
 #ifdef __cplusplus
 }

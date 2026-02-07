@@ -49,44 +49,44 @@ typedef struct {
  * Format: {,speed,rpm,coolant,battery,hour,minute,fuel,neutral,oil,...,}
  */
 static const FieldDescriptor live_fields[] = {
-    FIELD_SKIP(),                               /* 0: message start marker */
-    FIELD_INT(DashboardState, currentSpeed),    /* 1 */
-    FIELD_INT(DashboardState, rpm),             /* 2 */
-    FIELD_INT(DashboardState, coolanttemp),     /* 3 */
-    FIELD_FLOAT(DashboardState, batt),          /* 4 */
-    FIELD_INT(DashboardState, currenthour),     /* 5 */
-    FIELD_INT(DashboardState, currentminute),   /* 6 */
-    FIELD_INT(DashboardState, fuelfloat),       /* 7 */
-    FIELD_BOOL(DashboardState, neutral),        /* 8 */
-    FIELD_BOOL(DashboardState, oilwarning),     /* 9 */
-    FIELD_BOOL(DashboardState, highbeam),       /* 10 */
-    FIELD_BOOL(DashboardState, indicateleft),   /* 11 */
-    FIELD_BOOL(DashboardState, indicateright),  /* 12 */
-    FIELD_INT(DashboardState, choicestate),     /* 13 */
-    FIELD_INT(DashboardState, infomode),        /* 14 */
-    FIELD_FLOAT(DashboardState, trip1),         /* 15 */
-    FIELD_FLOAT(DashboardState, trip2),         /* 16 */
-    FIELD_FLOAT(DashboardState, odo),           /* 17 */
-    FIELD_INT(DashboardState, usingkm),         /* 18 */
-    FIELD_FLOAT(DashboardState, spdcorrect),    /* 19 */
-    FIELD_INT(DashboardState, theme),           /* 20 */
-    FIELD_INT(DashboardState, ambientTemp),     /* 21 */
-    FIELD_INT(DashboardState, currentgear),     /* 22 */
-    FIELD_INT(DashboardState, mpg),             /* 23 */
-    FIELD_INT(DashboardState, range),           /* 24 */
-    FIELD_INT(DashboardState, maxspeed),        /* 25 */
-    FIELD_INT(DashboardState, triptimehour),    /* 26 */
-    FIELD_INT(DashboardState, triptimemin),     /* 27 */
-    FIELD_BOOL(DashboardState, oilpressureavailable), /* 28 */
-    FIELD_INT(DashboardState, oilpressureohms), /* 29 */
-    FIELD_INT(DashboardState, oiltempohms),     /* 30 */
-    FIELD_INT(DashboardState, usingfh),         /* 31 */
-    FIELD_INT(DashboardState, usingbar),        /* 32 */
-    FIELD_INT(DashboardState, frontsensorid),   /* 33 */
-    FIELD_INT(DashboardState, rearsensorid),    /* 34 */
-    FIELD_INT(DashboardState, frontpressurelow), /* 35 */
-    FIELD_INT(DashboardState, rearpressurelow), /* 36 */
-    FIELD_STRING(DashboardState, strNav),       /* 37 */
+    FIELD_SKIP(),                                    /* 0: message start marker */
+    FIELD_INT(dashboard_state, current_speed),       /* 1 */
+    FIELD_INT(dashboard_state, rpm),                 /* 2 */
+    FIELD_INT(dashboard_state, coolant_temp),        /* 3 */
+    FIELD_FLOAT(dashboard_state, batt),              /* 4 */
+    FIELD_INT(dashboard_state, current_hour),        /* 5 */
+    FIELD_INT(dashboard_state, current_minute),      /* 6 */
+    FIELD_INT(dashboard_state, fuel_float),          /* 7 */
+    FIELD_BOOL(dashboard_state, neutral),            /* 8 */
+    FIELD_BOOL(dashboard_state, oil_warning),        /* 9 */
+    FIELD_BOOL(dashboard_state, high_beam),          /* 10 */
+    FIELD_BOOL(dashboard_state, indicate_left),      /* 11 */
+    FIELD_BOOL(dashboard_state, indicate_right),     /* 12 */
+    FIELD_INT(dashboard_state, choice_state),        /* 13 */
+    FIELD_INT(dashboard_state, info_mode),           /* 14 */
+    FIELD_FLOAT(dashboard_state, trip1),             /* 15 */
+    FIELD_FLOAT(dashboard_state, trip2),             /* 16 */
+    FIELD_FLOAT(dashboard_state, odo),               /* 17 */
+    FIELD_INT(dashboard_state, using_km),            /* 18 */
+    FIELD_FLOAT(dashboard_state, spd_correct),       /* 19 */
+    FIELD_INT(dashboard_state, theme),               /* 20 */
+    FIELD_INT(dashboard_state, ambient_temp),        /* 21 */
+    FIELD_INT(dashboard_state, current_gear),        /* 22 */
+    FIELD_INT(dashboard_state, mpg),                 /* 23 */
+    FIELD_INT(dashboard_state, range),               /* 24 */
+    FIELD_INT(dashboard_state, max_speed),           /* 25 */
+    FIELD_INT(dashboard_state, trip_time_hour),      /* 26 */
+    FIELD_INT(dashboard_state, trip_time_min),       /* 27 */
+    FIELD_BOOL(dashboard_state, oil_pressure_available), /* 28 */
+    FIELD_INT(dashboard_state, oil_pressure_ohms),   /* 29 */
+    FIELD_INT(dashboard_state, oil_temp_ohms),       /* 30 */
+    FIELD_INT(dashboard_state, using_fh),            /* 31 */
+    FIELD_INT(dashboard_state, using_bar),           /* 32 */
+    FIELD_INT(dashboard_state, front_sensor_id),     /* 33 */
+    FIELD_INT(dashboard_state, rear_sensor_id),      /* 34 */
+    FIELD_INT(dashboard_state, front_pressure_low),  /* 35 */
+    FIELD_INT(dashboard_state, rear_pressure_low),   /* 36 */
+    FIELD_STRING(dashboard_state, nav_string),       /* 37 */
 };
 
 /*
@@ -94,46 +94,46 @@ static const FieldDescriptor live_fields[] = {
  * Format: [,menustate,odo1,odo2,...,settings,...,]
  */
 static const FieldDescriptor menu_fields[] = {
-    FIELD_SKIP(),                               /* 0: message start marker */
-    FIELD_INT(MenuState, choicestate),          /* 1 */
-    FIELD_INT(MenuState, ododigit1),            /* 2 */
-    FIELD_INT(MenuState, ododigit2),            /* 3 */
-    FIELD_INT(MenuState, ododigit3),            /* 4 */
-    FIELD_INT(MenuState, ododigit4),            /* 5 */
-    FIELD_INT(MenuState, ododigit5),            /* 6 */
-    FIELD_INT(MenuState, ododigit6),            /* 7 */
-    FIELD_INT(MenuState, odo2digit1),           /* 8 */
-    FIELD_INT(MenuState, odo2digit2),           /* 9 */
-    FIELD_INT(MenuState, odo2digit3),           /* 10 */
-    FIELD_INT(MenuState, odo2digit4),           /* 11 */
-    FIELD_INT(MenuState, odo2digit5),           /* 12 */
-    FIELD_INT(MenuState, odo2digit6),           /* 13 */
-    FIELD_INT(MenuState, odoerror),             /* 14 */
-    FIELD_INT(MenuState, settimedigit0),        /* 15 */
-    FIELD_INT(MenuState, settimedigit1),        /* 16 */
-    FIELD_INT(MenuState, settimedigit2),        /* 17 */
-    FIELD_INT(MenuState, settimedigit3),        /* 18 */
-    FIELD_INT(MenuState, spcdigit0),            /* 19 */
-    FIELD_INT(MenuState, spcdigit1),            /* 20 */
-    FIELD_INT(MenuState, spcdigit2),            /* 21 */
-    FIELD_INT(MenuState, spcdigit3),            /* 22 */
-    FIELD_INT(MenuState, frontsprocket),        /* 23 */
-    FIELD_INT(MenuState, rearsprocket),         /* 24 */
-    FIELD_INT(MenuState, coolantfantemp),       /* 25 */
-    FIELD_INT(MenuState, usingkm),              /* 26 */
-    FIELD_INT(MenuState, usingfh),              /* 27 */
-    FIELD_INT(MenuState, usingbar),             /* 28 */
-    FIELD_INT(MenuState, frontsensorid),        /* 29 */
-    FIELD_INT(MenuState, rearsensorid),         /* 30 */
-    FIELD_INT(MenuState, frontpressurelow),     /* 31 */
-    FIELD_INT(MenuState, rearpressurelow),      /* 32 */
-    FIELD_INT(MenuState, controllayout),        /* 33 */
-    FIELD_INT(MenuState, daytheme),             /* 34 */
-    FIELD_INT(MenuState, nighttheme),           /* 35 */
-    FIELD_INT(MenuState, currentlightlevel),    /* 36 */
-    FIELD_INT(MenuState, lightswitchvalue),     /* 37 */
-    FIELD_INT(MenuState, fanneutraloption),     /* 38 */
-    FIELD_INT(MenuState, gearratiointerval),    /* 39 */
+    FIELD_SKIP(),                                 /* 0: message start marker */
+    FIELD_INT(menu_state, choice_state),          /* 1 */
+    FIELD_INT(menu_state, odo_digit1),            /* 2 */
+    FIELD_INT(menu_state, odo_digit2),            /* 3 */
+    FIELD_INT(menu_state, odo_digit3),            /* 4 */
+    FIELD_INT(menu_state, odo_digit4),            /* 5 */
+    FIELD_INT(menu_state, odo_digit5),            /* 6 */
+    FIELD_INT(menu_state, odo_digit6),            /* 7 */
+    FIELD_INT(menu_state, odo2_digit1),           /* 8 */
+    FIELD_INT(menu_state, odo2_digit2),           /* 9 */
+    FIELD_INT(menu_state, odo2_digit3),           /* 10 */
+    FIELD_INT(menu_state, odo2_digit4),           /* 11 */
+    FIELD_INT(menu_state, odo2_digit5),           /* 12 */
+    FIELD_INT(menu_state, odo2_digit6),           /* 13 */
+    FIELD_INT(menu_state, odo_error),             /* 14 */
+    FIELD_INT(menu_state, set_time_digit0),       /* 15 */
+    FIELD_INT(menu_state, set_time_digit1),       /* 16 */
+    FIELD_INT(menu_state, set_time_digit2),       /* 17 */
+    FIELD_INT(menu_state, set_time_digit3),       /* 18 */
+    FIELD_INT(menu_state, spc_digit0),            /* 19 */
+    FIELD_INT(menu_state, spc_digit1),            /* 20 */
+    FIELD_INT(menu_state, spc_digit2),            /* 21 */
+    FIELD_INT(menu_state, spc_digit3),            /* 22 */
+    FIELD_INT(menu_state, front_sprocket),        /* 23 */
+    FIELD_INT(menu_state, rear_sprocket),         /* 24 */
+    FIELD_INT(menu_state, coolant_fan_temp),      /* 25 */
+    FIELD_INT(menu_state, using_km),              /* 26 */
+    FIELD_INT(menu_state, using_fh),              /* 27 */
+    FIELD_INT(menu_state, using_bar),             /* 28 */
+    FIELD_INT(menu_state, front_sensor_id),       /* 29 */
+    FIELD_INT(menu_state, rear_sensor_id),        /* 30 */
+    FIELD_INT(menu_state, front_pressure_low),    /* 31 */
+    FIELD_INT(menu_state, rear_pressure_low),     /* 32 */
+    FIELD_INT(menu_state, control_layout),        /* 33 */
+    FIELD_INT(menu_state, day_theme),             /* 34 */
+    FIELD_INT(menu_state, night_theme),           /* 35 */
+    FIELD_INT(menu_state, current_light_level),   /* 36 */
+    FIELD_INT(menu_state, light_switch_value),    /* 37 */
+    FIELD_INT(menu_state, fan_neutral_option),    /* 38 */
+    FIELD_INT(menu_state, gear_ratio_interval),   /* 39 */
 };
 
 /*
@@ -141,13 +141,13 @@ static const FieldDescriptor menu_fields[] = {
  * Format: %symbol%roadname%towards%exit%distance%units%
  */
 static const FieldDescriptor nav_fields[] = {
-    FIELD_SKIP(),                               /* 0: message start marker */
-    FIELD_STRING(NavState, strNavSymbol),       /* 1 */
-    FIELD_STRING(NavState, strNavRoad),         /* 2 */
-    FIELD_STRING(NavState, strNavTowards),      /* 3 */
-    FIELD_STRING(NavState, strNavExit),         /* 4 */
-    FIELD_STRING(NavState, strNavDistance),     /* 5 */
-    FIELD_STRING(NavState, strNavDistanceUnits), /* 6 */
+    FIELD_SKIP(),                                  /* 0: message start marker */
+    FIELD_STRING(nav_state, nav_symbol),           /* 1 */
+    FIELD_STRING(nav_state, nav_road),             /* 2 */
+    FIELD_STRING(nav_state, nav_towards),          /* 3 */
+    FIELD_STRING(nav_state, nav_exit),             /* 4 */
+    FIELD_STRING(nav_state, nav_distance),         /* 5 */
+    FIELD_STRING(nav_state, nav_distance_units),   /* 6 */
 };
 
 /*
@@ -215,7 +215,7 @@ static bool parse_delimited_message(
     return true;
 }
 
-bool parse_live_message(const char* msg, DashboardState* state) {
+bool parse_live_message(const char* msg, dashboard_state* state) {
     return parse_delimited_message(
         msg,
         ',',
@@ -225,7 +225,7 @@ bool parse_live_message(const char* msg, DashboardState* state) {
     );
 }
 
-bool parse_menu_message(const char* msg, MenuState* state) {
+bool parse_menu_message(const char* msg, menu_state* state) {
     return parse_delimited_message(
         msg,
         ',',
@@ -235,7 +235,7 @@ bool parse_menu_message(const char* msg, MenuState* state) {
     );
 }
 
-bool parse_nav_message(const char* msg, NavState* state) {
+bool parse_nav_message(const char* msg, nav_state* state) {
     bool result = parse_delimited_message(
         msg,
         '%',
@@ -249,18 +249,18 @@ bool parse_nav_message(const char* msg, NavState* state) {
     }
 
     /* Post-processing: convert distance based on units */
-    if (strcmp(state->strNavDistanceUnits, "MILE") == 0) {
-        state->navMiles = atof(state->strNavDistance);
-    } else if (strcmp(state->strNavDistanceUnits, "YARD") == 0) {
-        state->navYards = atoi(state->strNavDistance);
-    } else if (strcmp(state->strNavDistanceUnits, "KM") == 0) {
-        state->navKM = atoi(state->strNavDistance);
-    } else if (strcmp(state->strNavDistanceUnits, "METRE") == 0) {
-        state->navMetres = atoi(state->strNavDistance);
+    if (strcmp(state->nav_distance_units, "MILE") == 0) {
+        state->nav_miles = atof(state->nav_distance);
+    } else if (strcmp(state->nav_distance_units, "YARD") == 0) {
+        state->nav_yards = atoi(state->nav_distance);
+    } else if (strcmp(state->nav_distance_units, "KM") == 0) {
+        state->nav_km = atoi(state->nav_distance);
+    } else if (strcmp(state->nav_distance_units, "METRE") == 0) {
+        state->nav_metres = atoi(state->nav_distance);
     }
 
     /* Nav is active if we have a symbol */
-    state->navActive = (strlen(state->strNavSymbol) > 0);
+    state->nav_active = (strlen(state->nav_symbol) > 0);
 
     return true;
 }

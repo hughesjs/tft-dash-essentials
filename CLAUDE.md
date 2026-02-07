@@ -7,14 +7,14 @@ This is the display application for the TFT Dash motorcycle dashboard. It runs o
 ## Build
 
 ```bash
-# Raspberry Pi (primary target)
-g++ -o testsdl testsdl.cpp -lSDL2 -lpthread
+# Universal build script (auto-detects platform)
+./build.sh
 
-# macOS (for development)
-g++ -o testsdl testsdl.cpp -I/Library/Frameworks/SDL2.framework/Headers -F/Library/Frameworks -framework SDL2
+# Build with tests
+./build.sh test
 ```
 
-There is no Makefile. `build.sh` contains the macOS build command. Compilation is a single `g++` invocation.
+The build script automatically detects macOS vs Linux and uses the correct SDL2 linking.
 
 ### Dependencies
 
@@ -23,21 +23,34 @@ There is no Makefile. `build.sh` contains the macOS build command. Compilation i
 
 ## Source Files
 
-### Main Application
-- **`testsdl.cpp`** (~6000 lines): The entire display application in a single file. No header files.
-- **`TPMSTest.cpp`**: Standalone test utility for TPMS serial data.
-- **`build.sh`**: macOS build script.
+```
+tftdashdisplay/
+├── src/                    Source code
+│   ├── testsdl.cpp        Main display application (~6000 lines)
+│   ├── parser.h/c         Extracted parsing with lookup tables
+│   ├── test_parser.c      Parser test suite
+│   └── TPMSTest.cpp       TPMS test utility
+├── assets/                 Graphics assets
+│   └── themes/            BMP files organised by theme
+├── build.sh               Universal build script
+├── CLAUDE.md              Project documentation
+├── REFACTORING.md         Refactoring progress log
+└── SIMULATOR.md           Simulator integration guide
+```
 
-### Refactored Modules (New)
-- **`parser.h/c`**: Extracted message parsing with data-driven lookup tables. Pure C, no SDL dependencies.
-- **`test_parser.c`**: Comprehensive test suite for parsing logic (10 test cases, all passing).
-- **`REFACTORING.md`**: Documentation of refactoring progress and architecture improvements.
+### Main Application
+- **`src/testsdl.cpp`** (~6000 lines): The entire display application in a single file.
+- **`src/TPMSTest.cpp`**: Standalone test utility for TPMS serial data.
+
+### Refactored Modules
+- **`src/parser.h/c`**: Extracted message parsing with data-driven lookup tables. Pure C, no SDL dependencies.
+- **`src/test_parser.c`**: Comprehensive test suite for parsing logic (10 test cases, all passing).
 
 ### Testing
 
 ```bash
 # Build and run parser tests
-gcc -o test_parser test_parser.c parser.c -std=c99 -lm
+./build.sh test
 ./test_parser
 ```
 

@@ -1277,12 +1277,23 @@ SDL_Surface *Loadsurface (SDL_Surface *existing, const char *file, const char *t
 	char szFile[255];
 	memset(szFile, 0, 255);
 
-	if (theme != NULL) {
-		strcat (szFile, theme);
-		strcat (szFile, "-");	
+	// Check if this is a theme thumbnail (ends with "thumb.bmp")
+	if (strstr(file, "thumb.bmp") != NULL) {
+		// Thumbnails are at assets/themes/{file}
+		strcat (szFile, "assets/themes/");
+		strcat (szFile, file);
+	} else {
+		// Regular files: assets/themes/{theme}/{file}
+		// Default theme if theme is NULL
+		strcat (szFile, "assets/themes/");
+		if (theme != NULL) {
+			strcat (szFile, theme);
+		} else {
+			strcat (szFile, "default");
+		}
+		strcat (szFile, "/");
+		strcat (szFile, file);
 	}
-	
-	strcat (szFile, file);
 
 	return SDL_LoadBMP (szFile);
 }

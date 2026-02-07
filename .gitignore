@@ -3,6 +3,9 @@ testsdl
 test_parser
 TPMSTest
 
+# Don't ignore assets directory
+!assets/
+
 # Object files
 *.o
 *.obj

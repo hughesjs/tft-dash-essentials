@@ -4,6 +4,8 @@
  * Uses data-driven lookup tables to avoid if-ladders and redundant parsing.
  */
 
+#define _GNU_SOURCE  /* for strsep */
+
 #include "parser.h"
 #include <string.h>
 #include <stdlib.h>
@@ -180,6 +182,7 @@ static void parse_field(const char* value, void* base_ptr, const FieldDescriptor
 
 /*
  * Generic message parser - splits on delimiter and applies field descriptors
+ * Uses strsep which correctly handles empty fields (consecutive delimiters)
  */
 static bool parse_delimited_message(
     const char* msg,
@@ -192,32 +195,23 @@ static bool parse_delimited_message(
         return false;
     }
 
-    char szCurrent[255];
-    int field_num = 0;
-    int currentpointer = 0;
-
-    memset(szCurrent, 0, sizeof(szCurrent));
-
-    for (size_t c = 0; c < strlen(msg); c++) {
-        if (msg[c] == delimiter) {
-            /* Parse this field if we have a descriptor for it */
-            if (field_num < num_fields) {
-                parse_field(szCurrent, state, &fields[field_num]);
-            }
-
-            /* Reset for next field */
-            memset(szCurrent, 0, sizeof(szCurrent));
-            currentpointer = 0;
-            field_num++;
-
-        } else {
-            /* Accumulate character */
-            if (currentpointer < sizeof(szCurrent) - 1) {
-                szCurrent[currentpointer++] = msg[c];
-            }
-        }
+    /* strsep modifies the string, so we need a copy */
+    char* copy = strdup(msg);
+    if (!copy) {
+        return false;
     }
 
+    char* ptr = copy;
+    char* token;
+    char delim_str[2] = { delimiter, '\0' };
+    size_t field_num = 0;
+
+    while ((token = strsep(&ptr, delim_str)) != NULL && field_num < num_fields) {
+        parse_field(token, state, &fields[field_num]);
+        field_num++;
+    }
+
+    free(copy);
     return true;
 }
 

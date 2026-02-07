@@ -22,7 +22,7 @@ pub fn build(b: *std.Build) void {
 
     testsdl.root_module.addCSourceFiles(.{
         .files = &.{"src/parser.c"},
-        .flags = &.{"-std=c99"},
+        .flags = &.{"-std=c23"},
     });
 
     testsdl.root_module.addIncludePath(b.path("src"));
@@ -54,7 +54,7 @@ pub fn build(b: *std.Build) void {
             "src/parser.c",
         },
         .flags = &.{
-            "-std=c99",
+            "-std=c23",
         },
     });
 

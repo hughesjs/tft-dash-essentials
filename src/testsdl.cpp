@@ -131,120 +131,120 @@ NAV TO DO
 #define ONTO		26
 #define TWRDS		27
 
-SDL_Window* window = NULL;
-SDL_Renderer* renderer = NULL;
-SDL_Surface* screenSurface = NULL;
-SDL_Surface* gImage = NULL;
+SDL_Window* window = nullptr;
+SDL_Renderer* renderer = nullptr;
+SDL_Surface* screenSurface = nullptr;
+SDL_Surface* gImage = nullptr;
 
 // Surfaces
-SDL_Surface* gR1213 = NULL;
-SDL_Surface* gR11 = NULL;
-SDL_Surface* gR10 = NULL;
-SDL_Surface* gR9 = NULL;
-SDL_Surface* gR8 = NULL;
-SDL_Surface* gR7 = NULL;
-SDL_Surface* gR6 = NULL;
-SDL_Surface* gR5 = NULL;
-SDL_Surface* gR4 = NULL;
-SDL_Surface* gR3 = NULL;
-SDL_Surface* gR2 = NULL;
-SDL_Surface* gR1 = NULL;
-SDL_Surface* gR0 = NULL;
+SDL_Surface* gR1213 = nullptr;
+SDL_Surface* gR11 = nullptr;
+SDL_Surface* gR10 = nullptr;
+SDL_Surface* gR9 = nullptr;
+SDL_Surface* gR8 = nullptr;
+SDL_Surface* gR7 = nullptr;
+SDL_Surface* gR6 = nullptr;
+SDL_Surface* gR5 = nullptr;
+SDL_Surface* gR4 = nullptr;
+SDL_Surface* gR3 = nullptr;
+SDL_Surface* gR2 = nullptr;
+SDL_Surface* gR1 = nullptr;
+SDL_Surface* gR0 = nullptr;
 
 // Rev line
-SDL_Surface* gRevline = NULL;
-SDL_Surface* gRevwhite = NULL;
-SDL_Surface* gSpeednumbers = NULL;
+SDL_Surface* gRevline = nullptr;
+SDL_Surface* gRevwhite = nullptr;
+SDL_Surface* gSpeednumbers = nullptr;
 
 // Small numbers for Temp, Trip, Odo, additional info
-SDL_Surface* gSmallnumbers = NULL;
+SDL_Surface* gSmallnumbers = nullptr;
 
 // Top Greyed out icons
-SDL_Surface* gTopiconsgrey = NULL;
-SDL_Surface* gTopiconsgreyOP = NULL;
-SDL_Surface* gTopiconsedge1 = NULL;
-SDL_Surface* gTopiconsedge2 = NULL;
+SDL_Surface* gTopiconsgrey = nullptr;
+SDL_Surface* gTopiconsgreyOP = nullptr;
+SDL_Surface* gTopiconsedge1 = nullptr;
+SDL_Surface* gTopiconsedge2 = nullptr;
 
 // Tyre icons if TPMS is connected
-SDL_Surface* gTyreicon = NULL;
-SDL_Surface* gTyresignal = NULL;
+SDL_Surface* gTyreicon = nullptr;
+SDL_Surface* gTyresignal = nullptr;
 
 // Mile info box
-SDL_Surface* gMileinfo = NULL;
+SDL_Surface* gMileinfo = nullptr;
 
 // Fuel Gauge
-SDL_Surface *gFuelgauge = NULL;
-SDL_Surface *gFuelwhite = NULL;
+SDL_Surface *gFuelgauge = nullptr;
+SDL_Surface *gFuelwhite = nullptr;
 
-SDL_Surface *gLowtyrebadge = NULL;
-SDL_Surface *gReartyrelow = NULL;
-SDL_Surface *gFronttyrelow = NULL;
-SDL_Surface *gBothtyrelow = NULL;
-SDL_Surface *gSpeedcorrection = NULL;
-SDL_Surface *gSettime = NULL;
-SDL_Surface *gSetunits = NULL;
-SDL_Surface *gSelecton = NULL;
-SDL_Surface *gMenuoptions = NULL;
-SDL_Surface *gControloptions = NULL;
-SDL_Surface *gControlselect = NULL;
-SDL_Surface *gTPMSoptions = NULL;
-SDL_Surface *gLightoptions = NULL;
-SDL_Surface *gWhitethumb = NULL;
-SDL_Surface *gBrightthumb = NULL;
-SDL_Surface *gDarkthumb = NULL;
-SDL_Surface *gGreenthumb = NULL;
-SDL_Surface *gRedthumb = NULL;
-SDL_Surface *gBluethumb = NULL;
-SDL_Surface *gOrangethumb = NULL;
-SDL_Surface *gYellowthumb = NULL;
-SDL_Surface *gNightthumb = NULL;
-SDL_Surface *gUparrow = NULL;
-SDL_Surface *gUparrowsmall = NULL;
-SDL_Surface *gMenuarrowright = NULL;
-SDL_Surface *gMenuarrowleft = NULL;
-SDL_Surface *gMenusmallarrowright = NULL;
-SDL_Surface *gMenusmallarrowleft = NULL;
-SDL_Surface *gCoolant = NULL;
-SDL_Surface *gCoolantF = NULL;
-SDL_Surface *gKm = NULL;
-SDL_Surface *gMiles = NULL;
-SDL_Surface *gKph = NULL;
-SDL_Surface *gMph = NULL;
-SDL_Surface *gHighbeamlight = NULL;
-SDL_Surface *gIndicateright = NULL;
-SDL_Surface *gIndicateleft = NULL;
-SDL_Surface *gIndicateboth = NULL;
-SDL_Surface *gIndicaterightfar = NULL;
-SDL_Surface *gIndicateleftfar = NULL;
-SDL_Surface *gOillight = NULL;
-SDL_Surface *gOillightOP = NULL;
-SDL_Surface *gNeutrallight = NULL;
-SDL_Surface *gEngineoverheat = NULL;
-SDL_Surface *gOverheatbadge = NULL;
-SDL_Surface *gLowoil = NULL;
-SDL_Surface *gLowoilbadge = NULL;
-SDL_Surface *gLowfuel = NULL;
-SDL_Surface *gLowfuelbadge = NULL;
-SDL_Surface *gInfobottomdiag = NULL;
-SDL_Surface *gInfotopdiag = NULL;
-SDL_Surface *gInfobottom = NULL;
-SDL_Surface *gInfotop = NULL;
-SDL_Surface *gInfotopKM = NULL;
-SDL_Surface *gTyrebottom = NULL;
-SDL_Surface *gTyretop = NULL;
-SDL_Surface *gCoolanticon = NULL;
-SDL_Surface *gThemeoptions = NULL;
-SDL_Surface *gArrowrighttheme = NULL;
-SDL_Surface *gArrowlefttheme = NULL;
-SDL_Surface *gDownarrow = NULL;
-SDL_Surface *gSetodometer = NULL;
-SDL_Surface *gOdoerror1 = NULL;
-SDL_Surface *gOdoerror2 = NULL;
-SDL_Surface *gSprocketsetup = NULL;
-SDL_Surface *gCoolantfantemp = NULL;
-SDL_Surface *gGear = NULL;
-SDL_Surface *gNavbg = NULL;
-SDL_Surface *gNavicons = NULL;
+SDL_Surface *gLowtyrebadge = nullptr;
+SDL_Surface *gReartyrelow = nullptr;
+SDL_Surface *gFronttyrelow = nullptr;
+SDL_Surface *gBothtyrelow = nullptr;
+SDL_Surface *gSpeedcorrection = nullptr;
+SDL_Surface *gSettime = nullptr;
+SDL_Surface *gSetunits = nullptr;
+SDL_Surface *gSelecton = nullptr;
+SDL_Surface *gMenuoptions = nullptr;
+SDL_Surface *gControloptions = nullptr;
+SDL_Surface *gControlselect = nullptr;
+SDL_Surface *gTPMSoptions = nullptr;
+SDL_Surface *gLightoptions = nullptr;
+SDL_Surface *gWhitethumb = nullptr;
+SDL_Surface *gBrightthumb = nullptr;
+SDL_Surface *gDarkthumb = nullptr;
+SDL_Surface *gGreenthumb = nullptr;
+SDL_Surface *gRedthumb = nullptr;
+SDL_Surface *gBluethumb = nullptr;
+SDL_Surface *gOrangethumb = nullptr;
+SDL_Surface *gYellowthumb = nullptr;
+SDL_Surface *gNightthumb = nullptr;
+SDL_Surface *gUparrow = nullptr;
+SDL_Surface *gUparrowsmall = nullptr;
+SDL_Surface *gMenuarrowright = nullptr;
+SDL_Surface *gMenuarrowleft = nullptr;
+SDL_Surface *gMenusmallarrowright = nullptr;
+SDL_Surface *gMenusmallarrowleft = nullptr;
+SDL_Surface *gCoolant = nullptr;
+SDL_Surface *gCoolantF = nullptr;
+SDL_Surface *gKm = nullptr;
+SDL_Surface *gMiles = nullptr;
+SDL_Surface *gKph = nullptr;
+SDL_Surface *gMph = nullptr;
+SDL_Surface *gHighbeamlight = nullptr;
+SDL_Surface *gIndicateright = nullptr;
+SDL_Surface *gIndicateleft = nullptr;
+SDL_Surface *gIndicateboth = nullptr;
+SDL_Surface *gIndicaterightfar = nullptr;
+SDL_Surface *gIndicateleftfar = nullptr;
+SDL_Surface *gOillight = nullptr;
+SDL_Surface *gOillightOP = nullptr;
+SDL_Surface *gNeutrallight = nullptr;
+SDL_Surface *gEngineoverheat = nullptr;
+SDL_Surface *gOverheatbadge = nullptr;
+SDL_Surface *gLowoil = nullptr;
+SDL_Surface *gLowoilbadge = nullptr;
+SDL_Surface *gLowfuel = nullptr;
+SDL_Surface *gLowfuelbadge = nullptr;
+SDL_Surface *gInfobottomdiag = nullptr;
+SDL_Surface *gInfotopdiag = nullptr;
+SDL_Surface *gInfobottom = nullptr;
+SDL_Surface *gInfotop = nullptr;
+SDL_Surface *gInfotopKM = nullptr;
+SDL_Surface *gTyrebottom = nullptr;
+SDL_Surface *gTyretop = nullptr;
+SDL_Surface *gCoolanticon = nullptr;
+SDL_Surface *gThemeoptions = nullptr;
+SDL_Surface *gArrowrighttheme = nullptr;
+SDL_Surface *gArrowlefttheme = nullptr;
+SDL_Surface *gDownarrow = nullptr;
+SDL_Surface *gSetodometer = nullptr;
+SDL_Surface *gOdoerror1 = nullptr;
+SDL_Surface *gOdoerror2 = nullptr;
+SDL_Surface *gSprocketsetup = nullptr;
+SDL_Surface *gCoolantfantemp = nullptr;
+SDL_Surface *gGear = nullptr;
+SDL_Surface *gNavbg = nullptr;
+SDL_Surface *gNavicons = nullptr;
 
 // Surface Rects
 // Rev counter
@@ -522,22 +522,22 @@ SDL_Texture *gInfotopKMtex;
 SDL_Texture *gTyrebottomtex;
 SDL_Texture *gTyretoptex;
 SDL_Texture *gCoolanticontex;
-SDL_Texture *gThemeoptionstex = NULL;
-SDL_Texture *gArrowrightthemetex = NULL;
-SDL_Texture *gArrowleftthemetex = NULL;
-SDL_Texture *gDownarrowtex = NULL;
-SDL_Texture *gSetodometertex = NULL;
-SDL_Texture *gOdoerror1tex = NULL;
-SDL_Texture *gOdoerror2tex = NULL;
-SDL_Texture *gSprocketsetuptex = NULL;
-SDL_Texture *gCoolantfantemptex = NULL;
-SDL_Texture *gGeartex = NULL;
-SDL_Texture *gLowtyrebadgetex = NULL;
-SDL_Texture *gReartyrelowtex = NULL;
-SDL_Texture *gFronttyrelowtex = NULL;
-SDL_Texture *gBothtyrelowtex = NULL;
-SDL_Texture *gNavbgtex = NULL;
-SDL_Texture *gNaviconstex = NULL;
+SDL_Texture *gThemeoptionstex = nullptr;
+SDL_Texture *gArrowrightthemetex = nullptr;
+SDL_Texture *gArrowleftthemetex = nullptr;
+SDL_Texture *gDownarrowtex = nullptr;
+SDL_Texture *gSetodometertex = nullptr;
+SDL_Texture *gOdoerror1tex = nullptr;
+SDL_Texture *gOdoerror2tex = nullptr;
+SDL_Texture *gSprocketsetuptex = nullptr;
+SDL_Texture *gCoolantfantemptex = nullptr;
+SDL_Texture *gGeartex = nullptr;
+SDL_Texture *gLowtyrebadgetex = nullptr;
+SDL_Texture *gReartyrelowtex = nullptr;
+SDL_Texture *gFronttyrelowtex = nullptr;
+SDL_Texture *gBothtyrelowtex = nullptr;
+SDL_Texture *gNavbgtex = nullptr;
+SDL_Texture *gNaviconstex = nullptr;
 
 char gszCommsmsg[1024];
 int serial_port;
@@ -1273,7 +1273,7 @@ double GetPreciseTemp (int ohms) {
 
 SDL_Surface *Loadsurface (SDL_Surface *existing, const char *file, const char *theme)
 {
-	if (existing != NULL) {
+	if (existing != nullptr) {
 		SDL_FreeSurface (existing);
 	}
 
@@ -1281,9 +1281,9 @@ SDL_Surface *Loadsurface (SDL_Surface *existing, const char *file, const char *t
 	memset(szFile, 0, 255);
 
 	// Files are at assets/themes/{theme}/{file}
-	// Default theme if theme is NULL
+	// Default theme if theme is nullptr
 	strcat (szFile, "assets/themes/");
-	if (theme != NULL) {
+	if (theme != nullptr) {
 		strcat (szFile, theme);
 	} else {
 		strcat (szFile, "default");
@@ -1301,292 +1301,292 @@ int loadsurfaces(const char *theme)
 
 
 	gR1213 = Loadsurface (gR1213, "R12-13.bmp", theme);
-	if (gR1213 == NULL) { fprintf(stderr, "could not load R12-13: %s\n", SDL_GetError()); return 1; }
+	if (gR1213 == nullptr) { fprintf(stderr, "could not load R12-13: %s\n", SDL_GetError()); return 1; }
 
 	gR11 = Loadsurface(gR11, "R11.bmp", theme);
-	if (gR11 == NULL) { fprintf(stderr, "could not load R11: %s\n", SDL_GetError()); return 1; }
+	if (gR11 == nullptr) { fprintf(stderr, "could not load R11: %s\n", SDL_GetError()); return 1; }
 
 	gR10 = Loadsurface(gR10, "R10.bmp", theme);
-	if (gR10 == NULL) { fprintf(stderr, "could not load R10: %s\n", SDL_GetError()); return 1; }
+	if (gR10 == nullptr) { fprintf(stderr, "could not load R10: %s\n", SDL_GetError()); return 1; }
 
 	gR9 = Loadsurface(gR9, "R9.bmp", theme);
-	if (gR9 == NULL) { fprintf(stderr, "could not load R9: %s\n", SDL_GetError()); return 1; }
+	if (gR9 == nullptr) { fprintf(stderr, "could not load R9: %s\n", SDL_GetError()); return 1; }
 
 	gR8 = Loadsurface(gR8, "R8.bmp", theme);
-	if (gR8 == NULL) { fprintf(stderr, "could not load R8: %s\n", SDL_GetError()); return 1; }
+	if (gR8 == nullptr) { fprintf(stderr, "could not load R8: %s\n", SDL_GetError()); return 1; }
 
 	gR7 = Loadsurface(gR7, "R7.bmp", theme);
-	if (gR7 == NULL) { fprintf(stderr, "could not load R7: %s\n", SDL_GetError()); return 1; }
+	if (gR7 == nullptr) { fprintf(stderr, "could not load R7: %s\n", SDL_GetError()); return 1; }
 
 	gR6 = Loadsurface(gR6, "R6.bmp", theme);
-	if (gR6 == NULL) { fprintf(stderr, "could not load R6: %s\n", SDL_GetError()); return 1; }
+	if (gR6 == nullptr) { fprintf(stderr, "could not load R6: %s\n", SDL_GetError()); return 1; }
 
 	gR5 = Loadsurface(gR5, "R5.bmp", theme);
-	if (gR5 == NULL) { fprintf(stderr, "could not load R5: %s\n", SDL_GetError()); return 1; }
+	if (gR5 == nullptr) { fprintf(stderr, "could not load R5: %s\n", SDL_GetError()); return 1; }
 
 	gR4 = Loadsurface(gR4, "R4.bmp", theme);
-	if (gR4 == NULL) { fprintf(stderr, "could not load R4: %s\n", SDL_GetError()); return 1; }
+	if (gR4 == nullptr) { fprintf(stderr, "could not load R4: %s\n", SDL_GetError()); return 1; }
 
 	gR3 = Loadsurface(gR3, "R3.bmp", theme);
-	if (gR3 == NULL) { fprintf(stderr, "could not load R3: %s\n", SDL_GetError()); return 1; }
+	if (gR3 == nullptr) { fprintf(stderr, "could not load R3: %s\n", SDL_GetError()); return 1; }
 
 	gR2 = Loadsurface(gR2, "R2.bmp", theme);
-	if (gR2 == NULL) { fprintf(stderr, "could not load R2: %s\n", SDL_GetError()); return 1; }
+	if (gR2 == nullptr) { fprintf(stderr, "could not load R2: %s\n", SDL_GetError()); return 1; }
 
 	gR1 = Loadsurface(gR1, "R1.bmp", theme);
-	if (gR1 == NULL) { fprintf(stderr, "could not load R1: %s\n", SDL_GetError()); return 1; }
+	if (gR1 == nullptr) { fprintf(stderr, "could not load R1: %s\n", SDL_GetError()); return 1; }
 
 	gR0 = Loadsurface(gR0, "R0.bmp", theme);
-	if (gR0 == NULL) { fprintf(stderr, "could not load R0: %s\n", SDL_GetError()); return 1; }
+	if (gR0 == nullptr) { fprintf(stderr, "could not load R0: %s\n", SDL_GetError()); return 1; }
 
 	// The blue rev line
 	gRevline = Loadsurface(gRevline, "Revline.bmp", theme);
-	if (gRevline == NULL) { fprintf(stderr, "could not load Revline: %s\n", SDL_GetError()); return 1; }
+	if (gRevline == nullptr) { fprintf(stderr, "could not load Revline: %s\n", SDL_GetError()); return 1; }
 
 	// A white square covering the rev line - rotation is applied to this to reveal the rev line
 	gRevwhite = Loadsurface(gRevwhite, "Whitesq.bmp", theme);
-	if (gRevwhite == NULL) { fprintf(stderr, "could not load Revwhite: %s\n", SDL_GetError()); return 1; }
+	if (gRevwhite == nullptr) { fprintf(stderr, "could not load Revwhite: %s\n", SDL_GetError()); return 1; }
 
 	// Large speedometer numbers
 	gSpeednumbers = Loadsurface(gSpeednumbers, "Speednumbers.bmp", theme);
-	if (gSpeednumbers == NULL) { fprintf(stderr, "could not load Speednumbers: %s\n", SDL_GetError()); return 1; }
+	if (gSpeednumbers == nullptr) { fprintf(stderr, "could not load Speednumbers: %s\n", SDL_GetError()); return 1; }
 
 	gSmallnumbers = Loadsurface(gSmallnumbers, "Smallnumbers.bmp", theme);
-	if (gSmallnumbers == NULL) { fprintf(stderr, "could not load Smallnumbers: %s\n", SDL_GetError()); return 1; }	
+	if (gSmallnumbers == nullptr) { fprintf(stderr, "could not load Smallnumbers: %s\n", SDL_GetError()); return 1; }	
 
 	gTopiconsgrey = Loadsurface(gTopiconsgrey, "Topiconsgrey.bmp", theme);
-	if (gTopiconsgrey == NULL) { fprintf(stderr, "could not load Topiconsgrey: %s\n", SDL_GetError()); return 1; }	
+	if (gTopiconsgrey == nullptr) { fprintf(stderr, "could not load Topiconsgrey: %s\n", SDL_GetError()); return 1; }	
 
 	gTopiconsgreyOP = Loadsurface(gTopiconsgreyOP, "TopiconsgreyOP.bmp", theme);
-	if (gTopiconsgreyOP == NULL) { fprintf(stderr, "could not load TopiconsgreyOP: %s\n", SDL_GetError()); return 1; }	
+	if (gTopiconsgreyOP == nullptr) { fprintf(stderr, "could not load TopiconsgreyOP: %s\n", SDL_GetError()); return 1; }	
 
 	gTopiconsedge1 = Loadsurface(gTopiconsedge1, "Topiconedge1.bmp", theme);
-	if (gTopiconsedge1 == NULL) { fprintf(stderr, "could not load Topiconedge1: %s\n", SDL_GetError()); return 1; }	
+	if (gTopiconsedge1 == nullptr) { fprintf(stderr, "could not load Topiconedge1: %s\n", SDL_GetError()); return 1; }	
 
 	gTopiconsedge2 = Loadsurface(gTopiconsedge2, "Topiconedge2.bmp", theme);
-	if (gTopiconsedge2 == NULL) { fprintf(stderr, "could not load Topiconedge2: %s\n", SDL_GetError()); return 1; }	
+	if (gTopiconsedge2 == nullptr) { fprintf(stderr, "could not load Topiconedge2: %s\n", SDL_GetError()); return 1; }	
 
 	gMileinfo = Loadsurface(gMileinfo, "Mileinfo.bmp", theme);
-	if (gMileinfo == NULL) { fprintf(stderr, "could not load Mileinfo: %s\n", SDL_GetError()); return 1; }
+	if (gMileinfo == nullptr) { fprintf(stderr, "could not load Mileinfo: %s\n", SDL_GetError()); return 1; }
 
 	gFuelgauge = Loadsurface(gFuelgauge, "Fuelgauge.bmp", theme);
-	if (gFuelgauge == NULL) { fprintf(stderr, "could not load Fuelgauge: %s\n", SDL_GetError()); return 1; }	
+	if (gFuelgauge == nullptr) { fprintf(stderr, "could not load Fuelgauge: %s\n", SDL_GetError()); return 1; }	
 
 	gFuelwhite = Loadsurface(gFuelwhite, "Fuelgaugewhite.bmp", theme);
-	if (gFuelwhite == NULL) { fprintf(stderr, "could not load Fuelgaugewhite: %s\n", SDL_GetError()); return 1; }
+	if (gFuelwhite == nullptr) { fprintf(stderr, "could not load Fuelgaugewhite: %s\n", SDL_GetError()); return 1; }
 
 	gSpeedcorrection = Loadsurface(gSpeedcorrection, "Speedcorrection.bmp", theme);
-	if (gSpeedcorrection == NULL) { fprintf(stderr, "could not load gSpeedcorrection: %s\n", SDL_GetError()); return 1; }
+	if (gSpeedcorrection == nullptr) { fprintf(stderr, "could not load gSpeedcorrection: %s\n", SDL_GetError()); return 1; }
 
 	gSettime = Loadsurface(gSettime, "Settime.bmp", theme);
-	if (gSettime == NULL) { fprintf(stderr, "could not load gSettime: %s\n", SDL_GetError()); return 1; }
+	if (gSettime == nullptr) { fprintf(stderr, "could not load gSettime: %s\n", SDL_GetError()); return 1; }
 
 	gSetunits = Loadsurface (gSetunits, "Setunits.bmp", theme);
-	if (gSetunits == NULL) { fprintf(stderr, "could not load gSetunits: %s\n", SDL_GetError()); return 1; }
+	if (gSetunits == nullptr) { fprintf(stderr, "could not load gSetunits: %s\n", SDL_GetError()); return 1; }
 
 	gSelecton = Loadsurface (gSelecton, "Selecton.bmp", theme);
-	if (gSelecton == NULL) { fprintf(stderr, "could not load gSelecton: %s\n", SDL_GetError()); return 1; }
+	if (gSelecton == nullptr) { fprintf(stderr, "could not load gSelecton: %s\n", SDL_GetError()); return 1; }
 
 	gMenuoptions = Loadsurface(gMenuoptions, "Menuoptionsex.bmp", theme);
-	if (gMenuoptions == NULL) { fprintf(stderr, "could not load gMenuoptions: %s\n", SDL_GetError()); return 1; }
+	if (gMenuoptions == nullptr) { fprintf(stderr, "could not load gMenuoptions: %s\n", SDL_GetError()); return 1; }
 
 	gControloptions = Loadsurface(gControloptions, "Controloptions.bmp", theme);
-	if (gControloptions == NULL) { fprintf(stderr, "could not load gControloptions: %s\n", SDL_GetError()); return 1; }	
+	if (gControloptions == nullptr) { fprintf(stderr, "could not load gControloptions: %s\n", SDL_GetError()); return 1; }	
 
 	gControlselect = Loadsurface(gControlselect, "Selectedcontrol.bmp", theme);
-	if (gControlselect == NULL) { fprintf(stderr, "could not load gControlselect: %s\n", SDL_GetError()); return 1; }	
+	if (gControlselect == nullptr) { fprintf(stderr, "could not load gControlselect: %s\n", SDL_GetError()); return 1; }	
 
 	gLightoptions = Loadsurface(gLightoptions, "Lightoptions.bmp", theme);
-	if (gLightoptions == NULL) { fprintf(stderr, "could not load gLightoptions: %s\n", SDL_GetError()); return 1; }
+	if (gLightoptions == nullptr) { fprintf(stderr, "could not load gLightoptions: %s\n", SDL_GetError()); return 1; }
 
 	gWhitethumb = Loadsurface(gWhitethumb, "whitethumb.bmp", "default");
-	if (gWhitethumb == NULL) { fprintf(stderr, "could not load gWhitethumb: %s\n", SDL_GetError()); return 1; }
+	if (gWhitethumb == nullptr) { fprintf(stderr, "could not load gWhitethumb: %s\n", SDL_GetError()); return 1; }
 
 	gBrightthumb = Loadsurface(gBrightthumb, "brightthumb.bmp", "bright");
-	if (gBrightthumb == NULL) { fprintf(stderr, "could not load gBrightthumb: %s\n", SDL_GetError()); return 1; }
+	if (gBrightthumb == nullptr) { fprintf(stderr, "could not load gBrightthumb: %s\n", SDL_GetError()); return 1; }
 
 	gDarkthumb = Loadsurface(gDarkthumb, "darkthumb.bmp", "dark");
-	if (gDarkthumb == NULL) { fprintf(stderr, "could not load gDarkthumb: %s\n", SDL_GetError()); return 1; }
+	if (gDarkthumb == nullptr) { fprintf(stderr, "could not load gDarkthumb: %s\n", SDL_GetError()); return 1; }
 
 	gGreenthumb = Loadsurface(gGreenthumb, "greenthumb.bmp", "green");
-	if (gGreenthumb == NULL) { fprintf(stderr, "could not load gGreenthumb: %s\n", SDL_GetError()); return 1; }
+	if (gGreenthumb == nullptr) { fprintf(stderr, "could not load gGreenthumb: %s\n", SDL_GetError()); return 1; }
 
 	gRedthumb = Loadsurface(gRedthumb, "redthumb.bmp", "red");
-	if (gRedthumb == NULL) { fprintf(stderr, "could not load gRedthumb: %s\n", SDL_GetError()); return 1; }
+	if (gRedthumb == nullptr) { fprintf(stderr, "could not load gRedthumb: %s\n", SDL_GetError()); return 1; }
 
 	gBluethumb = Loadsurface(gBluethumb, "bluethumb.bmp", "blue");
-	if (gBluethumb == NULL) { fprintf(stderr, "could not load gBluethumb: %s\n", SDL_GetError()); return 1; }
+	if (gBluethumb == nullptr) { fprintf(stderr, "could not load gBluethumb: %s\n", SDL_GetError()); return 1; }
 
 	gOrangethumb = Loadsurface(gOrangethumb, "orangethumb.bmp", "orange");
-	if (gOrangethumb == NULL) { fprintf(stderr, "could not load gOrangethumb: %s\n", SDL_GetError()); return 1; }
+	if (gOrangethumb == nullptr) { fprintf(stderr, "could not load gOrangethumb: %s\n", SDL_GetError()); return 1; }
 
 	gYellowthumb = Loadsurface(gYellowthumb, "yellowthumb.bmp", "yellow");
-	if (gYellowthumb == NULL) { fprintf(stderr, "could not load gYellowthumb: %s\n", SDL_GetError()); return 1; }
+	if (gYellowthumb == nullptr) { fprintf(stderr, "could not load gYellowthumb: %s\n", SDL_GetError()); return 1; }
 
 	gNightthumb = Loadsurface(gNightthumb, "nightthumb.bmp", "night");
-	if (gNightthumb == NULL) { fprintf(stderr, "could not load gNightthumb: %s\n", SDL_GetError()); return 1; }
+	if (gNightthumb == nullptr) { fprintf(stderr, "could not load gNightthumb: %s\n", SDL_GetError()); return 1; }
 
 	gTPMSoptions = Loadsurface(gTPMSoptions, "TPMSsetup.bmp", theme);
-	if (gTPMSoptions == NULL) { fprintf(stderr, "could not load gTPMSoptions: %s\n", SDL_GetError()); return 1; }
+	if (gTPMSoptions == nullptr) { fprintf(stderr, "could not load gTPMSoptions: %s\n", SDL_GetError()); return 1; }
 
 	gUparrow = Loadsurface(gUparrow, "Uparrow.bmp", theme);
-	if (gUparrow == NULL) { fprintf(stderr, "could not load gUparrow: %s\n", SDL_GetError()); return 1; }
+	if (gUparrow == nullptr) { fprintf(stderr, "could not load gUparrow: %s\n", SDL_GetError()); return 1; }
 
 	gUparrowsmall = Loadsurface(gUparrowsmall, "Uparrowsmall.bmp", theme);
-	if (gUparrowsmall == NULL) { fprintf(stderr, "could not load gUparrowsmall: %s\n", SDL_GetError()); return 1; }	
+	if (gUparrowsmall == nullptr) { fprintf(stderr, "could not load gUparrowsmall: %s\n", SDL_GetError()); return 1; }	
 
 	gMenuarrowright = Loadsurface(gMenuarrowright, "Menuarrowright.bmp", theme);
-	if (gMenuarrowright == NULL) { fprintf(stderr, "could not load gMenuarrowright: %s\n", SDL_GetError()); return 1; }
+	if (gMenuarrowright == nullptr) { fprintf(stderr, "could not load gMenuarrowright: %s\n", SDL_GetError()); return 1; }
 
 	gMenuarrowleft = Loadsurface(gMenuarrowleft, "Menuarrowleft.bmp", theme);
-	if (gMenuarrowleft == NULL) { fprintf(stderr, "could not load gMenuarrowleft: %s\n", SDL_GetError()); return 1; }
+	if (gMenuarrowleft == nullptr) { fprintf(stderr, "could not load gMenuarrowleft: %s\n", SDL_GetError()); return 1; }
 
 	gMenusmallarrowright = Loadsurface(gMenusmallarrowright, "Rightmenuarrowex.bmp", theme);
-	if (gMenusmallarrowright == NULL) { fprintf(stderr, "could not load gMenusmallarrowright: %s\n", SDL_GetError()); return 1; }
+	if (gMenusmallarrowright == nullptr) { fprintf(stderr, "could not load gMenusmallarrowright: %s\n", SDL_GetError()); return 1; }
 
 	gMenusmallarrowleft = Loadsurface(gMenusmallarrowleft, "Leftmenuarrowex.bmp", theme);
-	if (gMenusmallarrowleft == NULL) { fprintf(stderr, "could not load gMenusmallarrowleft: %s\n", SDL_GetError()); return 1; }
+	if (gMenusmallarrowleft == nullptr) { fprintf(stderr, "could not load gMenusmallarrowleft: %s\n", SDL_GetError()); return 1; }
 
 	gCoolant = Loadsurface(gCoolant, "Coolant.bmp", theme);
-	if (gCoolant == NULL) { fprintf(stderr, "could not load gCoolant: %s\n", SDL_GetError()); return 1; }
+	if (gCoolant == nullptr) { fprintf(stderr, "could not load gCoolant: %s\n", SDL_GetError()); return 1; }
 
 	gCoolantF = Loadsurface(gCoolantF, "CoolantF.bmp", theme);
-	if (gCoolantF == NULL) { fprintf(stderr, "could not load gCoolantF: %s\n", SDL_GetError()); return 1; }
+	if (gCoolantF == nullptr) { fprintf(stderr, "could not load gCoolantF: %s\n", SDL_GetError()); return 1; }
 
 	gKm = Loadsurface(gKm, "km.bmp", theme);
-	if (gKm == NULL) { fprintf(stderr, "could not load gKm: %s\n", SDL_GetError()); return 1; }
+	if (gKm == nullptr) { fprintf(stderr, "could not load gKm: %s\n", SDL_GetError()); return 1; }
 
 	gMiles = Loadsurface(gMiles, "Miles.bmp", theme);
-	if (gMiles == NULL) { fprintf(stderr, "could not load gMiles: %s\n", SDL_GetError()); return 1; }
+	if (gMiles == nullptr) { fprintf(stderr, "could not load gMiles: %s\n", SDL_GetError()); return 1; }
 
 	gKph = Loadsurface(gKph, "kph.bmp", theme);
-	if (gKph == NULL) { fprintf(stderr, "could not load gKph: %s\n", SDL_GetError()); return 1; }
+	if (gKph == nullptr) { fprintf(stderr, "could not load gKph: %s\n", SDL_GetError()); return 1; }
 
 	gMph = Loadsurface(gMph, "mph.bmp", theme);
-	if (gMph == NULL) { fprintf(stderr, "could not load gMph: %s\n", SDL_GetError()); return 1; }
+	if (gMph == nullptr) { fprintf(stderr, "could not load gMph: %s\n", SDL_GetError()); return 1; }
 
 	gTyreicon = Loadsurface(gTyreicon, "tyreicon.bmp", theme);
-	if (gTyreicon == NULL) { fprintf(stderr, "could not load gTyreicon: %s\n", SDL_GetError()); return 1; }
+	if (gTyreicon == nullptr) { fprintf(stderr, "could not load gTyreicon: %s\n", SDL_GetError()); return 1; }
 
 	gTyresignal = Loadsurface(gTyresignal, "tyresignal.bmp", theme);
-	if (gTyresignal == NULL) { fprintf(stderr, "could not load gTyresignal: %s\n", SDL_GetError()); return 1; }	
+	if (gTyresignal == nullptr) { fprintf(stderr, "could not load gTyresignal: %s\n", SDL_GetError()); return 1; }	
 
 	gHighbeamlight = Loadsurface(gHighbeamlight, "Highbeamlight.bmp", theme);
-	if (gHighbeamlight == NULL) { fprintf(stderr, "could not load gHighbeamlight: %s\n", SDL_GetError()); return 1; }
+	if (gHighbeamlight == nullptr) { fprintf(stderr, "could not load gHighbeamlight: %s\n", SDL_GetError()); return 1; }
 
 	gIndicateright = Loadsurface(gIndicateright, "Indicateright.bmp", theme);
-	if (gIndicateright == NULL) { fprintf(stderr, "could not load gIndicateright: %s\n", SDL_GetError()); return 1; }
+	if (gIndicateright == nullptr) { fprintf(stderr, "could not load gIndicateright: %s\n", SDL_GetError()); return 1; }
 
 	gIndicateleft = Loadsurface(gIndicateleft, "Indicateleft.bmp", theme);
-	if (gIndicateleft == NULL) { fprintf(stderr, "could not load gIndicateleft: %s\n", SDL_GetError()); return 1; }
+	if (gIndicateleft == nullptr) { fprintf(stderr, "could not load gIndicateleft: %s\n", SDL_GetError()); return 1; }
 
 	gIndicateboth = Loadsurface(gIndicateboth, "Indicateboth.bmp", theme);
-	if (gIndicateboth == NULL) { fprintf(stderr, "could not load gIndicateboth: %s\n", SDL_GetError()); return 1; }
+	if (gIndicateboth == nullptr) { fprintf(stderr, "could not load gIndicateboth: %s\n", SDL_GetError()); return 1; }
 
 	gIndicaterightfar = Loadsurface(gIndicaterightfar, "Indicaterightfar.bmp", theme);
-	if (gIndicaterightfar == NULL) { fprintf(stderr, "could not load gIndicaterightfar: %s\n", SDL_GetError()); return 1; }
+	if (gIndicaterightfar == nullptr) { fprintf(stderr, "could not load gIndicaterightfar: %s\n", SDL_GetError()); return 1; }
 
 	gIndicateleftfar = Loadsurface(gIndicateleftfar, "Indicateleftfar.bmp", theme);
-	if (gIndicateleftfar == NULL) { fprintf(stderr, "could not load gIndicateleftfar: %s\n", SDL_GetError()); return 1; }
+	if (gIndicateleftfar == nullptr) { fprintf(stderr, "could not load gIndicateleftfar: %s\n", SDL_GetError()); return 1; }
 
 	gOillight = Loadsurface(gOillight, "Oillight.bmp", theme);
-	if (gOillight == NULL) { fprintf(stderr, "could not load gOillight: %s\n", SDL_GetError()); return 1; }
+	if (gOillight == nullptr) { fprintf(stderr, "could not load gOillight: %s\n", SDL_GetError()); return 1; }
 
 	gOillightOP = Loadsurface(gOillightOP, "OillightOP.bmp", theme);
-	if (gOillightOP == NULL) { fprintf(stderr, "could not load gOillightOP: %s\n", SDL_GetError()); return 1; }
+	if (gOillightOP == nullptr) { fprintf(stderr, "could not load gOillightOP: %s\n", SDL_GetError()); return 1; }
 
 	gNeutrallight = Loadsurface(gNeutrallight, "Neutrallight.bmp", theme);
-	if (gNeutrallight == NULL) { fprintf(stderr, "could not load gNeutrallight: %s\n", SDL_GetError()); return 1; }
+	if (gNeutrallight == nullptr) { fprintf(stderr, "could not load gNeutrallight: %s\n", SDL_GetError()); return 1; }
 
 	gEngineoverheat = Loadsurface(gEngineoverheat, "Engineoverheat.bmp", theme);
-	if (gEngineoverheat == NULL) { fprintf(stderr, "could not load gEngineoverheat: %s\n", SDL_GetError()); return 1; }
+	if (gEngineoverheat == nullptr) { fprintf(stderr, "could not load gEngineoverheat: %s\n", SDL_GetError()); return 1; }
 
 	gOverheatbadge = Loadsurface(gOverheatbadge, "Overheatbadge.bmp", theme);
-	if (gOverheatbadge == NULL) { fprintf(stderr, "could not load gOverheatbadge: %s\n", SDL_GetError()); return 1; }
+	if (gOverheatbadge == nullptr) { fprintf(stderr, "could not load gOverheatbadge: %s\n", SDL_GetError()); return 1; }
 
 	gLowoil = Loadsurface(gLowoil, "Lowoil.bmp", theme);
-	if (gLowoil == NULL) { fprintf(stderr, "could not load gLowoil: %s\n", SDL_GetError()); return 1; }
+	if (gLowoil == nullptr) { fprintf(stderr, "could not load gLowoil: %s\n", SDL_GetError()); return 1; }
 
 	gLowoilbadge = Loadsurface(gLowoilbadge, "Lowoilbadge.bmp", theme);
-	if (gLowoilbadge == NULL) { fprintf(stderr, "could not load gLowoilbadge: %s\n", SDL_GetError()); return 1; }
+	if (gLowoilbadge == nullptr) { fprintf(stderr, "could not load gLowoilbadge: %s\n", SDL_GetError()); return 1; }
 
 	gLowfuel = Loadsurface(gLowfuel, "Lowfuel.bmp", theme);
-	if (gLowfuel == NULL) { fprintf(stderr, "could not load gLowfuel: %s\n", SDL_GetError()); return 1; }
+	if (gLowfuel == nullptr) { fprintf(stderr, "could not load gLowfuel: %s\n", SDL_GetError()); return 1; }
 
 	gLowfuelbadge = Loadsurface(gLowfuelbadge, "Fuelwarningbadge.bmp", theme);
-	if (gLowfuelbadge == NULL) { fprintf(stderr, "could not load gLowfuelbadge: %s\n", SDL_GetError()); return 1; }
+	if (gLowfuelbadge == nullptr) { fprintf(stderr, "could not load gLowfuelbadge: %s\n", SDL_GetError()); return 1; }
 
 	gInfobottomdiag = Loadsurface(gInfobottomdiag, "Infobottomdiag.bmp", theme);
-	if (gInfobottomdiag == NULL) { fprintf(stderr, "could not load gInfobottomdiag: %s\n", SDL_GetError()); return 1; }
+	if (gInfobottomdiag == nullptr) { fprintf(stderr, "could not load gInfobottomdiag: %s\n", SDL_GetError()); return 1; }
 
 	gInfotopdiag = Loadsurface(gInfotopdiag, "Infotopdiag.bmp", theme);
-	if (gInfotopdiag == NULL) { fprintf(stderr, "could not load gInfotopdiag: %s\n", SDL_GetError()); return 1; }
+	if (gInfotopdiag == nullptr) { fprintf(stderr, "could not load gInfotopdiag: %s\n", SDL_GetError()); return 1; }
 
 	gInfobottom = Loadsurface(gInfobottom, "Infobottom.bmp", theme);
-	if (gInfobottom == NULL) { fprintf(stderr, "could not load gInfobottom: %s\n", SDL_GetError()); return 1; }
+	if (gInfobottom == nullptr) { fprintf(stderr, "could not load gInfobottom: %s\n", SDL_GetError()); return 1; }
 
 	gInfotop = Loadsurface(gInfotop, "Infotop.bmp", theme);
-	if (gInfotop == NULL) { fprintf(stderr, "could not load gInfotop: %s\n", SDL_GetError()); return 1; }
+	if (gInfotop == nullptr) { fprintf(stderr, "could not load gInfotop: %s\n", SDL_GetError()); return 1; }
 
 	gInfotopKM = Loadsurface(gInfotopKM, "InfotopKM.bmp", theme);
-	if (gInfotopKM == NULL) { fprintf(stderr, "could not load gInfotopKM: %s\n", SDL_GetError()); return 1; }
+	if (gInfotopKM == nullptr) { fprintf(stderr, "could not load gInfotopKM: %s\n", SDL_GetError()); return 1; }
 
 	gTyrebottom = Loadsurface(gTyrebottom, "tyrebottom.bmp", theme);
-	if (gTyrebottom == NULL) { fprintf(stderr, "could not load gTyrebottom: %s\n", SDL_GetError()); return 1; }
+	if (gTyrebottom == nullptr) { fprintf(stderr, "could not load gTyrebottom: %s\n", SDL_GetError()); return 1; }
 
 	gTyretop = Loadsurface(gTyretop, "tyretop.bmp", theme);
-	if (gTyretop == NULL) { fprintf(stderr, "could not load gTyretop: %s\n", SDL_GetError()); return 1; }
+	if (gTyretop == nullptr) { fprintf(stderr, "could not load gTyretop: %s\n", SDL_GetError()); return 1; }
 
 	gCoolanticon = Loadsurface(gCoolanticon, "Coolanticon.bmp", theme);
-	if (gCoolanticon == NULL) { fprintf(stderr, "could not load gCoolanticon: %s\n", SDL_GetError()); return 1; }
+	if (gCoolanticon == nullptr) { fprintf(stderr, "could not load gCoolanticon: %s\n", SDL_GetError()); return 1; }
 
-	gThemeoptions = Loadsurface(gThemeoptions, "Themeoptions.bmp", NULL);
-	if (gThemeoptions == NULL) { fprintf(stderr, "could not load gThemeoptions: %s\n", SDL_GetError()); return 1; }
+	gThemeoptions = Loadsurface(gThemeoptions, "Themeoptions.bmp", nullptr);
+	if (gThemeoptions == nullptr) { fprintf(stderr, "could not load gThemeoptions: %s\n", SDL_GetError()); return 1; }
 
-	gArrowrighttheme = Loadsurface(gArrowrighttheme, "Arrowrighttheme.bmp", NULL);
-	if (gArrowrighttheme == NULL) { fprintf(stderr, "could not load gArrowrighttheme: %s\n", SDL_GetError()); return 1; }
+	gArrowrighttheme = Loadsurface(gArrowrighttheme, "Arrowrighttheme.bmp", nullptr);
+	if (gArrowrighttheme == nullptr) { fprintf(stderr, "could not load gArrowrighttheme: %s\n", SDL_GetError()); return 1; }
 
-	gArrowlefttheme = Loadsurface(gArrowlefttheme, "Arrowlefttheme.bmp", NULL);
-	if (gArrowlefttheme == NULL) { fprintf(stderr, "could not load gArrowlefttheme: %s\n", SDL_GetError()); return 1; }
+	gArrowlefttheme = Loadsurface(gArrowlefttheme, "Arrowlefttheme.bmp", nullptr);
+	if (gArrowlefttheme == nullptr) { fprintf(stderr, "could not load gArrowlefttheme: %s\n", SDL_GetError()); return 1; }
 
 	gDownarrow = Loadsurface(gDownarrow, "Downarrow.bmp", theme);
-	if (gDownarrow == NULL) { fprintf(stderr, "could not load gDownarrow: %s\n", SDL_GetError()); return 1; }
+	if (gDownarrow == nullptr) { fprintf(stderr, "could not load gDownarrow: %s\n", SDL_GetError()); return 1; }
 
-	gSetodometer = Loadsurface(gSetodometer, "Setodometer.bmp", NULL);
-	if (gSetodometer == NULL) { fprintf(stderr, "could not load gSetodometer: %s\n", SDL_GetError()); return 1; }
+	gSetodometer = Loadsurface(gSetodometer, "Setodometer.bmp", nullptr);
+	if (gSetodometer == nullptr) { fprintf(stderr, "could not load gSetodometer: %s\n", SDL_GetError()); return 1; }
 
-	gOdoerror1 = Loadsurface(gOdoerror1, "Odoerror1.bmp", NULL);
-	if (gOdoerror1 == NULL) { fprintf(stderr, "could not load gOdoerror1: %s\n", SDL_GetError()); return 1; }
+	gOdoerror1 = Loadsurface(gOdoerror1, "Odoerror1.bmp", nullptr);
+	if (gOdoerror1 == nullptr) { fprintf(stderr, "could not load gOdoerror1: %s\n", SDL_GetError()); return 1; }
 
-	gOdoerror2 = Loadsurface(gOdoerror2, "Odoerror2.bmp", NULL);
-	if (gOdoerror2 == NULL) { fprintf(stderr, "could not load gOdoerror2: %s\n", SDL_GetError()); return 1; }
+	gOdoerror2 = Loadsurface(gOdoerror2, "Odoerror2.bmp", nullptr);
+	if (gOdoerror2 == nullptr) { fprintf(stderr, "could not load gOdoerror2: %s\n", SDL_GetError()); return 1; }
 
 	gSprocketsetup = Loadsurface(gSprocketsetup, "Sprocketsetup.bmp", theme);
-	if (gSprocketsetup == NULL) { fprintf(stderr, "could not load gSprocketsetup: %s\n", SDL_GetError()); return 1; }	
+	if (gSprocketsetup == nullptr) { fprintf(stderr, "could not load gSprocketsetup: %s\n", SDL_GetError()); return 1; }	
 
 	gCoolantfantemp = Loadsurface(gCoolantfantemp, "Coolantfantemp.bmp", theme);
-	if (gCoolantfantemp == NULL) { fprintf(stderr, "could not load gCoolantfantemp: %s\n", SDL_GetError()); return 1; }	
+	if (gCoolantfantemp == nullptr) { fprintf(stderr, "could not load gCoolantfantemp: %s\n", SDL_GetError()); return 1; }	
 
 	gLowtyrebadge = Loadsurface (gLowtyrebadge, "Lowtyrebadge.bmp", theme);
-	if (gLowtyrebadge == NULL) { fprintf(stderr, "could not load gLowtyrebadge: %s\n", SDL_GetError()); return 1; }	
+	if (gLowtyrebadge == nullptr) { fprintf(stderr, "could not load gLowtyrebadge: %s\n", SDL_GetError()); return 1; }	
 
 	gReartyrelow = Loadsurface (gReartyrelow, "Reartyrelow.bmp", theme);
-	if (gReartyrelow == NULL) { fprintf(stderr, "could not load gReartyrelow: %s\n", SDL_GetError()); return 1; }	
+	if (gReartyrelow == nullptr) { fprintf(stderr, "could not load gReartyrelow: %s\n", SDL_GetError()); return 1; }	
 
 	gFronttyrelow = Loadsurface (gFronttyrelow, "Fronttyrelow.bmp", theme);
-	if (gFronttyrelow == NULL) { fprintf(stderr, "could not load gFronttyrelow: %s\n", SDL_GetError()); return 1; }
+	if (gFronttyrelow == nullptr) { fprintf(stderr, "could not load gFronttyrelow: %s\n", SDL_GetError()); return 1; }
 
 	gBothtyrelow = Loadsurface (gBothtyrelow, "Frontrearlow.bmp", theme);
-	if (gBothtyrelow == NULL) { fprintf(stderr, "could not load gBothtyrelow: %s\n", SDL_GetError()); return 1; }
+	if (gBothtyrelow == nullptr) { fprintf(stderr, "could not load gBothtyrelow: %s\n", SDL_GetError()); return 1; }
 
 	gGear = Loadsurface(gGear, "Gear.bmp", theme);
-	if (gGear == NULL) { fprintf(stderr, "could not load gGear: %s\n", SDL_GetError()); return 1; }	
+	if (gGear == nullptr) { fprintf(stderr, "could not load gGear: %s\n", SDL_GetError()); return 1; }	
 
 	gNavbg = Loadsurface(gNavbg, "Navbg.bmp", theme);
-	if (gNavbg == NULL) { fprintf(stderr, "could not load gNavbg: %s\n", SDL_GetError()); return 1; }
+	if (gNavbg == nullptr) { fprintf(stderr, "could not load gNavbg: %s\n", SDL_GetError()); return 1; }
 
 	gNavicons = Loadsurface(gNavicons, "Navgfx.bmp", theme);
-	if (gNavicons == NULL) { fprintf(stderr, "could not load gNavicons: %s\n", SDL_GetError()); return 1; }
+	if (gNavicons == nullptr) { fprintf(stderr, "could not load gNavicons: %s\n", SDL_GetError()); return 1; }
 
 	return 0;
 }
@@ -1628,19 +1628,19 @@ void initrects()
 SDL_Texture* texturefromsurface (SDL_Surface *surface, char *surfacename) {
 
 	SDL_Texture *tex;
-	if (surface != NULL) {
+	if (surface != nullptr) {
 		tex = SDL_CreateTextureFromSurface (renderer, surface);
 
-		if (tex == NULL) {
+		if (tex == nullptr) {
 			fprintf(stderr, "could not convert %s to texture: %s\n", surfacename, SDL_GetError());
 		} else {
 			return tex;
 		}
 	} else {
-		fprintf(stderr, "%s was NULL: %s\n", surfacename);
+		fprintf(stderr, "%s was nullptr: %s\n", surfacename);
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 int inittexturesex () {
@@ -1651,672 +1651,672 @@ int inittexturesex () {
 
 int inittextures()
 {	
-	if (grevlinetex != NULL) {SDL_DestroyTexture (grevlinetex);}
+	if (grevlinetex != nullptr) {SDL_DestroyTexture (grevlinetex);}
 	grevlinetex = SDL_CreateTextureFromSurface(renderer, gRevline);
-	if (grevlinetex == NULL) {
+	if (grevlinetex == nullptr) {
 		fprintf(stderr, "could not convert gRevline to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 	
-	if (grevwhitetex != NULL) {SDL_DestroyTexture (grevwhitetex);}
+	if (grevwhitetex != nullptr) {SDL_DestroyTexture (grevwhitetex);}
 	grevwhitetex = SDL_CreateTextureFromSurface(renderer, gRevwhite);
-	if (grevwhitetex == NULL) {
+	if (grevwhitetex == nullptr) {
 		fprintf(stderr, "could not convert gRevwhite to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gspeednumberstex != NULL) {SDL_DestroyTexture (gspeednumberstex);}
+	if (gspeednumberstex != nullptr) {SDL_DestroyTexture (gspeednumberstex);}
 	gspeednumberstex = SDL_CreateTextureFromSurface(renderer, gSpeednumbers);
-	if (gspeednumberstex == NULL) {
+	if (gspeednumberstex == nullptr) {
 		fprintf(stderr, "could not convert gSpeednumbers to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr1213tex != NULL) {SDL_DestroyTexture (gr1213tex);}
+	if (gr1213tex != nullptr) {SDL_DestroyTexture (gr1213tex);}
 	gr1213tex = SDL_CreateTextureFromSurface(renderer, gR1213);
-	if (gr1213tex == NULL) {
+	if (gr1213tex == nullptr) {
 		fprintf(stderr, "could not convert gR1213 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr11tex != NULL) {SDL_DestroyTexture (gr11tex);}
+	if (gr11tex != nullptr) {SDL_DestroyTexture (gr11tex);}
 	gr11tex = SDL_CreateTextureFromSurface(renderer, gR11);
-	if (gr11tex == NULL) {
+	if (gr11tex == nullptr) {
 		fprintf(stderr, "could not convert gR11 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr10tex != NULL) {SDL_DestroyTexture (gr10tex);}
+	if (gr10tex != nullptr) {SDL_DestroyTexture (gr10tex);}
 	gr10tex = SDL_CreateTextureFromSurface(renderer, gR10);
-	if (gr10tex == NULL) {
+	if (gr10tex == nullptr) {
 		fprintf(stderr, "could not convert gR10 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr9tex != NULL) {SDL_DestroyTexture (gr9tex);}
+	if (gr9tex != nullptr) {SDL_DestroyTexture (gr9tex);}
 	gr9tex = SDL_CreateTextureFromSurface(renderer, gR9);
-	if (gr9tex == NULL) {
+	if (gr9tex == nullptr) {
 		fprintf(stderr, "could not convert gR9 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr8tex != NULL) {SDL_DestroyTexture (gr8tex);}
+	if (gr8tex != nullptr) {SDL_DestroyTexture (gr8tex);}
 	gr8tex = SDL_CreateTextureFromSurface(renderer, gR8);
-	if (gr8tex == NULL) {
+	if (gr8tex == nullptr) {
 		fprintf(stderr, "could not convert gR8 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr7tex != NULL) {SDL_DestroyTexture (gr7tex);}
+	if (gr7tex != nullptr) {SDL_DestroyTexture (gr7tex);}
 	gr7tex = SDL_CreateTextureFromSurface(renderer, gR7);
-	if (gr7tex == NULL) {
+	if (gr7tex == nullptr) {
 		fprintf(stderr, "could not convert gR7 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr6tex != NULL) {SDL_DestroyTexture (gr6tex);}
+	if (gr6tex != nullptr) {SDL_DestroyTexture (gr6tex);}
 	gr6tex = SDL_CreateTextureFromSurface(renderer, gR6);
-	if (gr6tex == NULL) {
+	if (gr6tex == nullptr) {
 		fprintf(stderr, "could not convert gR6 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr5tex != NULL) {SDL_DestroyTexture (gr5tex);}
+	if (gr5tex != nullptr) {SDL_DestroyTexture (gr5tex);}
 	gr5tex = SDL_CreateTextureFromSurface(renderer, gR5);
-	if (gr5tex == NULL) {
+	if (gr5tex == nullptr) {
 		fprintf(stderr, "could not convert gR5 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr4tex != NULL) {SDL_DestroyTexture (gr4tex);}
+	if (gr4tex != nullptr) {SDL_DestroyTexture (gr4tex);}
 	gr4tex = SDL_CreateTextureFromSurface(renderer, gR4);
-	if (gr4tex == NULL) {
+	if (gr4tex == nullptr) {
 		fprintf(stderr, "could not convert gR4 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr3tex != NULL) {SDL_DestroyTexture (gr3tex);}
+	if (gr3tex != nullptr) {SDL_DestroyTexture (gr3tex);}
 	gr3tex = SDL_CreateTextureFromSurface(renderer, gR3);
-	if (gr3tex == NULL) {
+	if (gr3tex == nullptr) {
 		fprintf(stderr, "could not convert gR3 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr2tex != NULL) {SDL_DestroyTexture (gr2tex);}
+	if (gr2tex != nullptr) {SDL_DestroyTexture (gr2tex);}
 	gr2tex = SDL_CreateTextureFromSurface(renderer, gR2);
-	if (gr2tex == NULL) {
+	if (gr2tex == nullptr) {
 		fprintf(stderr, "could not convert gR2 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr1tex != NULL) {SDL_DestroyTexture (gr1tex);}
+	if (gr1tex != nullptr) {SDL_DestroyTexture (gr1tex);}
 	gr1tex = SDL_CreateTextureFromSurface(renderer, gR1);
-	if (gr1tex == NULL) {
+	if (gr1tex == nullptr) {
 		fprintf(stderr, "could not convert gR1 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gr0tex != NULL) {SDL_DestroyTexture (gr0tex);}
+	if (gr0tex != nullptr) {SDL_DestroyTexture (gr0tex);}
 	gr0tex = SDL_CreateTextureFromSurface(renderer, gR0);
-	if (gr0tex == NULL) {
+	if (gr0tex == nullptr) {
 		fprintf(stderr, "could not convert gR0 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gsmallnumberstex != NULL) {SDL_DestroyTexture (gsmallnumberstex);}
+	if (gsmallnumberstex != nullptr) {SDL_DestroyTexture (gsmallnumberstex);}
 	gsmallnumberstex = SDL_CreateTextureFromSurface(renderer, gSmallnumbers);
-	if (gsmallnumberstex == NULL) {
+	if (gsmallnumberstex == nullptr) {
 		fprintf(stderr, "could not convert gSmallnumbers to texture: %s\n", SDL_GetError());
 		return 1;
 	}	
 
-	if (gtopiconsgreytex != NULL) {SDL_DestroyTexture (gtopiconsgreytex);}
+	if (gtopiconsgreytex != nullptr) {SDL_DestroyTexture (gtopiconsgreytex);}
 	gtopiconsgreytex = SDL_CreateTextureFromSurface(renderer, gTopiconsgrey);
-	if (gtopiconsgreytex == NULL) {
+	if (gtopiconsgreytex == nullptr) {
 		fprintf(stderr, "could not convert gTopiconsgrey to texture: %s\n", SDL_GetError());
 		return 1;
 	}		
 
-	if (gtopiconsgreyoptex != NULL) {SDL_DestroyTexture (gtopiconsgreyoptex);}
+	if (gtopiconsgreyoptex != nullptr) {SDL_DestroyTexture (gtopiconsgreyoptex);}
 	gtopiconsgreyoptex = SDL_CreateTextureFromSurface(renderer, gTopiconsgreyOP);
-	if (gtopiconsgreyoptex == NULL) {
+	if (gtopiconsgreyoptex == nullptr) {
 		fprintf(stderr, "could not convert gTopiconsgreyOP to texture: %s\n", SDL_GetError());
 		return 1;
 	}		
 
-	if (gtopiconsedge1tex != NULL) {SDL_DestroyTexture (gtopiconsedge1tex);}
+	if (gtopiconsedge1tex != nullptr) {SDL_DestroyTexture (gtopiconsedge1tex);}
 	gtopiconsedge1tex = SDL_CreateTextureFromSurface(renderer, gTopiconsedge1);
-	if (gtopiconsedge1tex == NULL) {
+	if (gtopiconsedge1tex == nullptr) {
 		fprintf(stderr, "could not convert gTopiconsedge1 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gtopiconsedge2tex != NULL) {SDL_DestroyTexture (gtopiconsedge2tex);}
+	if (gtopiconsedge2tex != nullptr) {SDL_DestroyTexture (gtopiconsedge2tex);}
 	gtopiconsedge2tex = SDL_CreateTextureFromSurface(renderer, gTopiconsedge2);
-	if (gtopiconsedge2tex == NULL) {
+	if (gtopiconsedge2tex == nullptr) {
 		fprintf(stderr, "could not convert gTopiconsedge2 to texture: %s\n", SDL_GetError());
 		return 1;
 	}		
 
 
-	if (gmileinfotex != NULL) {SDL_DestroyTexture (gmileinfotex);}
+	if (gmileinfotex != nullptr) {SDL_DestroyTexture (gmileinfotex);}
 	gmileinfotex = SDL_CreateTextureFromSurface(renderer, gMileinfo);
-	if (gmileinfotex == NULL) {
+	if (gmileinfotex == nullptr) {
 		fprintf(stderr, "could not convert gMileinfo to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gfuelgaugetex != NULL) {SDL_DestroyTexture (gfuelgaugetex);}
+	if (gfuelgaugetex != nullptr) {SDL_DestroyTexture (gfuelgaugetex);}
 	gfuelgaugetex = SDL_CreateTextureFromSurface(renderer, gFuelgauge);
-	if (gfuelgaugetex == NULL) {
+	if (gfuelgaugetex == nullptr) {
 		fprintf(stderr, "could not convert gFuelgauge to texture: %s\n", SDL_GetError());
 		return 1;
 	}	
 
-	if (gfuelgaugewhitetex != NULL) {SDL_DestroyTexture (gfuelgaugewhitetex);}
+	if (gfuelgaugewhitetex != nullptr) {SDL_DestroyTexture (gfuelgaugewhitetex);}
 	gfuelgaugewhitetex = SDL_CreateTextureFromSurface(renderer, gFuelwhite);
-	if (gfuelgaugewhitetex == NULL) {
+	if (gfuelgaugewhitetex == nullptr) {
 		fprintf(stderr, "could not convert gFuelwhite to texture: %s\n", SDL_GetError());
 		return 1;
 	}	
 
-	if (gLightoptionstex != NULL) {SDL_DestroyTexture (gLightoptionstex);}
+	if (gLightoptionstex != nullptr) {SDL_DestroyTexture (gLightoptionstex);}
 	gLightoptionstex = SDL_CreateTextureFromSurface(renderer, gLightoptions);
-	if (gLightoptionstex == NULL) {
+	if (gLightoptionstex == nullptr) {
 		fprintf(stderr, "could not convert gLightoptions to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gWhitethumbtex != NULL) {SDL_DestroyTexture (gWhitethumbtex);}
+	if (gWhitethumbtex != nullptr) {SDL_DestroyTexture (gWhitethumbtex);}
 	gWhitethumbtex = SDL_CreateTextureFromSurface(renderer, gWhitethumb);
-	if (gWhitethumbtex == NULL) {
+	if (gWhitethumbtex == nullptr) {
 		fprintf(stderr, "could not convert gWhitethumb to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gBrightthumbtex != NULL) {SDL_DestroyTexture (gBrightthumbtex);}
+	if (gBrightthumbtex != nullptr) {SDL_DestroyTexture (gBrightthumbtex);}
 	gBrightthumbtex = SDL_CreateTextureFromSurface(renderer, gBrightthumb);
-	if (gBrightthumbtex == NULL) {
+	if (gBrightthumbtex == nullptr) {
 		fprintf(stderr, "could not convert gBrightthumb to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gDarkthumbtex != NULL) {SDL_DestroyTexture (gDarkthumbtex);}
+	if (gDarkthumbtex != nullptr) {SDL_DestroyTexture (gDarkthumbtex);}
 	gDarkthumbtex = SDL_CreateTextureFromSurface(renderer, gDarkthumb);
-	if (gDarkthumbtex == NULL) {
+	if (gDarkthumbtex == nullptr) {
 		fprintf(stderr, "could not convert gDarkthumb to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gGreenthumbtex != NULL) {SDL_DestroyTexture (gGreenthumbtex);}
+	if (gGreenthumbtex != nullptr) {SDL_DestroyTexture (gGreenthumbtex);}
 	gGreenthumbtex = SDL_CreateTextureFromSurface(renderer, gGreenthumb);
-	if (gGreenthumbtex == NULL) {
+	if (gGreenthumbtex == nullptr) {
 		fprintf(stderr, "could not convert gGreenthumb to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gRedthumbtex != NULL) {SDL_DestroyTexture (gRedthumbtex);}
+	if (gRedthumbtex != nullptr) {SDL_DestroyTexture (gRedthumbtex);}
 	gRedthumbtex = SDL_CreateTextureFromSurface(renderer, gRedthumb);
-	if (gRedthumbtex == NULL) {
+	if (gRedthumbtex == nullptr) {
 		fprintf(stderr, "could not convert gRedthumb to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gBluethumbtex != NULL) {SDL_DestroyTexture (gBluethumbtex);}
+	if (gBluethumbtex != nullptr) {SDL_DestroyTexture (gBluethumbtex);}
 	gBluethumbtex = SDL_CreateTextureFromSurface(renderer, gBluethumb);
-	if (gBluethumbtex == NULL) {
+	if (gBluethumbtex == nullptr) {
 		fprintf(stderr, "could not convert gBluethumb to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gOrangethumbtex != NULL) {SDL_DestroyTexture (gOrangethumbtex);}
+	if (gOrangethumbtex != nullptr) {SDL_DestroyTexture (gOrangethumbtex);}
 	gOrangethumbtex = SDL_CreateTextureFromSurface(renderer, gOrangethumb);
-	if (gOrangethumbtex == NULL) {
+	if (gOrangethumbtex == nullptr) {
 		fprintf(stderr, "could not convert gOrangethumb to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gYellowthumbtex != NULL) {SDL_DestroyTexture (gYellowthumbtex);}
+	if (gYellowthumbtex != nullptr) {SDL_DestroyTexture (gYellowthumbtex);}
 	gYellowthumbtex = SDL_CreateTextureFromSurface(renderer, gYellowthumb);
-	if (gYellowthumbtex == NULL) {
+	if (gYellowthumbtex == nullptr) {
 		fprintf(stderr, "could not convert gYellowthumb to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gNightthumbtex != NULL) {SDL_DestroyTexture (gNightthumbtex);}
+	if (gNightthumbtex != nullptr) {SDL_DestroyTexture (gNightthumbtex);}
 	gNightthumbtex = SDL_CreateTextureFromSurface(renderer, gNightthumb);
-	if (gNightthumbtex == NULL) {
+	if (gNightthumbtex == nullptr) {
 		fprintf(stderr, "could not convert gNightthumb to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
 
-	if (gSpeedcorrectiontex != NULL) {SDL_DestroyTexture (gSpeedcorrectiontex);}
+	if (gSpeedcorrectiontex != nullptr) {SDL_DestroyTexture (gSpeedcorrectiontex);}
 	gSpeedcorrectiontex = SDL_CreateTextureFromSurface(renderer, gSpeedcorrection);
-	if (gSpeedcorrectiontex == NULL) {
+	if (gSpeedcorrectiontex == nullptr) {
 		fprintf(stderr, "could not convert gSpeedcorrection to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gSettimetex != NULL) {SDL_DestroyTexture (gSettimetex);}
+	if (gSettimetex != nullptr) {SDL_DestroyTexture (gSettimetex);}
 	gSettimetex = SDL_CreateTextureFromSurface(renderer, gSettime);
-	if (gSettimetex == NULL) {
+	if (gSettimetex == nullptr) {
 		fprintf(stderr, "could not convert gSettime to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gSetunitstex != NULL) {SDL_DestroyTexture (gSetunitstex);}
+	if (gSetunitstex != nullptr) {SDL_DestroyTexture (gSetunitstex);}
 	gSetunitstex = SDL_CreateTextureFromSurface (renderer, gSetunits);
-	if (gSetunitstex == NULL) {
+	if (gSetunitstex == nullptr) {
 		fprintf(stderr, "could not convert gSetunits to texture: %s\n", SDL_GetError());
 		return 1;
 	}	
 
-	if (gSelectontex != NULL) {SDL_DestroyTexture (gSelectontex);}
+	if (gSelectontex != nullptr) {SDL_DestroyTexture (gSelectontex);}
 	gSelectontex = SDL_CreateTextureFromSurface (renderer, gSelecton);
-	if (gSelectontex == NULL) {
+	if (gSelectontex == nullptr) {
 		fprintf(stderr, "could not convert gSelecton to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gMenuoptionstex != NULL) {SDL_DestroyTexture (gMenuoptionstex);}
+	if (gMenuoptionstex != nullptr) {SDL_DestroyTexture (gMenuoptionstex);}
 	gMenuoptionstex = SDL_CreateTextureFromSurface(renderer, gMenuoptions);
-	if (gMenuoptionstex == NULL) {
+	if (gMenuoptionstex == nullptr) {
 		fprintf(stderr, "could not convert gMenuoptions to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gControloptionstex != NULL) {SDL_DestroyTexture (gControloptionstex);}
+	if (gControloptionstex != nullptr) {SDL_DestroyTexture (gControloptionstex);}
 	gControloptionstex = SDL_CreateTextureFromSurface(renderer, gControloptions);
-	if (gControloptionstex == NULL) {
+	if (gControloptionstex == nullptr) {
 		fprintf(stderr, "could not convert gControloptions to texture: %s\n", SDL_GetError());
 		return 1;
 	}	
 
-	if (gControlselecttex != NULL) {SDL_DestroyTexture (gControlselecttex);}
+	if (gControlselecttex != nullptr) {SDL_DestroyTexture (gControlselecttex);}
 	gControlselecttex = SDL_CreateTextureFromSurface(renderer, gControlselect);
-	if (gControlselecttex == NULL) {
+	if (gControlselecttex == nullptr) {
 		fprintf(stderr, "could not convert gControlselect to texture: %s\n", SDL_GetError());
 		return 1;
 	}	
 
-	if (gTPMSoptionstex != NULL) {SDL_DestroyTexture (gTPMSoptionstex);}
+	if (gTPMSoptionstex != nullptr) {SDL_DestroyTexture (gTPMSoptionstex);}
 	gTPMSoptionstex = SDL_CreateTextureFromSurface(renderer, gTPMSoptions);
-	if (gTPMSoptionstex == NULL) {
+	if (gTPMSoptionstex == nullptr) {
 		fprintf(stderr, "could not convert gTPMSoptions to texture: %s\n", SDL_GetError());
 		return 1;
 	}	
 
-	if (gUparrowtex != NULL) {SDL_DestroyTexture (gUparrowtex);}
+	if (gUparrowtex != nullptr) {SDL_DestroyTexture (gUparrowtex);}
 	gUparrowtex = SDL_CreateTextureFromSurface(renderer, gUparrow);
-	if (gUparrowtex == NULL) {
+	if (gUparrowtex == nullptr) {
 		fprintf(stderr, "could not convert gUparrow to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gUparrowsmalltex != NULL) {SDL_DestroyTexture (gUparrowsmalltex);}
+	if (gUparrowsmalltex != nullptr) {SDL_DestroyTexture (gUparrowsmalltex);}
 	gUparrowsmalltex = SDL_CreateTextureFromSurface(renderer, gUparrowsmall);
-	if (gUparrowsmalltex == NULL) {
+	if (gUparrowsmalltex == nullptr) {
 		fprintf(stderr, "could not convert gUparrowsmall to texture: %s\n", SDL_GetError());
 		return 1;
 	}	
 
-	if (gMenuarrowrighttex != NULL) {SDL_DestroyTexture (gMenuarrowrighttex);}
+	if (gMenuarrowrighttex != nullptr) {SDL_DestroyTexture (gMenuarrowrighttex);}
 	gMenuarrowrighttex = SDL_CreateTextureFromSurface(renderer, gMenuarrowright);
-	if (gMenuarrowrighttex == NULL) {
+	if (gMenuarrowrighttex == nullptr) {
 		fprintf(stderr, "could not convert gMenuarrowright to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gMenuarrowlefttex != NULL) {SDL_DestroyTexture (gMenuarrowlefttex);}
+	if (gMenuarrowlefttex != nullptr) {SDL_DestroyTexture (gMenuarrowlefttex);}
 	gMenuarrowlefttex = SDL_CreateTextureFromSurface(renderer, gMenuarrowleft);
-	if (gMenuarrowlefttex == NULL) {
+	if (gMenuarrowlefttex == nullptr) {
 		fprintf(stderr, "could not convert gMenuarrowleft to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gMenusmallarrowrighttex != NULL) {SDL_DestroyTexture (gMenusmallarrowrighttex);}
+	if (gMenusmallarrowrighttex != nullptr) {SDL_DestroyTexture (gMenusmallarrowrighttex);}
 	gMenusmallarrowrighttex = SDL_CreateTextureFromSurface(renderer, gMenusmallarrowright);
-	if (gMenusmallarrowrighttex == NULL) {
+	if (gMenusmallarrowrighttex == nullptr) {
 		fprintf(stderr, "could not convert gMenusmallarrowright to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gMenusmallarrowlefttex != NULL) {SDL_DestroyTexture (gMenusmallarrowlefttex);}
+	if (gMenusmallarrowlefttex != nullptr) {SDL_DestroyTexture (gMenusmallarrowlefttex);}
 	gMenusmallarrowlefttex = SDL_CreateTextureFromSurface(renderer, gMenusmallarrowleft);
-	if (gMenusmallarrowlefttex == NULL) {
+	if (gMenusmallarrowlefttex == nullptr) {
 		fprintf(stderr, "could not convert gMenusmallarrowleft to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gCoolanttex != NULL) {SDL_DestroyTexture (gCoolanttex);}
+	if (gCoolanttex != nullptr) {SDL_DestroyTexture (gCoolanttex);}
 	gCoolanttex = SDL_CreateTextureFromSurface(renderer, gCoolant);
-	if (gCoolanttex == NULL) {
+	if (gCoolanttex == nullptr) {
 		fprintf(stderr, "could not convert gCoolant to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gCoolantFtex != NULL) {SDL_DestroyTexture (gCoolantFtex);}
+	if (gCoolantFtex != nullptr) {SDL_DestroyTexture (gCoolantFtex);}
 	gCoolantFtex = SDL_CreateTextureFromSurface(renderer, gCoolantF);
-	if (gCoolantFtex == NULL) {
+	if (gCoolantFtex == nullptr) {
 		fprintf(stderr, "could not convert gCoolantF to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gKmtex != NULL) {SDL_DestroyTexture (gKmtex);}
+	if (gKmtex != nullptr) {SDL_DestroyTexture (gKmtex);}
 	gKmtex = SDL_CreateTextureFromSurface(renderer, gKm);
-	if (gKmtex == NULL) {
+	if (gKmtex == nullptr) {
 		fprintf(stderr, "could not convert gKm to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
 
-	if (gMilestex != NULL) {SDL_DestroyTexture (gMilestex);}
+	if (gMilestex != nullptr) {SDL_DestroyTexture (gMilestex);}
 	gMilestex = SDL_CreateTextureFromSurface(renderer, gMiles);
-	if (gMilestex == NULL) {
+	if (gMilestex == nullptr) {
 		fprintf(stderr, "could not convert gMiles to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
 
-	if (gKphtex != NULL) {SDL_DestroyTexture (gKphtex);}
+	if (gKphtex != nullptr) {SDL_DestroyTexture (gKphtex);}
 	gKphtex = SDL_CreateTextureFromSurface(renderer, gKph);
-	if (gKphtex == NULL) {
+	if (gKphtex == nullptr) {
 		fprintf(stderr, "could not convert gKph to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
 
-	if (gMphtex != NULL) {SDL_DestroyTexture (gMphtex);}
+	if (gMphtex != nullptr) {SDL_DestroyTexture (gMphtex);}
 	gMphtex = SDL_CreateTextureFromSurface(renderer, gMph);
-	if (gMphtex == NULL) {
+	if (gMphtex == nullptr) {
 		fprintf(stderr, "could not convert gMph to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gTyreicontex != NULL) {SDL_DestroyTexture (gTyreicontex);}
+	if (gTyreicontex != nullptr) {SDL_DestroyTexture (gTyreicontex);}
 	gTyreicontex = SDL_CreateTextureFromSurface(renderer, gTyreicon);
-	if (gTyreicontex == NULL) {
+	if (gTyreicontex == nullptr) {
 		fprintf(stderr, "could not convert gTyreicon to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gTyresignaltex != NULL) {SDL_DestroyTexture (gTyresignaltex);}
+	if (gTyresignaltex != nullptr) {SDL_DestroyTexture (gTyresignaltex);}
 	gTyresignaltex = SDL_CreateTextureFromSurface(renderer, gTyresignal);
-	if (gTyresignaltex == NULL) {
+	if (gTyresignaltex == nullptr) {
 		fprintf(stderr, "could not convert gTyresignal to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gHighbeamlighttex != NULL) {SDL_DestroyTexture (gHighbeamlighttex);}
+	if (gHighbeamlighttex != nullptr) {SDL_DestroyTexture (gHighbeamlighttex);}
 	gHighbeamlighttex = SDL_CreateTextureFromSurface(renderer, gHighbeamlight);
-	if (gHighbeamlighttex == NULL) {
+	if (gHighbeamlighttex == nullptr) {
 		fprintf(stderr, "could not convert gHighbeamlight to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gIndicaterighttex != NULL) {SDL_DestroyTexture (gIndicaterighttex);}
+	if (gIndicaterighttex != nullptr) {SDL_DestroyTexture (gIndicaterighttex);}
 	gIndicaterighttex = SDL_CreateTextureFromSurface(renderer, gIndicateright);
-	if (gIndicaterighttex == NULL) {
+	if (gIndicaterighttex == nullptr) {
 		fprintf(stderr, "could not convert gIndicateright to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gIndicatelefttex != NULL) {SDL_DestroyTexture (gIndicatelefttex);}
+	if (gIndicatelefttex != nullptr) {SDL_DestroyTexture (gIndicatelefttex);}
 	gIndicatelefttex = SDL_CreateTextureFromSurface(renderer, gIndicateleft);
-	if (gIndicatelefttex == NULL) {
+	if (gIndicatelefttex == nullptr) {
 		fprintf(stderr, "could not convert gIndicateleft to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gIndicatebothtex != NULL) {SDL_DestroyTexture (gIndicatebothtex);}
+	if (gIndicatebothtex != nullptr) {SDL_DestroyTexture (gIndicatebothtex);}
 	gIndicatebothtex = SDL_CreateTextureFromSurface(renderer, gIndicateboth);
-	if (gIndicateboth == NULL) {
+	if (gIndicateboth == nullptr) {
 		fprintf(stderr, "could not convert gIndicateboth to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gIndicaterightfartex != NULL) {SDL_DestroyTexture (gIndicaterightfartex);}
+	if (gIndicaterightfartex != nullptr) {SDL_DestroyTexture (gIndicaterightfartex);}
 	gIndicaterightfartex = SDL_CreateTextureFromSurface(renderer, gIndicaterightfar);
-	if (gIndicaterightfartex == NULL) {
+	if (gIndicaterightfartex == nullptr) {
 		fprintf(stderr, "could not convert gIndicaterightfar to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gIndicateleftfartex != NULL) {SDL_DestroyTexture (gIndicateleftfartex);}
+	if (gIndicateleftfartex != nullptr) {SDL_DestroyTexture (gIndicateleftfartex);}
 	gIndicateleftfartex = SDL_CreateTextureFromSurface(renderer, gIndicateleftfar);
-	if (gIndicateleftfartex == NULL) {
+	if (gIndicateleftfartex == nullptr) {
 		fprintf(stderr, "could not convert gIndicateleftfar to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gOillighttex != NULL) {SDL_DestroyTexture (gOillighttex);}
+	if (gOillighttex != nullptr) {SDL_DestroyTexture (gOillighttex);}
 	gOillighttex = SDL_CreateTextureFromSurface(renderer, gOillight);
-	if (gOillighttex == NULL) {
+	if (gOillighttex == nullptr) {
 		fprintf(stderr, "could not convert gOillight to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gOillightoptex != NULL) {SDL_DestroyTexture (gOillightoptex);}
+	if (gOillightoptex != nullptr) {SDL_DestroyTexture (gOillightoptex);}
 	gOillightoptex = SDL_CreateTextureFromSurface(renderer, gOillightOP);
-	if (gOillightoptex == NULL) {
+	if (gOillightoptex == nullptr) {
 		fprintf(stderr, "could not convert gOillightOP to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gNeutrallighttex != NULL) {SDL_DestroyTexture (gNeutrallighttex);}
+	if (gNeutrallighttex != nullptr) {SDL_DestroyTexture (gNeutrallighttex);}
 	gNeutrallighttex = SDL_CreateTextureFromSurface(renderer, gNeutrallight);
-	if (gNeutrallighttex == NULL) {
+	if (gNeutrallighttex == nullptr) {
 		fprintf(stderr, "could not convert gNeutrallight to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gEngineoverheattex != NULL) {SDL_DestroyTexture (gEngineoverheattex);}
+	if (gEngineoverheattex != nullptr) {SDL_DestroyTexture (gEngineoverheattex);}
 	gEngineoverheattex = SDL_CreateTextureFromSurface(renderer, gEngineoverheat);
-	if (gEngineoverheattex == NULL) {
+	if (gEngineoverheattex == nullptr) {
 		fprintf(stderr, "could not convert gEngineoverheat to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gOverheatbadgetex != NULL) {SDL_DestroyTexture (gOverheatbadgetex);}
+	if (gOverheatbadgetex != nullptr) {SDL_DestroyTexture (gOverheatbadgetex);}
 	gOverheatbadgetex = SDL_CreateTextureFromSurface(renderer, gOverheatbadge);
-	if (gOverheatbadgetex == NULL) {
+	if (gOverheatbadgetex == nullptr) {
 		fprintf(stderr, "could not convert gOverheatbadge to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gLowoiltex != NULL) {SDL_DestroyTexture (gLowoiltex);}
+	if (gLowoiltex != nullptr) {SDL_DestroyTexture (gLowoiltex);}
 	gLowoiltex = SDL_CreateTextureFromSurface(renderer, gLowoil);
-	if (gLowoiltex == NULL) {
+	if (gLowoiltex == nullptr) {
 		fprintf(stderr, "could not convert gLowoil to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gLowoilbadgetex != NULL) {SDL_DestroyTexture (gLowoilbadgetex);}
+	if (gLowoilbadgetex != nullptr) {SDL_DestroyTexture (gLowoilbadgetex);}
 	gLowoilbadgetex = SDL_CreateTextureFromSurface(renderer, gLowoilbadge);
-	if (gLowoilbadgetex == NULL) {
+	if (gLowoilbadgetex == nullptr) {
 		fprintf(stderr, "could not convert gLowoilbadge to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gLowfueltex != NULL) {SDL_DestroyTexture (gLowfueltex);}
+	if (gLowfueltex != nullptr) {SDL_DestroyTexture (gLowfueltex);}
 	gLowfueltex = SDL_CreateTextureFromSurface(renderer, gLowfuel);
-	if (gLowfueltex == NULL) {
+	if (gLowfueltex == nullptr) {
 		fprintf(stderr, "could not convert gLowfuel to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gLowfuelbadgetex != NULL) {SDL_DestroyTexture (gLowfuelbadgetex);}
+	if (gLowfuelbadgetex != nullptr) {SDL_DestroyTexture (gLowfuelbadgetex);}
 	gLowfuelbadgetex = SDL_CreateTextureFromSurface(renderer, gLowfuelbadge);
-	if (gLowfuelbadgetex == NULL) {
+	if (gLowfuelbadgetex == nullptr) {
 		fprintf(stderr, "could not convert gLowfuelbadge to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gInfobottomdiagtex != NULL) {SDL_DestroyTexture (gInfobottomdiagtex);}
+	if (gInfobottomdiagtex != nullptr) {SDL_DestroyTexture (gInfobottomdiagtex);}
 	gInfobottomdiagtex = SDL_CreateTextureFromSurface(renderer, gInfobottomdiag);
-	if (gInfobottomdiagtex == NULL) {
+	if (gInfobottomdiagtex == nullptr) {
 		fprintf(stderr, "could not convert gInfobottomdiag to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gInfotopdiagtex != NULL) {SDL_DestroyTexture (gInfotopdiagtex);}
+	if (gInfotopdiagtex != nullptr) {SDL_DestroyTexture (gInfotopdiagtex);}
 	gInfotopdiagtex = SDL_CreateTextureFromSurface(renderer, gInfotopdiag);
-	if (gInfotopdiagtex == NULL) {
+	if (gInfotopdiagtex == nullptr) {
 		fprintf(stderr, "could not convert gInfotopdiag to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gInfobottomtex != NULL) {SDL_DestroyTexture (gInfobottomtex);}
+	if (gInfobottomtex != nullptr) {SDL_DestroyTexture (gInfobottomtex);}
 	gInfobottomtex = SDL_CreateTextureFromSurface(renderer, gInfobottom);
-	if (gInfobottomtex == NULL) {
+	if (gInfobottomtex == nullptr) {
 		fprintf(stderr, "could not convert gInfobottom to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gInfotoptex != NULL) {SDL_DestroyTexture (gInfotoptex);}
+	if (gInfotoptex != nullptr) {SDL_DestroyTexture (gInfotoptex);}
 	gInfotoptex = SDL_CreateTextureFromSurface(renderer, gInfotop);
-	if (gInfotoptex == NULL) {
+	if (gInfotoptex == nullptr) {
 		fprintf(stderr, "could not convert gInfotop to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gInfotopKMtex != NULL) {SDL_DestroyTexture (gInfotopKMtex);}
+	if (gInfotopKMtex != nullptr) {SDL_DestroyTexture (gInfotopKMtex);}
 	gInfotopKMtex = SDL_CreateTextureFromSurface(renderer, gInfotopKM);
-	if (gInfotopKMtex == NULL) {
+	if (gInfotopKMtex == nullptr) {
 		fprintf(stderr, "could not convert gInfotopKM to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gTyrebottomtex != NULL) {SDL_DestroyTexture (gTyrebottomtex);}
+	if (gTyrebottomtex != nullptr) {SDL_DestroyTexture (gTyrebottomtex);}
 	gTyrebottomtex = SDL_CreateTextureFromSurface(renderer, gTyrebottom);
-	if (gTyrebottomtex == NULL) {
+	if (gTyrebottomtex == nullptr) {
 		fprintf(stderr, "could not convert gTyrebottom to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gTyretoptex != NULL) {SDL_DestroyTexture (gTyretoptex);}
+	if (gTyretoptex != nullptr) {SDL_DestroyTexture (gTyretoptex);}
 	gTyretoptex = SDL_CreateTextureFromSurface(renderer, gTyretop);
-	if (gTyretoptex == NULL) {
+	if (gTyretoptex == nullptr) {
 		fprintf(stderr, "could not convert gTyretop to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gCoolanticontex != NULL) {SDL_DestroyTexture (gCoolanticontex);}
+	if (gCoolanticontex != nullptr) {SDL_DestroyTexture (gCoolanticontex);}
 	gCoolanticontex = SDL_CreateTextureFromSurface(renderer, gCoolanticon);
-	if (gCoolanticontex == NULL) {
+	if (gCoolanticontex == nullptr) {
 		fprintf(stderr, "could not convert gCoolanticon to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gThemeoptionstex != NULL) {SDL_DestroyTexture (gThemeoptionstex);}
+	if (gThemeoptionstex != nullptr) {SDL_DestroyTexture (gThemeoptionstex);}
 	gThemeoptionstex = SDL_CreateTextureFromSurface(renderer, gThemeoptions);
-	if (gThemeoptionstex == NULL) {
+	if (gThemeoptionstex == nullptr) {
 		fprintf(stderr, "could not convert gThemeoptions to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gArrowrightthemetex != NULL) {SDL_DestroyTexture (gArrowrightthemetex);}
+	if (gArrowrightthemetex != nullptr) {SDL_DestroyTexture (gArrowrightthemetex);}
 	gArrowrightthemetex = SDL_CreateTextureFromSurface(renderer, gArrowrighttheme);
-	if (gArrowrightthemetex == NULL) {
+	if (gArrowrightthemetex == nullptr) {
 		fprintf(stderr, "could not convert gArrowrighttheme to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gArrowleftthemetex != NULL) {SDL_DestroyTexture (gArrowleftthemetex);}
+	if (gArrowleftthemetex != nullptr) {SDL_DestroyTexture (gArrowleftthemetex);}
 	gArrowleftthemetex = SDL_CreateTextureFromSurface(renderer, gArrowlefttheme);
-	if (gArrowleftthemetex == NULL) {
+	if (gArrowleftthemetex == nullptr) {
 		fprintf(stderr, "could not convert gArrowlefttheme to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gDownarrowtex != NULL) {SDL_DestroyTexture (gDownarrowtex);}
+	if (gDownarrowtex != nullptr) {SDL_DestroyTexture (gDownarrowtex);}
 	gDownarrowtex = SDL_CreateTextureFromSurface(renderer, gDownarrow);
-	if (gDownarrowtex == NULL) {
+	if (gDownarrowtex == nullptr) {
 		fprintf(stderr, "could not convert gDownarrow to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gSetodometertex != NULL) {SDL_DestroyTexture (gSetodometertex);}
+	if (gSetodometertex != nullptr) {SDL_DestroyTexture (gSetodometertex);}
 	gSetodometertex = SDL_CreateTextureFromSurface(renderer, gSetodometer);
-	if (gSetodometertex == NULL) {
+	if (gSetodometertex == nullptr) {
 		fprintf(stderr, "could not convert gSetodometer to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gOdoerror1tex != NULL) {SDL_DestroyTexture (gOdoerror1tex);}
+	if (gOdoerror1tex != nullptr) {SDL_DestroyTexture (gOdoerror1tex);}
 	gOdoerror1tex = SDL_CreateTextureFromSurface(renderer, gOdoerror1);
-	if (gOdoerror1tex == NULL) {
+	if (gOdoerror1tex == nullptr) {
 		fprintf(stderr, "could not convert gOdoerror1 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gOdoerror2tex != NULL) {SDL_DestroyTexture (gOdoerror2tex);}
+	if (gOdoerror2tex != nullptr) {SDL_DestroyTexture (gOdoerror2tex);}
 	gOdoerror2tex = SDL_CreateTextureFromSurface(renderer, gOdoerror2);
-	if (gOdoerror2tex == NULL) {
+	if (gOdoerror2tex == nullptr) {
 		fprintf(stderr, "could not convert gOdoerror2 to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gSprocketsetuptex != NULL) {SDL_DestroyTexture (gSprocketsetuptex);}
+	if (gSprocketsetuptex != nullptr) {SDL_DestroyTexture (gSprocketsetuptex);}
 	gSprocketsetuptex = SDL_CreateTextureFromSurface(renderer, gSprocketsetup);
-	if (gSprocketsetuptex == NULL) {
+	if (gSprocketsetuptex == nullptr) {
 		fprintf(stderr, "could not convert gSprocketsetup to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gCoolantfantemptex != NULL) {SDL_DestroyTexture (gCoolantfantemptex);}
+	if (gCoolantfantemptex != nullptr) {SDL_DestroyTexture (gCoolantfantemptex);}
 	gCoolantfantemptex = SDL_CreateTextureFromSurface(renderer, gCoolantfantemp);
-	if (gCoolantfantemptex == NULL) {
+	if (gCoolantfantemptex == nullptr) {
 		fprintf(stderr, "could not convert gCoolantfantemp to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gLowtyrebadgetex != NULL) {SDL_DestroyTexture (gLowtyrebadgetex);}
+	if (gLowtyrebadgetex != nullptr) {SDL_DestroyTexture (gLowtyrebadgetex);}
 	gLowtyrebadgetex = SDL_CreateTextureFromSurface(renderer, gLowtyrebadge);
-	if (gLowtyrebadgetex == NULL) {
+	if (gLowtyrebadgetex == nullptr) {
 		fprintf(stderr, "could not convert gLowtyrebadge to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gReartyrelowtex != NULL) {SDL_DestroyTexture (gReartyrelowtex);}
+	if (gReartyrelowtex != nullptr) {SDL_DestroyTexture (gReartyrelowtex);}
 	gReartyrelowtex = SDL_CreateTextureFromSurface(renderer, gReartyrelow);
-	if (gReartyrelowtex == NULL) {
+	if (gReartyrelowtex == nullptr) {
 		fprintf(stderr, "could not convert gReartyrelow to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gFronttyrelowtex != NULL) {SDL_DestroyTexture (gFronttyrelowtex);}
+	if (gFronttyrelowtex != nullptr) {SDL_DestroyTexture (gFronttyrelowtex);}
 	gFronttyrelowtex = SDL_CreateTextureFromSurface(renderer, gFronttyrelow);
-	if (gFronttyrelowtex == NULL) {
+	if (gFronttyrelowtex == nullptr) {
 		fprintf(stderr, "could not convert gFronttyrelow to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gBothtyrelowtex != NULL) {SDL_DestroyTexture (gBothtyrelowtex);}
+	if (gBothtyrelowtex != nullptr) {SDL_DestroyTexture (gBothtyrelowtex);}
 	gBothtyrelowtex = SDL_CreateTextureFromSurface(renderer, gBothtyrelow);
-	if (gBothtyrelowtex == NULL) {
+	if (gBothtyrelowtex == nullptr) {
 		fprintf(stderr, "could not convert gBothtyrelow to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gGeartex != NULL) {SDL_DestroyTexture (gGeartex);}
+	if (gGeartex != nullptr) {SDL_DestroyTexture (gGeartex);}
 	gGeartex = SDL_CreateTextureFromSurface(renderer, gGear);
-	if (gGeartex == NULL) {
+	if (gGeartex == nullptr) {
 		fprintf(stderr, "could not convert gGear to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gNavbgtex != NULL) {SDL_DestroyTexture (gNavbgtex);}
+	if (gNavbgtex != nullptr) {SDL_DestroyTexture (gNavbgtex);}
 	gNavbgtex = SDL_CreateTextureFromSurface(renderer, gNavbg);
-	if (gNavbgtex == NULL) {
+	if (gNavbgtex == nullptr) {
 		fprintf(stderr, "could not convert gNavbg to texture: %s\n", SDL_GetError());
 		return 1;
 	}
 
-	if (gNaviconstex != NULL) {SDL_DestroyTexture (gNaviconstex);}
+	if (gNaviconstex != nullptr) {SDL_DestroyTexture (gNaviconstex);}
 	gNaviconstex = SDL_CreateTextureFromSurface(renderer, gNavicons);
-	if (gNavicons == NULL) {
+	if (gNavicons == nullptr) {
 		fprintf(stderr, "could not convert gNavicons to texture: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -4024,7 +4024,7 @@ int RenderTexture (SDL_Texture* tex, int x, int y, int w, int h)
 	dstRect.w = w;
 	dstRect.h = h;
 
-	return SDL_RenderCopy(renderer, tex, NULL, &dstRect);
+	return SDL_RenderCopy(renderer, tex, nullptr, &dstRect);
 }
 
 int RenderTopIconGreyTexture (int x, int y, int w, int h) 
@@ -4036,9 +4036,9 @@ int RenderTopIconGreyTexture (int x, int y, int w, int h)
 	dstRect.h = h;
 
 	if (oilpressureavailable) {
-		return SDL_RenderCopy(renderer, gtopiconsgreyoptex, NULL, &dstRect);	
+		return SDL_RenderCopy(renderer, gtopiconsgreyoptex, nullptr, &dstRect);	
 	} else {
-		return SDL_RenderCopy(renderer, gtopiconsgreytex, NULL, &dstRect);	
+		return SDL_RenderCopy(renderer, gtopiconsgreytex, nullptr, &dstRect);	
 	}
 }
 
@@ -4051,9 +4051,9 @@ int RenderOilLightTexture (int x, int y, int w, int h)
 	dstRect.h = h;
 
 	if (oilpressureavailable) {
-		return SDL_RenderCopy(renderer, gOillightoptex, NULL, &dstRect);	
+		return SDL_RenderCopy(renderer, gOillightoptex, nullptr, &dstRect);	
 	} else {
-		return SDL_RenderCopy(renderer, gOillighttex, NULL, &dstRect);	
+		return SDL_RenderCopy(renderer, gOillighttex, nullptr, &dstRect);	
 	}
 }
 
@@ -4848,55 +4848,55 @@ void Dashboardstartup () {
 		int revamountinc = 10;
 		int revinc = 100;
 		if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr0tex, NULL, &rectg0);
+			SDL_RenderCopy(renderer, gr0tex, nullptr, &rectg0);
 		}
 		revamountinc+=revinc;
 		if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr1tex, NULL, &rectg1);
+			SDL_RenderCopy(renderer, gr1tex, nullptr, &rectg1);
 		}
 		revamountinc+=revinc;
 		if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr2tex, NULL, &rectg2);
+			SDL_RenderCopy(renderer, gr2tex, nullptr, &rectg2);
 		}
 		revamountinc+=revinc;
 			if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr3tex, NULL, &rectg3);
+			SDL_RenderCopy(renderer, gr3tex, nullptr, &rectg3);
 		}
 		revamountinc+=revinc;
 			if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr4tex, NULL, &rectg4);
+			SDL_RenderCopy(renderer, gr4tex, nullptr, &rectg4);
 		}
 		revamountinc+=revinc;
 			if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr5tex, NULL, &rectg5);
+			SDL_RenderCopy(renderer, gr5tex, nullptr, &rectg5);
 		}
 		revamountinc+=revinc;
 			if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr6tex, NULL, &rectg6);
+			SDL_RenderCopy(renderer, gr6tex, nullptr, &rectg6);
 		}
 		revamountinc+=revinc;
 			if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr7tex, NULL, &rectg7);
+			SDL_RenderCopy(renderer, gr7tex, nullptr, &rectg7);
 		}
 		revamountinc+=revinc;
 			if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr8tex, NULL, &rectg8);
+			SDL_RenderCopy(renderer, gr8tex, nullptr, &rectg8);
 		}
 		revamountinc+=revinc;
 			if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr9tex, NULL, &rectg9);
+			SDL_RenderCopy(renderer, gr9tex, nullptr, &rectg9);
 		}
 		revamountinc+=revinc;
 			if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr10tex, NULL, &rectg10);
+			SDL_RenderCopy(renderer, gr10tex, nullptr, &rectg10);
 		}
 		revamountinc+=revinc;
 			if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr11tex, NULL, &rectg11);
+			SDL_RenderCopy(renderer, gr11tex, nullptr, &rectg11);
 		}
 		revamountinc+=revinc;
 			if (startupanimcount > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, gr1213tex, NULL, &rectg1213);
+			SDL_RenderCopy(renderer, gr1213tex, nullptr, &rectg1213);
 		}
 	}
 
@@ -5130,7 +5130,7 @@ void Drawdashboard () {
 
 
 	// Rev counter rev line texture
-	SDL_RenderCopy(renderer, grevlinetex, NULL, &grevline);
+	SDL_RenderCopy(renderer, grevlinetex, nullptr, &grevline);
 
 	targetrpmrotation = GetRPMrotation (rpm);
 	if (targetrpmrotation > currentrpmrotation) {
@@ -5146,7 +5146,7 @@ void Drawdashboard () {
 	}
 
 	// White rev counter cover to reveal the rev line
-	SDL_RenderCopyEx(renderer, grevwhitetex, NULL, &grrevwhite, currentrpmrotation , &gwhitepoint, SDL_FLIP_NONE);
+	SDL_RenderCopyEx(renderer, grevwhitetex, nullptr, &grrevwhite, currentrpmrotation , &gwhitepoint, SDL_FLIP_NONE);
 
 	// Top grey icons
 	RenderTopIconGreyTexture (0, 0, 627, 138);
@@ -5358,19 +5358,19 @@ void Drawdashboard () {
 	
 
 	// Rev counter numbers
-	SDL_RenderCopy(renderer, gr1213tex, NULL, &rectg1213);
-	SDL_RenderCopy(renderer, gr11tex, NULL, &rectg11);
-	SDL_RenderCopy(renderer, gr10tex, NULL, &rectg10);
-	SDL_RenderCopy(renderer, gr9tex, NULL, &rectg9);
-	SDL_RenderCopy(renderer, gr8tex, NULL, &rectg8);
-	SDL_RenderCopy(renderer, gr7tex, NULL, &rectg7);
-	SDL_RenderCopy(renderer, gr6tex, NULL, &rectg6);
-	SDL_RenderCopy(renderer, gr5tex, NULL, &rectg5);
-	SDL_RenderCopy(renderer, gr4tex, NULL, &rectg4);
-	SDL_RenderCopy(renderer, gr3tex, NULL, &rectg3);
-	SDL_RenderCopy(renderer, gr2tex, NULL, &rectg2);
-	SDL_RenderCopy(renderer, gr1tex, NULL, &rectg1);
-	SDL_RenderCopy(renderer, gr0tex, NULL, &rectg0);
+	SDL_RenderCopy(renderer, gr1213tex, nullptr, &rectg1213);
+	SDL_RenderCopy(renderer, gr11tex, nullptr, &rectg11);
+	SDL_RenderCopy(renderer, gr10tex, nullptr, &rectg10);
+	SDL_RenderCopy(renderer, gr9tex, nullptr, &rectg9);
+	SDL_RenderCopy(renderer, gr8tex, nullptr, &rectg8);
+	SDL_RenderCopy(renderer, gr7tex, nullptr, &rectg7);
+	SDL_RenderCopy(renderer, gr6tex, nullptr, &rectg6);
+	SDL_RenderCopy(renderer, gr5tex, nullptr, &rectg5);
+	SDL_RenderCopy(renderer, gr4tex, nullptr, &rectg4);
+	SDL_RenderCopy(renderer, gr3tex, nullptr, &rectg3);
+	SDL_RenderCopy(renderer, gr2tex, nullptr, &rectg2);
+	SDL_RenderCopy(renderer, gr1tex, nullptr, &rectg1);
+	SDL_RenderCopy(renderer, gr0tex, nullptr, &rectg0);
 
 	sprintf( strCurrentspeed, "%d", currentSpeed);
 	sprintf( strTrip1, "%.1f", trip1);
@@ -5755,18 +5755,18 @@ int main(int argc, char* args[]) {
 	SDL_ShowCursor(SDL_DISABLE);
 	
 	int err;
-	err = pthread_create(&(tid[0]), NULL, &pollInterface, NULL);
+	err = pthread_create(&(tid[0]), nullptr, &pollInterface, nullptr);
     if (err != 0)
         printf("\ncan't create thread :[%s]", strerror(err));
     else
         printf("\n Thread created successfully\n");
 
 	if (tpmsmodel == STANDARDTPMS) {
-		err = pthread_create(&(tpms_tid[0]), NULL, &pollTPMSInterface, NULL);
+		err = pthread_create(&(tpms_tid[0]), nullptr, &pollTPMSInterface, nullptr);
 	}		
 
 	if (tpmsmodel == EBAYTPMS) {
-		err = pthread_create(&(tpms_tid[0]), NULL, &pollTPMSInterface2, NULL);
+		err = pthread_create(&(tpms_tid[0]), nullptr, &pollTPMSInterface2, nullptr);
 	}
 	
     if (err != 0)
@@ -5786,7 +5786,7 @@ int main(int argc, char* args[]) {
 		return 1;
 	}
 
-	if (window == NULL) {
+	if (window == nullptr) {
 		fprintf(stderr, "could not create window: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -5794,7 +5794,7 @@ int main(int argc, char* args[]) {
 	screenSurface = SDL_GetWindowSurface(window);
 
 	if (theme == 0) {
-		if (loadsurfaces(NULL) != 0) {
+		if (loadsurfaces(nullptr) != 0) {
 			return 1;
 		}
 	}
@@ -5918,7 +5918,7 @@ int main(int argc, char* args[]) {
 		if (theme != currenttheme) {			
 			currenttheme = theme;
 			if (theme == 0) {
-				loadsurfaces(NULL);
+				loadsurfaces(nullptr);
 			}
 
 			if (theme == 1) {

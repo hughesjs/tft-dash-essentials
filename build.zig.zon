@@ -1,0 +1,10 @@
+.{
+    .name = .tftdashdisplay,
+    .version = "0.1.0",
+    .fingerprint = 0x2e9799a637abb26f,
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}

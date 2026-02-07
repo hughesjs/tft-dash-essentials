@@ -6,20 +6,33 @@ This is the display application for the TFT Dash motorcycle dashboard. It runs o
 
 ## Build
 
-```bash
-# Universal build script (auto-detects platform)
-./build.sh
+Uses Zig as the build system. The `build.zig` defines two targets: `testsdl` (main dashboard) and `test_parser` (parser test suite).
 
-# Build with tests
-./build.sh test
+```bash
+# Build everything
+zig build
+
+# Build and run parser tests
+zig build test
+
+# Build and run the dashboard
+zig build run
+
+# Convenience wrapper
+./build.sh          # builds
+./build.sh test     # builds and runs tests
+
+# Cross-compile for Raspberry Pi (aarch64)
+zig build -Dtarget=aarch64-linux-gnu
 ```
 
-The build script automatically detects macOS vs Linux and uses the correct SDL2 linking.
+Binaries are output to `zig-out/bin/`.
 
 ### Dependencies
 
-- SDL2 development libraries (`libsdl2-dev` on Raspberry Pi)
-- pthreads (linked via `-lpthread`)
+- Zig 0.15+ (`pacman -S zig` on Arch, or download from ziglang.org)
+- SDL2 development libraries (`libsdl2-dev` on Raspberry Pi, `sdl2` on Arch)
+- pthreads (linked via build.zig)
 
 ## Source Files
 
@@ -32,7 +45,9 @@ tftdashdisplay/
 │   └── TPMSTest.cpp       TPMS test utility
 ├── assets/                 Graphics assets
 │   └── themes/            BMP files organised by theme
-├── build.sh               Universal build script
+├── build.zig              Zig build system configuration
+├── build.zig.zon          Zig package manifest
+├── build.sh               Convenience build wrapper
 ├── CLAUDE.md              Project documentation
 ├── REFACTORING.md         Refactoring progress log
 └── SIMULATOR.md           Simulator integration guide
@@ -50,8 +65,7 @@ tftdashdisplay/
 
 ```bash
 # Build and run parser tests
-./build.sh test
-./test_parser
+zig build test
 ```
 
 The parser has been extracted and tested independently of SDL/hardware. It uses a data-driven approach with field descriptor tables instead of if-ladders, providing O(1) field lookup and parsing each value exactly once.

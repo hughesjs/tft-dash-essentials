@@ -15,6 +15,10 @@ TPMSTest
 *.so
 *.dylib
 
+# Zig build
+.zig-cache/
+zig-out/
+
 # macOS
 .DS_Store
 

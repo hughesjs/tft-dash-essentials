@@ -1,144 +1,115 @@
 # TFT Dash Refactoring Progress
 
-## Phase 1: Extract and Test Parsing Logic ✅ COMPLETE
+## Completed
 
-### What We've Done
+### Parser extraction
+- Extracted message parsing from `testsdl.cpp` into `parser.h/c`
+- Data-driven field descriptor tables instead of if-ladders
+- Tokenisation via `strsep` (C23 + `_GNU_SOURCE`)
+- Comprehensive test suite in `test_parser.c` (10 tests, all passing)
+- `zig build test` to run
 
-1. **Created `parser.h`** - Clean API for message parsing with three structs:
-   - `DashboardState` - Live sensor data from firmware
-   - `MenuState` - Configuration/menu data from firmware
-   - `NavState` - Navigation data from phone
+### Asset manager extraction
+- Standalone `assets.h/c` module for themed BMP loading
+- Two-key hash map lookup: `(theme, asset_name)` → `SDL_Texture*`
+- FNV-1a hashing, open addressing with linear probing, auto-resize at 70% load
+- `asset_store_load_theme()` scans directories via `opendir`/`readdir`
+- Test suite in `test_assets.c` (7 tests, all passing)
+- `zig build test` runs both parser and asset tests
 
-2. **Created `parser.c`** - Data-driven parsing implementation:
-   - **Eliminated if-ladders**: Used lookup tables with field descriptors
-   - **Parse once, not 37 times**: Each field parsed exactly once with correct function
-   - **O(1) field lookup**: Direct array indexing instead of cascading if statements
-   - **Type-safe**: Field type encoded in descriptor (INT, FLOAT, BOOL, STRING)
-   - **Maintainable**: Adding/removing fields is just editing the table
+### snake_case naming convention
+- All functions, globals, locals, struct types and members converted to snake_case
+- Constants remain UPPER_CASE (already correct)
 
-3. **Created `test_parser.c`** - Comprehensive test suite:
-   - 10 test cases covering all message types
-   - Tests for integers, floats, booleans, strings
-   - Real-world message validation
-   - Null pointer safety checks
-   - **All tests passing ✅**
+### Zig build system
+- Replaced manual g++ invocations with `build.zig`
+- Builds main app, parser tests, and handles asset copying
+- Cross-compilation support for aarch64
 
-### Performance Improvements
+## Display-side refactoring opportunities
 
-**Before (if-ladder):**
-```c
-if (messagenumber == 1) { currentSpeed = atoi(szCurrent); }
-if (messagenumber == 2) { rpm = atoi(szCurrent); }
-// ... 35 more comparisons for EVERY field
+Roughly in order of impact:
+
+1. **Texture loading boilerplate** (~300 lines) — 100+ textures loaded with identical error-checking. Replace with a generic helper or data-driven asset table.
+
+2. **Drawing function duplication** (~200 lines) — 7 near-identical `draw_*_string()` functions. Parameterise into one generic glyph renderer.
+
+3. **Global state grouping** (~100 globals) — Group into structs: `bike_state`, `tpms_state`, `animation_state`, `display_strings`, etc.
+
+4. **Theme descriptor table** — Replace scattered `if (theme == X)` checks with a theme struct and index lookup.
+
+5. **Nav symbol lookup table** — Replace 20+ `strcmp()` chains with a data-driven table (same pattern as parser).
+
+6. **Menu system extraction** — `draw_menu()` is 576 lines of nested ifs. Extract per-menu rendering functions.
+
+7. **Warning badge priority** — Extract implicit nested-if priority logic into an explicit priority function.
+
+## Firmware architectural change (future option)
+
+### Current state
+
+The firmware handles both signal acquisition AND application logic:
+- Reads sensors, averages, converts to meaningful units
+- Manages the entire menu state machine (which menu, which digit being edited, cycling values)
+- Stores all settings in EEPROM (theme, units, sprockets, fan temp, TPMS, etc.)
+- Controls the fan relay
+- Tracks odometer/trips and persists to EEPROM
+- Manages RTC
+
+The display just renders whatever state the firmware sends. The protocol is one-directional (firmware to display).
+
+### Proposal: move menu logic to the display
+
+Make the firmware a sensor bridge. It reads hardware, outputs values, and accepts setting commands from the display.
+
+**Stays on firmware (hardware-dependent):**
+- Sensor reading, averaging, signal processing
+- Fan relay control (safety-critical — must work if display crashes)
+- Odometer/trip persistence in EEPROM (SD card too fragile for frequent writes on a motorcycle)
+- RTC read/write
+- Speed correction (must happen before odometer accumulation)
+
+**Moves to display:**
+- Menu state machine and navigation
+- Theme/unit preferences (become Pi-side config, possibly a file)
+- All menu digit editing state (odo digits, time digits, speed correction digits)
+
+**New protocol:**
+
 ```
-- 37 comparisons per field
-- For 37 fields: ~684 total comparisons
+Firmware -> Display (sensor data only):
+  {,speed,rpm,coolant,batt,fuel,neutral,oil,highbeam,left,right,
+   gear,ambient_temp,hour,minute,odo,trip1,trip2,oil_press,oil_temp,
+   fan_state,button_option,button_select,}
 
-**After (lookup table):**
-```c
-parse_field(szCurrent, state, &fields[field_num]);
-```
-- 1 array lookup per field
-- For 37 fields: 37 total lookups
-- **~18x fewer operations**
-
-### How to Build & Test
-
-```bash
-# Compile tests
-gcc -o test_parser test_parser.c parser.c -std=c99 -lm
-
-# Run tests
-./test_parser
-```
-
-## Next Steps
-
-### Phase 2: Modularise Codebase (In Progress)
-
-Break `testsdl.cpp` into logical modules:
-- `parser.c/h` ✅ Done
-- `serial.c/h` - Serial port handling and framing
-- `render.c/h` - SDL2 rendering functions
-- `menu.c/h` - Menu system
-- `main.c` - Main loop and initialisation
-
-### Phase 3: Replace Global State
-
-Create `DashboardContext` struct to replace ~80 global variables:
-```c
-typedef struct {
-    DashboardState live;
-    MenuState menu;
-    NavState nav;
-    SDL_Renderer* renderer;
-    // ... SDL textures, surfaces, etc.
-} DashboardContext;
-```
-
-Pass context pointer through function calls instead of using globals.
-
-### Phase 4: Documentation
-
-Update CLAUDE.md with new architecture, module descriptions, and testing instructions.
-
-## Benefits Achieved So Far
-
-- ✅ **Testable code**: Parsing logic can be tested without SDL/hardware
-- ✅ **No regressions**: Tests validate behaviour before/after refactoring
-- ✅ **Better performance**: O(1) lookups vs O(n) if-ladders
-- ✅ **More maintainable**: Data-driven approach, clear field mappings
-- ✅ **Learning opportunity**: Understanding the protocol deeply
-- ✅ **Rust rewrite prep**: Clear data structures and parsing logic to port
-
-## Parsing Implementation Details
-
-### Field Descriptor Pattern
-
-```c
-typedef struct {
-    FieldType type;    // INT, FLOAT, BOOL, STRING
-    size_t offset;     // Byte offset into target struct
-    size_t max_len;    // For strings only
-} FieldDescriptor;
+Display -> Firmware (commands):
+  CMD:RESET_TRIP1
+  CMD:RESET_TRIP2
+  CMD:SET_SPD_CORRECT:-2.5
+  CMD:SET_TIME:14:23
+  CMD:SET_SPROCKET_FRONT:15
+  CMD:SET_SPROCKET_REAR:44
+  CMD:SET_FAN_TEMP:95
+  CMD:SET_FAN_MODE:2
+  CMD:SET_GEAR_INTERVAL:200
+  CMD:SAVE_ODO
 ```
 
-### Example Field Table
+**Benefits:**
+- Firmware becomes much simpler — no menu state machine, no digit editor state
+- Serial protocol shrinks — no more sending 6 odo digits, 4 time digits, etc.
+- Adding/changing menus only requires display changes
+- Display-only settings (theme, units) don't round-trip through the firmware
+- Button events are raw — display decides what they mean in context
 
-```c
-static const FieldDescriptor live_fields[] = {
-    FIELD_SKIP(),                            /* 0: skip */
-    FIELD_INT(DashboardState, currentSpeed), /* 1 */
-    FIELD_INT(DashboardState, rpm),          /* 2 */
-    // ...
-};
-```
+**Costs:**
+- Bidirectional serial (trivial — `Serial.read()` on Arduino, `write()` on Pi)
+- Settings persistence needs thought — EEPROM for hardware settings, file for display settings
+- If display is down, buttons do nothing (but they're useless without a screen anyway)
 
-### Generic Parser
-
-One parser handles all message types:
-```c
-parse_delimited_message(msg, delimiter, state, fields, num_fields);
-```
-
-This means:
-- Live messages use `,` delimiter and `live_fields[]`
-- Menu messages use `,` delimiter and `menu_fields[]`
-- Nav messages use `%` delimiter and `nav_fields[]`
-
-### Type-Safe Field Parsing
-
-```c
-void parse_field(const char* value, void* base_ptr, const FieldDescriptor* desc) {
-    char* target = (char*)base_ptr + desc->offset;
-
-    switch (desc->type) {
-        case TYPE_INT:   *(int*)target = atoi(value); break;
-        case TYPE_FLOAT: *(float*)target = atof(value); break;
-        case TYPE_BOOL:  *(bool*)target = (atoi(value) == 1); break;
-        case TYPE_STRING: strncpy(target, value, desc->max_len); break;
-    }
-}
-```
-
-Each field is parsed exactly once with the correct conversion function.
+**Implementation path:**
+1. Add `Serial.read()` command handler to firmware
+2. Strip menu state machine from firmware
+3. Implement menu logic on display side
+4. Simplify serial protocol
+5. Add display-side config file for theme/units/layout

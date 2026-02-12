@@ -63,10 +63,38 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(test_parser);
 
-    // 'zig build test' step - builds and runs parser tests
-    const run_tests = b.addRunArtifact(test_parser);
-    const test_step = b.step("test", "Run parser tests");
-    test_step.dependOn(&run_tests.step);
+    // --- Asset manager tests ---
+    const test_assets = b.addExecutable(.{
+        .name = "test_assets",
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+
+    test_assets.root_module.addCSourceFiles(.{
+        .files = &.{
+            "src/test_assets.c",
+            "src/assets.c",
+        },
+        .flags = &.{
+            "-std=c23",
+        },
+    });
+
+    test_assets.root_module.addIncludePath(b.path("src"));
+    test_assets.root_module.linkSystemLibrary("SDL2", .{});
+
+    b.installArtifact(test_assets);
+
+    // 'zig build test' step - builds and runs all tests
+    const run_parser_tests = b.addRunArtifact(test_parser);
+    const run_asset_tests = b.addRunArtifact(test_assets);
+    run_asset_tests.setCwd(b.path("."));
+    const test_step = b.step("test", "Run all tests");
+    test_step.dependOn(&run_parser_tests.step);
+    test_step.dependOn(&run_asset_tests.step);
 
     // 'zig build run' step - builds and runs the dashboard
     const run_dash = b.addRunArtifact(testsdl);

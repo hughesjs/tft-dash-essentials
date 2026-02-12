@@ -39,9 +39,11 @@ Binaries are output to `zig-out/bin/`.
 ```
 tftdashdisplay/
 ├── src/                    Source code
-│   ├── testsdl.cpp        Main display application (~6000 lines)
+│   ├── testsdl.cpp        Main display application (~4800 lines)
 │   ├── parser.h/c         Extracted parsing with lookup tables
+│   ├── assets.h/c         Asset management with themed texture lookup
 │   ├── test_parser.c      Parser test suite
+│   ├── test_assets.c      Asset manager test suite
 │   └── TPMSTest.cpp       TPMS test utility
 ├── assets/                 Graphics assets
 │   └── themes/            BMP files organised by theme
@@ -59,7 +61,9 @@ tftdashdisplay/
 
 ### Refactored Modules
 - **`src/parser.h/c`**: Extracted message parsing with data-driven lookup tables. Pure C, no SDL dependencies.
+- **`src/assets.h/c`**: Asset management with two-key hash map `(theme, name)` → `SDL_Texture*`. Loads BMP files from theme directories. Integrated into `testsdl.cpp` replacing 143 globals with `tex()` / `tex_from()` lookups.
 - **`src/test_parser.c`**: Comprehensive test suite for parsing logic (10 test cases, all passing).
+- **`src/test_assets.c`**: Asset manager test suite (7 tests, all passing).
 
 ### Testing
 
@@ -76,14 +80,14 @@ The file is structured in broad sections:
 
 | Lines (approx.) | Section |
 |---|---|
-| 1-700 | Global state variables, `#define` constants, menu state definitions |
-| 700-3000 | Sprite/bitmap rendering helpers (numbers, gauges, indicators, nav icons) |
-| 3007-3500 | `UnpackMenuMessage()` / `UnpackMessage()` - serial data deserialisation |
-| 3524-3696 | `connectInterface()` / `pollInterface()` - serial port connection & read thread |
-| 3698-3950 | TPMS interface - separate serial connection & polling thread |
-| 4234+ | `Drawmenu()` - on-screen menu system rendering |
-| 5137+ | `Drawdashboard()` - main dashboard rendering |
-| 5746+ | `main()` - SDL init, thread spawning, event/render loop |
+| 1-700 | Global state variables, `#define` constants, menu state definitions, asset store helpers |
+| 700-1700 | Sprite/bitmap rendering helpers (numbers, gauges, indicators, nav icons) |
+| 1700-2500 | `unpack_menu_message()` / `unpack_message()` - serial data deserialisation |
+| 2500-2700 | `connect_interface()` / `poll_interface()` - serial port connection & read thread |
+| 2700-2950 | TPMS interface - separate serial connection & polling thread |
+| 3002+ | `draw_menu()` - on-screen menu system rendering |
+| 3895+ | `draw_dashboard()` - main dashboard rendering |
+| 4504+ | `main()` - SDL init, asset store init, thread spawning, event/render loop |
 
 ### Threading Model
 
@@ -110,13 +114,13 @@ Parsing splits on commas after detecting `{` or `[` start markers.
 
 Themes: default/white, green, red, blue, orange, yellow, night, bright (high-contrast), dark.
 
-Each theme has a complete set of BMP sprite files with the theme name as prefix (e.g. `blue-Coolant.bmp`, `night-Revline.bmp`). Unprefixed BMPs are the default/white theme.
+Each theme has its own directory under `assets/themes/` (e.g. `assets/themes/blue/Coolant.bmp`, `assets/themes/night/Revline.bmp`). The default theme is in `assets/themes/default/`.
 
-Theme is selected via the on-screen menu and stored in EEPROM on the firmware side.
+Theme is selected via the on-screen menu and stored in EEPROM on the firmware side. Theme switching is instant — all 9 themes are loaded into the asset store at startup.
 
 ## BMP Assets
 
-All graphical assets are BMP files loaded as SDL surfaces at startup via `loadsurfaces()`. They **must** be in the same directory as the `testsdl` binary.
+All graphical assets are BMP files in `assets/themes/<theme>/`. At startup, `asset_store_load_theme()` loads all 9 theme directories into a hash map. Textures are retrieved via `tex("Name.bmp")` for the current theme or `tex_from("theme", "Name.bmp")` for a specific theme.
 
 ## Key Constants
 

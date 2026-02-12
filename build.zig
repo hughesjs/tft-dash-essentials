@@ -21,7 +21,7 @@ pub fn build(b: *std.Build) void {
     });
 
     testsdl.root_module.addCSourceFiles(.{
-        .files = &.{"src/parser.c"},
+        .files = &.{ "src/parser.c", "src/assets.c" },
         .flags = &.{"-std=c23"},
     });
 

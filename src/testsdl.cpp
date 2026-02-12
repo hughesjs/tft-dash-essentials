@@ -87,6 +87,30 @@ NAV TO DO
 // Parser module
 #include "parser.h"
 
+// Asset management
+#include "assets.h"
+
+asset_store* g_assets = nullptr;
+const char*  g_current_theme = "default";
+
+static const char* THEME_NAMES[] = {
+	"default", "green", "red", "blue", "orange", "yellow", "night", "bright", "dark"
+};
+#define THEME_COUNT 9
+
+static const char* theme_name_from_id(int id) {
+	if (id >= 0 && id < THEME_COUNT) return THEME_NAMES[id];
+	return "default";
+}
+
+static inline SDL_Texture* tex(const char* name) {
+	return asset_store_get_texture(g_assets, g_current_theme, name);
+}
+
+static inline SDL_Texture* tex_from(const char* theme, const char* name) {
+	return asset_store_get_texture(g_assets, theme, name);
+}
+
 #define STANDARDTPMS 100
 #define EBAYTPMS 200
 
@@ -134,117 +158,6 @@ NAV TO DO
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 SDL_Surface* screen_surface = nullptr;
-SDL_Surface* g_image = nullptr;
-
-// Surfaces
-SDL_Surface* g_r1213 = nullptr;
-SDL_Surface* g_r11 = nullptr;
-SDL_Surface* g_r10 = nullptr;
-SDL_Surface* g_r9 = nullptr;
-SDL_Surface* g_r8 = nullptr;
-SDL_Surface* g_r7 = nullptr;
-SDL_Surface* g_r6 = nullptr;
-SDL_Surface* g_r5 = nullptr;
-SDL_Surface* g_r4 = nullptr;
-SDL_Surface* g_r3 = nullptr;
-SDL_Surface* g_r2 = nullptr;
-SDL_Surface* g_r1 = nullptr;
-SDL_Surface* g_r0 = nullptr;
-
-// Rev line
-SDL_Surface* g_revline = nullptr;
-SDL_Surface* g_revwhite = nullptr;
-SDL_Surface* g_speed_numbers = nullptr;
-
-// Small numbers for Temp, Trip, Odo, additional info
-SDL_Surface* g_small_numbers = nullptr;
-
-// Top Greyed out icons
-SDL_Surface* g_top_icons_grey = nullptr;
-SDL_Surface* g_top_icons_grey_op = nullptr;
-SDL_Surface* g_top_icons_edge1 = nullptr;
-SDL_Surface* g_top_icons_edge2 = nullptr;
-
-// Tyre icons if TPMS is connected
-SDL_Surface* g_tyre_icon = nullptr;
-SDL_Surface* g_tyre_signal = nullptr;
-
-// Mile info box
-SDL_Surface* g_mile_info = nullptr;
-
-// Fuel Gauge
-SDL_Surface *g_fuel_gauge = nullptr;
-SDL_Surface *g_fuel_white = nullptr;
-
-SDL_Surface *g_low_tyre_badge = nullptr;
-SDL_Surface *g_rear_tyre_low = nullptr;
-SDL_Surface *g_front_tyre_low = nullptr;
-SDL_Surface *g_both_tyre_low = nullptr;
-SDL_Surface *g_speed_correction = nullptr;
-SDL_Surface *g_set_time = nullptr;
-SDL_Surface *g_set_units = nullptr;
-SDL_Surface *g_select_on = nullptr;
-SDL_Surface *g_menu_options = nullptr;
-SDL_Surface *g_control_options = nullptr;
-SDL_Surface *g_control_select = nullptr;
-SDL_Surface *g_tpms_options = nullptr;
-SDL_Surface *g_light_options = nullptr;
-SDL_Surface *g_white_thumb = nullptr;
-SDL_Surface *g_bright_thumb = nullptr;
-SDL_Surface *g_dark_thumb = nullptr;
-SDL_Surface *g_green_thumb = nullptr;
-SDL_Surface *g_red_thumb = nullptr;
-SDL_Surface *g_blue_thumb = nullptr;
-SDL_Surface *g_orange_thumb = nullptr;
-SDL_Surface *g_yellow_thumb = nullptr;
-SDL_Surface *g_night_thumb = nullptr;
-SDL_Surface *g_up_arrow = nullptr;
-SDL_Surface *g_up_arrow_small = nullptr;
-SDL_Surface *g_menu_arrow_right = nullptr;
-SDL_Surface *g_menu_arrow_left = nullptr;
-SDL_Surface *g_menu_small_arrow_right = nullptr;
-SDL_Surface *g_menu_small_arrow_left = nullptr;
-SDL_Surface *g_coolant = nullptr;
-SDL_Surface *g_coolant_f = nullptr;
-SDL_Surface *g_km = nullptr;
-SDL_Surface *g_miles = nullptr;
-SDL_Surface *g_kph = nullptr;
-SDL_Surface *g_mph = nullptr;
-SDL_Surface *g_high_beam_light = nullptr;
-SDL_Surface *g_indicate_right = nullptr;
-SDL_Surface *g_indicate_left = nullptr;
-SDL_Surface *g_indicate_both = nullptr;
-SDL_Surface *g_indicate_right_far = nullptr;
-SDL_Surface *g_indicate_left_far = nullptr;
-SDL_Surface *g_oil_light = nullptr;
-SDL_Surface *g_oil_light_op = nullptr;
-SDL_Surface *g_neutral_light = nullptr;
-SDL_Surface *g_engine_overheat = nullptr;
-SDL_Surface *g_overheat_badge = nullptr;
-SDL_Surface *g_low_oil = nullptr;
-SDL_Surface *g_low_oil_badge = nullptr;
-SDL_Surface *g_low_fuel = nullptr;
-SDL_Surface *g_low_fuel_badge = nullptr;
-SDL_Surface *g_info_bottom_diag = nullptr;
-SDL_Surface *g_info_top_diag = nullptr;
-SDL_Surface *g_info_bottom = nullptr;
-SDL_Surface *g_info_top = nullptr;
-SDL_Surface *g_info_top_km = nullptr;
-SDL_Surface *g_tyre_bottom = nullptr;
-SDL_Surface *g_tyre_top = nullptr;
-SDL_Surface *g_coolant_icon = nullptr;
-SDL_Surface *g_theme_options = nullptr;
-SDL_Surface *g_arrow_right_theme = nullptr;
-SDL_Surface *g_arrow_left_theme = nullptr;
-SDL_Surface *g_down_arrow = nullptr;
-SDL_Surface *g_set_odometer = nullptr;
-SDL_Surface *g_odo_error1 = nullptr;
-SDL_Surface *g_odo_error2 = nullptr;
-SDL_Surface *g_sprocket_setup = nullptr;
-SDL_Surface *g_coolant_fan_temp = nullptr;
-SDL_Surface *g_gear = nullptr;
-SDL_Surface *g_nav_bg = nullptr;
-SDL_Surface *g_nav_icons = nullptr;
 
 // Surface Rects
 // Rev counter
@@ -437,107 +350,6 @@ SDL_Rect spd_digit_one;
 SDL_Rect spd_digit_two;
 SDL_Rect spd_digit_three;
 
-// Textures (Converted from Surfaces)
-SDL_Texture* g_r1213_tex;
-SDL_Texture* g_r11_tex;
-SDL_Texture* g_r10_tex;
-SDL_Texture* g_r9_tex;
-SDL_Texture* g_r8_tex;
-SDL_Texture* g_r7_tex;
-SDL_Texture* g_r6_tex;
-SDL_Texture* g_r5_tex;
-SDL_Texture* g_r4_tex;
-SDL_Texture* g_r3_tex;
-SDL_Texture* g_r2_tex;
-SDL_Texture* g_r1_tex;
-SDL_Texture* g_r0_tex;
-
-SDL_Texture* g_revline_tex;
-SDL_Texture* g_revwhite_tex;
-SDL_Texture* g_speed_numbers_tex;
-
-SDL_Texture* g_small_numbers_tex;
-SDL_Texture* g_top_icons_grey_tex;
-SDL_Texture* g_top_icons_grey_op_tex;
-SDL_Texture* gtopiconsedge1tex;
-SDL_Texture* gtopiconsedge2tex;
-
-SDL_Texture* g_mile_info_tex;
-
-SDL_Texture* g_fuel_gauge_tex;
-SDL_Texture* gfuelgaugewhitetex;
-
-SDL_Texture *g_speed_correction_tex;
-SDL_Texture *g_set_time_tex;
-SDL_Texture *g_select_on_tex;
-SDL_Texture *g_set_units_tex;
-SDL_Texture *g_menu_options_tex;
-SDL_Texture *g_control_options_tex;
-SDL_Texture *g_control_select_tex;
-SDL_Texture *g_tpms_options_tex;
-SDL_Texture *g_up_arrow_tex;
-SDL_Texture *g_up_arrow_small_tex;
-SDL_Texture *g_menu_arrow_right_tex;
-SDL_Texture *g_menu_arrow_left_tex;
-SDL_Texture *g_menu_small_arrow_right_tex;
-SDL_Texture *g_menu_small_arrow_left_tex;
-SDL_Texture *g_light_options_tex;
-SDL_Texture *g_white_thumb_tex;
-SDL_Texture *g_bright_thumb_tex;
-SDL_Texture *g_dark_thumb_tex;
-SDL_Texture *g_green_thumb_tex;
-SDL_Texture *g_red_thumb_tex;
-SDL_Texture *g_blue_thumb_tex;
-SDL_Texture *g_orange_thumb_tex;
-SDL_Texture *g_yellow_thumb_tex;
-SDL_Texture *g_night_thumb_tex;
-SDL_Texture *g_coolant_tex;
-SDL_Texture *g_coolant_f_tex;
-SDL_Texture *g_km_tex;
-SDL_Texture *g_miles_tex;
-SDL_Texture *g_kph_tex;
-SDL_Texture *g_mph_tex;
-SDL_Texture *g_tyre_icon_tex;
-SDL_Texture *g_tyre_signal_tex;
-SDL_Texture *g_high_beam_light_tex;
-SDL_Texture *g_indicate_right_tex;
-SDL_Texture *g_indicate_left_tex;
-SDL_Texture *g_indicate_both_tex;
-SDL_Texture *g_indicate_right_far_tex;
-SDL_Texture *g_indicate_left_far_tex;
-SDL_Texture *g_oil_light_tex;
-SDL_Texture *g_oil_light_op_tex;
-SDL_Texture *g_neutral_light_tex;
-SDL_Texture *g_engine_overheat_tex;
-SDL_Texture *g_overheat_badge_tex;
-SDL_Texture *g_low_oil_tex;
-SDL_Texture *g_low_oil_badge_tex;
-SDL_Texture *g_low_fuel_tex;
-SDL_Texture *g_low_fuel_badge_tex;
-SDL_Texture *g_info_bottom_diag_tex;
-SDL_Texture *g_info_top_diag_tex;
-SDL_Texture *g_info_bottom_tex;
-SDL_Texture *g_info_top_tex;
-SDL_Texture *g_info_top_km_tex;
-SDL_Texture *g_tyre_bottom_tex;
-SDL_Texture *g_tyre_top_tex;
-SDL_Texture *g_coolant_icon_tex;
-SDL_Texture *g_theme_options_tex = nullptr;
-SDL_Texture *g_arrow_right_theme_tex = nullptr;
-SDL_Texture *g_arrow_left_theme_tex = nullptr;
-SDL_Texture *g_down_arrow_tex = nullptr;
-SDL_Texture *g_set_odometer_tex = nullptr;
-SDL_Texture *g_odo_error1_tex = nullptr;
-SDL_Texture *g_odo_error2_tex = nullptr;
-SDL_Texture *g_sprocket_setup_tex = nullptr;
-SDL_Texture *g_coolant_fan_temp_tex = nullptr;
-SDL_Texture *g_gear_tex = nullptr;
-SDL_Texture *g_low_tyre_badge_tex = nullptr;
-SDL_Texture *g_rear_tyre_low_tex = nullptr;
-SDL_Texture *g_front_tyre_low_tex = nullptr;
-SDL_Texture *g_both_tyre_low_tex = nullptr;
-SDL_Texture *g_nav_bg_tex = nullptr;
-SDL_Texture *g_nav_icons_tex = nullptr;
 
 char g_sz_comms_msg[1024];
 int serial_port;
@@ -1271,325 +1083,7 @@ double get_precise_temp (int ohms) {
 }
 
 
-SDL_Surface *load_surface (SDL_Surface *existing, const char *file, const char *theme)
-{
-	if (existing != nullptr) {
-		SDL_FreeSurface (existing);
-	}
 
-	char sz_file[255];
-	memset(sz_file, 0, 255);
-
-	// Files are at assets/themes/{theme}/{file}
-	// Default theme if theme is nullptr
-	strcat (sz_file, "assets/themes/");
-	if (theme != nullptr) {
-		strcat (sz_file, theme);
-	} else {
-		strcat (sz_file, "default");
-	}
-	strcat (sz_file, "/");
-	strcat (sz_file, file);
-
-	return SDL_LoadBMP (sz_file);
-}
-
-int load_surfaces(const char *theme)
-{
-	// Load Images into Surfaces
-	// Rev number lines - needed to be individual textures to preserve the curve when revealing the rev line	
-
-
-	g_r1213 = load_surface (g_r1213, "R12-13.bmp", theme);
-	if (g_r1213 == nullptr) { fprintf(stderr, "could not load R12-13: %s\n", SDL_GetError()); return 1; }
-
-	g_r11 = load_surface(g_r11, "R11.bmp", theme);
-	if (g_r11 == nullptr) { fprintf(stderr, "could not load R11: %s\n", SDL_GetError()); return 1; }
-
-	g_r10 = load_surface(g_r10, "R10.bmp", theme);
-	if (g_r10 == nullptr) { fprintf(stderr, "could not load R10: %s\n", SDL_GetError()); return 1; }
-
-	g_r9 = load_surface(g_r9, "R9.bmp", theme);
-	if (g_r9 == nullptr) { fprintf(stderr, "could not load R9: %s\n", SDL_GetError()); return 1; }
-
-	g_r8 = load_surface(g_r8, "R8.bmp", theme);
-	if (g_r8 == nullptr) { fprintf(stderr, "could not load R8: %s\n", SDL_GetError()); return 1; }
-
-	g_r7 = load_surface(g_r7, "R7.bmp", theme);
-	if (g_r7 == nullptr) { fprintf(stderr, "could not load R7: %s\n", SDL_GetError()); return 1; }
-
-	g_r6 = load_surface(g_r6, "R6.bmp", theme);
-	if (g_r6 == nullptr) { fprintf(stderr, "could not load R6: %s\n", SDL_GetError()); return 1; }
-
-	g_r5 = load_surface(g_r5, "R5.bmp", theme);
-	if (g_r5 == nullptr) { fprintf(stderr, "could not load R5: %s\n", SDL_GetError()); return 1; }
-
-	g_r4 = load_surface(g_r4, "R4.bmp", theme);
-	if (g_r4 == nullptr) { fprintf(stderr, "could not load R4: %s\n", SDL_GetError()); return 1; }
-
-	g_r3 = load_surface(g_r3, "R3.bmp", theme);
-	if (g_r3 == nullptr) { fprintf(stderr, "could not load R3: %s\n", SDL_GetError()); return 1; }
-
-	g_r2 = load_surface(g_r2, "R2.bmp", theme);
-	if (g_r2 == nullptr) { fprintf(stderr, "could not load R2: %s\n", SDL_GetError()); return 1; }
-
-	g_r1 = load_surface(g_r1, "R1.bmp", theme);
-	if (g_r1 == nullptr) { fprintf(stderr, "could not load R1: %s\n", SDL_GetError()); return 1; }
-
-	g_r0 = load_surface(g_r0, "R0.bmp", theme);
-	if (g_r0 == nullptr) { fprintf(stderr, "could not load R0: %s\n", SDL_GetError()); return 1; }
-
-	// The blue rev line
-	g_revline = load_surface(g_revline, "Revline.bmp", theme);
-	if (g_revline == nullptr) { fprintf(stderr, "could not load Revline: %s\n", SDL_GetError()); return 1; }
-
-	// A white square covering the rev line - rotation is applied to this to reveal the rev line
-	g_revwhite = load_surface(g_revwhite, "Whitesq.bmp", theme);
-	if (g_revwhite == nullptr) { fprintf(stderr, "could not load Revwhite: %s\n", SDL_GetError()); return 1; }
-
-	// Large speedometer numbers
-	g_speed_numbers = load_surface(g_speed_numbers, "Speednumbers.bmp", theme);
-	if (g_speed_numbers == nullptr) { fprintf(stderr, "could not load Speednumbers: %s\n", SDL_GetError()); return 1; }
-
-	g_small_numbers = load_surface(g_small_numbers, "Smallnumbers.bmp", theme);
-	if (g_small_numbers == nullptr) { fprintf(stderr, "could not load Smallnumbers: %s\n", SDL_GetError()); return 1; }	
-
-	g_top_icons_grey = load_surface(g_top_icons_grey, "Topiconsgrey.bmp", theme);
-	if (g_top_icons_grey == nullptr) { fprintf(stderr, "could not load Topiconsgrey: %s\n", SDL_GetError()); return 1; }	
-
-	g_top_icons_grey_op = load_surface(g_top_icons_grey_op, "TopiconsgreyOP.bmp", theme);
-	if (g_top_icons_grey_op == nullptr) { fprintf(stderr, "could not load TopiconsgreyOP: %s\n", SDL_GetError()); return 1; }	
-
-	g_top_icons_edge1 = load_surface(g_top_icons_edge1, "Topiconedge1.bmp", theme);
-	if (g_top_icons_edge1 == nullptr) { fprintf(stderr, "could not load Topiconedge1: %s\n", SDL_GetError()); return 1; }	
-
-	g_top_icons_edge2 = load_surface(g_top_icons_edge2, "Topiconedge2.bmp", theme);
-	if (g_top_icons_edge2 == nullptr) { fprintf(stderr, "could not load Topiconedge2: %s\n", SDL_GetError()); return 1; }	
-
-	g_mile_info = load_surface(g_mile_info, "Mileinfo.bmp", theme);
-	if (g_mile_info == nullptr) { fprintf(stderr, "could not load Mileinfo: %s\n", SDL_GetError()); return 1; }
-
-	g_fuel_gauge = load_surface(g_fuel_gauge, "Fuelgauge.bmp", theme);
-	if (g_fuel_gauge == nullptr) { fprintf(stderr, "could not load Fuelgauge: %s\n", SDL_GetError()); return 1; }	
-
-	g_fuel_white = load_surface(g_fuel_white, "Fuelgaugewhite.bmp", theme);
-	if (g_fuel_white == nullptr) { fprintf(stderr, "could not load Fuelgaugewhite: %s\n", SDL_GetError()); return 1; }
-
-	g_speed_correction = load_surface(g_speed_correction, "Speedcorrection.bmp", theme);
-	if (g_speed_correction == nullptr) { fprintf(stderr, "could not load g_speed_correction: %s\n", SDL_GetError()); return 1; }
-
-	g_set_time = load_surface(g_set_time, "Settime.bmp", theme);
-	if (g_set_time == nullptr) { fprintf(stderr, "could not load g_set_time: %s\n", SDL_GetError()); return 1; }
-
-	g_set_units = load_surface (g_set_units, "Setunits.bmp", theme);
-	if (g_set_units == nullptr) { fprintf(stderr, "could not load g_set_units: %s\n", SDL_GetError()); return 1; }
-
-	g_select_on = load_surface (g_select_on, "Selecton.bmp", theme);
-	if (g_select_on == nullptr) { fprintf(stderr, "could not load g_select_on: %s\n", SDL_GetError()); return 1; }
-
-	g_menu_options = load_surface(g_menu_options, "Menuoptionsex.bmp", theme);
-	if (g_menu_options == nullptr) { fprintf(stderr, "could not load g_menu_options: %s\n", SDL_GetError()); return 1; }
-
-	g_control_options = load_surface(g_control_options, "Controloptions.bmp", theme);
-	if (g_control_options == nullptr) { fprintf(stderr, "could not load g_control_options: %s\n", SDL_GetError()); return 1; }	
-
-	g_control_select = load_surface(g_control_select, "Selectedcontrol.bmp", theme);
-	if (g_control_select == nullptr) { fprintf(stderr, "could not load g_control_select: %s\n", SDL_GetError()); return 1; }	
-
-	g_light_options = load_surface(g_light_options, "Lightoptions.bmp", theme);
-	if (g_light_options == nullptr) { fprintf(stderr, "could not load g_light_options: %s\n", SDL_GetError()); return 1; }
-
-	g_white_thumb = load_surface(g_white_thumb, "whitethumb.bmp", "default");
-	if (g_white_thumb == nullptr) { fprintf(stderr, "could not load g_white_thumb: %s\n", SDL_GetError()); return 1; }
-
-	g_bright_thumb = load_surface(g_bright_thumb, "brightthumb.bmp", "bright");
-	if (g_bright_thumb == nullptr) { fprintf(stderr, "could not load g_bright_thumb: %s\n", SDL_GetError()); return 1; }
-
-	g_dark_thumb = load_surface(g_dark_thumb, "darkthumb.bmp", "dark");
-	if (g_dark_thumb == nullptr) { fprintf(stderr, "could not load g_dark_thumb: %s\n", SDL_GetError()); return 1; }
-
-	g_green_thumb = load_surface(g_green_thumb, "greenthumb.bmp", "green");
-	if (g_green_thumb == nullptr) { fprintf(stderr, "could not load g_green_thumb: %s\n", SDL_GetError()); return 1; }
-
-	g_red_thumb = load_surface(g_red_thumb, "redthumb.bmp", "red");
-	if (g_red_thumb == nullptr) { fprintf(stderr, "could not load g_red_thumb: %s\n", SDL_GetError()); return 1; }
-
-	g_blue_thumb = load_surface(g_blue_thumb, "bluethumb.bmp", "blue");
-	if (g_blue_thumb == nullptr) { fprintf(stderr, "could not load g_blue_thumb: %s\n", SDL_GetError()); return 1; }
-
-	g_orange_thumb = load_surface(g_orange_thumb, "orangethumb.bmp", "orange");
-	if (g_orange_thumb == nullptr) { fprintf(stderr, "could not load g_orange_thumb: %s\n", SDL_GetError()); return 1; }
-
-	g_yellow_thumb = load_surface(g_yellow_thumb, "yellowthumb.bmp", "yellow");
-	if (g_yellow_thumb == nullptr) { fprintf(stderr, "could not load g_yellow_thumb: %s\n", SDL_GetError()); return 1; }
-
-	g_night_thumb = load_surface(g_night_thumb, "nightthumb.bmp", "night");
-	if (g_night_thumb == nullptr) { fprintf(stderr, "could not load g_night_thumb: %s\n", SDL_GetError()); return 1; }
-
-	g_tpms_options = load_surface(g_tpms_options, "TPMSsetup.bmp", theme);
-	if (g_tpms_options == nullptr) { fprintf(stderr, "could not load g_tpms_options: %s\n", SDL_GetError()); return 1; }
-
-	g_up_arrow = load_surface(g_up_arrow, "Uparrow.bmp", theme);
-	if (g_up_arrow == nullptr) { fprintf(stderr, "could not load g_up_arrow: %s\n", SDL_GetError()); return 1; }
-
-	g_up_arrow_small = load_surface(g_up_arrow_small, "Uparrowsmall.bmp", theme);
-	if (g_up_arrow_small == nullptr) { fprintf(stderr, "could not load g_up_arrow_small: %s\n", SDL_GetError()); return 1; }	
-
-	g_menu_arrow_right = load_surface(g_menu_arrow_right, "Menuarrowright.bmp", theme);
-	if (g_menu_arrow_right == nullptr) { fprintf(stderr, "could not load g_menu_arrow_right: %s\n", SDL_GetError()); return 1; }
-
-	g_menu_arrow_left = load_surface(g_menu_arrow_left, "Menuarrowleft.bmp", theme);
-	if (g_menu_arrow_left == nullptr) { fprintf(stderr, "could not load g_menu_arrow_left: %s\n", SDL_GetError()); return 1; }
-
-	g_menu_small_arrow_right = load_surface(g_menu_small_arrow_right, "Rightmenuarrowex.bmp", theme);
-	if (g_menu_small_arrow_right == nullptr) { fprintf(stderr, "could not load g_menu_small_arrow_right: %s\n", SDL_GetError()); return 1; }
-
-	g_menu_small_arrow_left = load_surface(g_menu_small_arrow_left, "Leftmenuarrowex.bmp", theme);
-	if (g_menu_small_arrow_left == nullptr) { fprintf(stderr, "could not load g_menu_small_arrow_left: %s\n", SDL_GetError()); return 1; }
-
-	g_coolant = load_surface(g_coolant, "Coolant.bmp", theme);
-	if (g_coolant == nullptr) { fprintf(stderr, "could not load g_coolant: %s\n", SDL_GetError()); return 1; }
-
-	g_coolant_f = load_surface(g_coolant_f, "CoolantF.bmp", theme);
-	if (g_coolant_f == nullptr) { fprintf(stderr, "could not load g_coolant_f: %s\n", SDL_GetError()); return 1; }
-
-	g_km = load_surface(g_km, "km.bmp", theme);
-	if (g_km == nullptr) { fprintf(stderr, "could not load g_km: %s\n", SDL_GetError()); return 1; }
-
-	g_miles = load_surface(g_miles, "Miles.bmp", theme);
-	if (g_miles == nullptr) { fprintf(stderr, "could not load g_miles: %s\n", SDL_GetError()); return 1; }
-
-	g_kph = load_surface(g_kph, "kph.bmp", theme);
-	if (g_kph == nullptr) { fprintf(stderr, "could not load g_kph: %s\n", SDL_GetError()); return 1; }
-
-	g_mph = load_surface(g_mph, "mph.bmp", theme);
-	if (g_mph == nullptr) { fprintf(stderr, "could not load g_mph: %s\n", SDL_GetError()); return 1; }
-
-	g_tyre_icon = load_surface(g_tyre_icon, "tyreicon.bmp", theme);
-	if (g_tyre_icon == nullptr) { fprintf(stderr, "could not load g_tyre_icon: %s\n", SDL_GetError()); return 1; }
-
-	g_tyre_signal = load_surface(g_tyre_signal, "tyresignal.bmp", theme);
-	if (g_tyre_signal == nullptr) { fprintf(stderr, "could not load g_tyre_signal: %s\n", SDL_GetError()); return 1; }	
-
-	g_high_beam_light = load_surface(g_high_beam_light, "Highbeamlight.bmp", theme);
-	if (g_high_beam_light == nullptr) { fprintf(stderr, "could not load g_high_beam_light: %s\n", SDL_GetError()); return 1; }
-
-	g_indicate_right = load_surface(g_indicate_right, "Indicateright.bmp", theme);
-	if (g_indicate_right == nullptr) { fprintf(stderr, "could not load g_indicate_right: %s\n", SDL_GetError()); return 1; }
-
-	g_indicate_left = load_surface(g_indicate_left, "Indicateleft.bmp", theme);
-	if (g_indicate_left == nullptr) { fprintf(stderr, "could not load g_indicate_left: %s\n", SDL_GetError()); return 1; }
-
-	g_indicate_both = load_surface(g_indicate_both, "Indicateboth.bmp", theme);
-	if (g_indicate_both == nullptr) { fprintf(stderr, "could not load g_indicate_both: %s\n", SDL_GetError()); return 1; }
-
-	g_indicate_right_far = load_surface(g_indicate_right_far, "Indicaterightfar.bmp", theme);
-	if (g_indicate_right_far == nullptr) { fprintf(stderr, "could not load g_indicate_right_far: %s\n", SDL_GetError()); return 1; }
-
-	g_indicate_left_far = load_surface(g_indicate_left_far, "Indicateleftfar.bmp", theme);
-	if (g_indicate_left_far == nullptr) { fprintf(stderr, "could not load g_indicate_left_far: %s\n", SDL_GetError()); return 1; }
-
-	g_oil_light = load_surface(g_oil_light, "Oillight.bmp", theme);
-	if (g_oil_light == nullptr) { fprintf(stderr, "could not load g_oil_light: %s\n", SDL_GetError()); return 1; }
-
-	g_oil_light_op = load_surface(g_oil_light_op, "OillightOP.bmp", theme);
-	if (g_oil_light_op == nullptr) { fprintf(stderr, "could not load g_oil_light_op: %s\n", SDL_GetError()); return 1; }
-
-	g_neutral_light = load_surface(g_neutral_light, "Neutrallight.bmp", theme);
-	if (g_neutral_light == nullptr) { fprintf(stderr, "could not load g_neutral_light: %s\n", SDL_GetError()); return 1; }
-
-	g_engine_overheat = load_surface(g_engine_overheat, "Engineoverheat.bmp", theme);
-	if (g_engine_overheat == nullptr) { fprintf(stderr, "could not load g_engine_overheat: %s\n", SDL_GetError()); return 1; }
-
-	g_overheat_badge = load_surface(g_overheat_badge, "Overheatbadge.bmp", theme);
-	if (g_overheat_badge == nullptr) { fprintf(stderr, "could not load g_overheat_badge: %s\n", SDL_GetError()); return 1; }
-
-	g_low_oil = load_surface(g_low_oil, "Lowoil.bmp", theme);
-	if (g_low_oil == nullptr) { fprintf(stderr, "could not load g_low_oil: %s\n", SDL_GetError()); return 1; }
-
-	g_low_oil_badge = load_surface(g_low_oil_badge, "Lowoilbadge.bmp", theme);
-	if (g_low_oil_badge == nullptr) { fprintf(stderr, "could not load g_low_oil_badge: %s\n", SDL_GetError()); return 1; }
-
-	g_low_fuel = load_surface(g_low_fuel, "Lowfuel.bmp", theme);
-	if (g_low_fuel == nullptr) { fprintf(stderr, "could not load g_low_fuel: %s\n", SDL_GetError()); return 1; }
-
-	g_low_fuel_badge = load_surface(g_low_fuel_badge, "Fuelwarningbadge.bmp", theme);
-	if (g_low_fuel_badge == nullptr) { fprintf(stderr, "could not load g_low_fuel_badge: %s\n", SDL_GetError()); return 1; }
-
-	g_info_bottom_diag = load_surface(g_info_bottom_diag, "Infobottomdiag.bmp", theme);
-	if (g_info_bottom_diag == nullptr) { fprintf(stderr, "could not load g_info_bottom_diag: %s\n", SDL_GetError()); return 1; }
-
-	g_info_top_diag = load_surface(g_info_top_diag, "Infotopdiag.bmp", theme);
-	if (g_info_top_diag == nullptr) { fprintf(stderr, "could not load g_info_top_diag: %s\n", SDL_GetError()); return 1; }
-
-	g_info_bottom = load_surface(g_info_bottom, "Infobottom.bmp", theme);
-	if (g_info_bottom == nullptr) { fprintf(stderr, "could not load g_info_bottom: %s\n", SDL_GetError()); return 1; }
-
-	g_info_top = load_surface(g_info_top, "Infotop.bmp", theme);
-	if (g_info_top == nullptr) { fprintf(stderr, "could not load g_info_top: %s\n", SDL_GetError()); return 1; }
-
-	g_info_top_km = load_surface(g_info_top_km, "InfotopKM.bmp", theme);
-	if (g_info_top_km == nullptr) { fprintf(stderr, "could not load g_info_top_km: %s\n", SDL_GetError()); return 1; }
-
-	g_tyre_bottom = load_surface(g_tyre_bottom, "tyrebottom.bmp", theme);
-	if (g_tyre_bottom == nullptr) { fprintf(stderr, "could not load g_tyre_bottom: %s\n", SDL_GetError()); return 1; }
-
-	g_tyre_top = load_surface(g_tyre_top, "tyretop.bmp", theme);
-	if (g_tyre_top == nullptr) { fprintf(stderr, "could not load g_tyre_top: %s\n", SDL_GetError()); return 1; }
-
-	g_coolant_icon = load_surface(g_coolant_icon, "Coolanticon.bmp", theme);
-	if (g_coolant_icon == nullptr) { fprintf(stderr, "could not load g_coolant_icon: %s\n", SDL_GetError()); return 1; }
-
-	g_theme_options = load_surface(g_theme_options, "Themeoptions.bmp", nullptr);
-	if (g_theme_options == nullptr) { fprintf(stderr, "could not load g_theme_options: %s\n", SDL_GetError()); return 1; }
-
-	g_arrow_right_theme = load_surface(g_arrow_right_theme, "Arrowrighttheme.bmp", nullptr);
-	if (g_arrow_right_theme == nullptr) { fprintf(stderr, "could not load g_arrow_right_theme: %s\n", SDL_GetError()); return 1; }
-
-	g_arrow_left_theme = load_surface(g_arrow_left_theme, "Arrowlefttheme.bmp", nullptr);
-	if (g_arrow_left_theme == nullptr) { fprintf(stderr, "could not load g_arrow_left_theme: %s\n", SDL_GetError()); return 1; }
-
-	g_down_arrow = load_surface(g_down_arrow, "Downarrow.bmp", theme);
-	if (g_down_arrow == nullptr) { fprintf(stderr, "could not load g_down_arrow: %s\n", SDL_GetError()); return 1; }
-
-	g_set_odometer = load_surface(g_set_odometer, "Setodometer.bmp", nullptr);
-	if (g_set_odometer == nullptr) { fprintf(stderr, "could not load g_set_odometer: %s\n", SDL_GetError()); return 1; }
-
-	g_odo_error1 = load_surface(g_odo_error1, "Odoerror1.bmp", nullptr);
-	if (g_odo_error1 == nullptr) { fprintf(stderr, "could not load g_odo_error1: %s\n", SDL_GetError()); return 1; }
-
-	g_odo_error2 = load_surface(g_odo_error2, "Odoerror2.bmp", nullptr);
-	if (g_odo_error2 == nullptr) { fprintf(stderr, "could not load g_odo_error2: %s\n", SDL_GetError()); return 1; }
-
-	g_sprocket_setup = load_surface(g_sprocket_setup, "Sprocketsetup.bmp", theme);
-	if (g_sprocket_setup == nullptr) { fprintf(stderr, "could not load g_sprocket_setup: %s\n", SDL_GetError()); return 1; }	
-
-	g_coolant_fan_temp = load_surface(g_coolant_fan_temp, "Coolantfantemp.bmp", theme);
-	if (g_coolant_fan_temp == nullptr) { fprintf(stderr, "could not load g_coolant_fan_temp: %s\n", SDL_GetError()); return 1; }	
-
-	g_low_tyre_badge = load_surface (g_low_tyre_badge, "Lowtyrebadge.bmp", theme);
-	if (g_low_tyre_badge == nullptr) { fprintf(stderr, "could not load g_low_tyre_badge: %s\n", SDL_GetError()); return 1; }	
-
-	g_rear_tyre_low = load_surface (g_rear_tyre_low, "Reartyrelow.bmp", theme);
-	if (g_rear_tyre_low == nullptr) { fprintf(stderr, "could not load g_rear_tyre_low: %s\n", SDL_GetError()); return 1; }	
-
-	g_front_tyre_low = load_surface (g_front_tyre_low, "Fronttyrelow.bmp", theme);
-	if (g_front_tyre_low == nullptr) { fprintf(stderr, "could not load g_front_tyre_low: %s\n", SDL_GetError()); return 1; }
-
-	g_both_tyre_low = load_surface (g_both_tyre_low, "Frontrearlow.bmp", theme);
-	if (g_both_tyre_low == nullptr) { fprintf(stderr, "could not load g_both_tyre_low: %s\n", SDL_GetError()); return 1; }
-
-	g_gear = load_surface(g_gear, "Gear.bmp", theme);
-	if (g_gear == nullptr) { fprintf(stderr, "could not load g_gear: %s\n", SDL_GetError()); return 1; }	
-
-	g_nav_bg = load_surface(g_nav_bg, "Navbg.bmp", theme);
-	if (g_nav_bg == nullptr) { fprintf(stderr, "could not load g_nav_bg: %s\n", SDL_GetError()); return 1; }
-
-	g_nav_icons = load_surface(g_nav_icons, "Navgfx.bmp", theme);
-	if (g_nav_icons == nullptr) { fprintf(stderr, "could not load g_nav_icons: %s\n", SDL_GetError()); return 1; }
-
-	return 0;
-}
 
 void init_rects()
 {
@@ -1624,707 +1118,7 @@ void init_rects()
 	spd_digit_three.y = 363;
 }
 
-/*
-SDL_Texture* texturefromsurface (SDL_Surface *surface, char *surfacename) {
 
-	SDL_Texture *tex;
-	if (surface != nullptr) {
-		tex = SDL_CreateTextureFromSurface (renderer, surface);
-
-		if (tex == nullptr) {
-			fprintf(stderr, "could not convert %s to texture: %s\n", surfacename, SDL_GetError());
-		} else {
-			return tex;
-		}
-	} else {
-		fprintf(stderr, "%s was nullptr: %s\n", surfacename);
-	}
-
-	return nullptr;
-}
-
-int init_textures_ex () {
-
-}
-
-*/
-
-int init_textures()
-{	
-	if (g_revline_tex != nullptr) {SDL_DestroyTexture (g_revline_tex);}
-	g_revline_tex = SDL_CreateTextureFromSurface(renderer, g_revline);
-	if (g_revline_tex == nullptr) {
-		fprintf(stderr, "could not convert g_revline to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-	
-	if (g_revwhite_tex != nullptr) {SDL_DestroyTexture (g_revwhite_tex);}
-	g_revwhite_tex = SDL_CreateTextureFromSurface(renderer, g_revwhite);
-	if (g_revwhite_tex == nullptr) {
-		fprintf(stderr, "could not convert g_revwhite to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_speed_numbers_tex != nullptr) {SDL_DestroyTexture (g_speed_numbers_tex);}
-	g_speed_numbers_tex = SDL_CreateTextureFromSurface(renderer, g_speed_numbers);
-	if (g_speed_numbers_tex == nullptr) {
-		fprintf(stderr, "could not convert g_speed_numbers to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r1213_tex != nullptr) {SDL_DestroyTexture (g_r1213_tex);}
-	g_r1213_tex = SDL_CreateTextureFromSurface(renderer, g_r1213);
-	if (g_r1213_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r1213 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r11_tex != nullptr) {SDL_DestroyTexture (g_r11_tex);}
-	g_r11_tex = SDL_CreateTextureFromSurface(renderer, g_r11);
-	if (g_r11_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r11 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r10_tex != nullptr) {SDL_DestroyTexture (g_r10_tex);}
-	g_r10_tex = SDL_CreateTextureFromSurface(renderer, g_r10);
-	if (g_r10_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r10 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r9_tex != nullptr) {SDL_DestroyTexture (g_r9_tex);}
-	g_r9_tex = SDL_CreateTextureFromSurface(renderer, g_r9);
-	if (g_r9_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r9 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r8_tex != nullptr) {SDL_DestroyTexture (g_r8_tex);}
-	g_r8_tex = SDL_CreateTextureFromSurface(renderer, g_r8);
-	if (g_r8_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r8 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r7_tex != nullptr) {SDL_DestroyTexture (g_r7_tex);}
-	g_r7_tex = SDL_CreateTextureFromSurface(renderer, g_r7);
-	if (g_r7_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r7 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r6_tex != nullptr) {SDL_DestroyTexture (g_r6_tex);}
-	g_r6_tex = SDL_CreateTextureFromSurface(renderer, g_r6);
-	if (g_r6_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r6 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r5_tex != nullptr) {SDL_DestroyTexture (g_r5_tex);}
-	g_r5_tex = SDL_CreateTextureFromSurface(renderer, g_r5);
-	if (g_r5_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r5 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r4_tex != nullptr) {SDL_DestroyTexture (g_r4_tex);}
-	g_r4_tex = SDL_CreateTextureFromSurface(renderer, g_r4);
-	if (g_r4_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r4 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r3_tex != nullptr) {SDL_DestroyTexture (g_r3_tex);}
-	g_r3_tex = SDL_CreateTextureFromSurface(renderer, g_r3);
-	if (g_r3_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r3 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r2_tex != nullptr) {SDL_DestroyTexture (g_r2_tex);}
-	g_r2_tex = SDL_CreateTextureFromSurface(renderer, g_r2);
-	if (g_r2_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r2 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r1_tex != nullptr) {SDL_DestroyTexture (g_r1_tex);}
-	g_r1_tex = SDL_CreateTextureFromSurface(renderer, g_r1);
-	if (g_r1_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r1 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_r0_tex != nullptr) {SDL_DestroyTexture (g_r0_tex);}
-	g_r0_tex = SDL_CreateTextureFromSurface(renderer, g_r0);
-	if (g_r0_tex == nullptr) {
-		fprintf(stderr, "could not convert g_r0 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_small_numbers_tex != nullptr) {SDL_DestroyTexture (g_small_numbers_tex);}
-	g_small_numbers_tex = SDL_CreateTextureFromSurface(renderer, g_small_numbers);
-	if (g_small_numbers_tex == nullptr) {
-		fprintf(stderr, "could not convert g_small_numbers to texture: %s\n", SDL_GetError());
-		return 1;
-	}	
-
-	if (g_top_icons_grey_tex != nullptr) {SDL_DestroyTexture (g_top_icons_grey_tex);}
-	g_top_icons_grey_tex = SDL_CreateTextureFromSurface(renderer, g_top_icons_grey);
-	if (g_top_icons_grey_tex == nullptr) {
-		fprintf(stderr, "could not convert g_top_icons_grey to texture: %s\n", SDL_GetError());
-		return 1;
-	}		
-
-	if (g_top_icons_grey_op_tex != nullptr) {SDL_DestroyTexture (g_top_icons_grey_op_tex);}
-	g_top_icons_grey_op_tex = SDL_CreateTextureFromSurface(renderer, g_top_icons_grey_op);
-	if (g_top_icons_grey_op_tex == nullptr) {
-		fprintf(stderr, "could not convert g_top_icons_grey_op to texture: %s\n", SDL_GetError());
-		return 1;
-	}		
-
-	if (gtopiconsedge1tex != nullptr) {SDL_DestroyTexture (gtopiconsedge1tex);}
-	gtopiconsedge1tex = SDL_CreateTextureFromSurface(renderer, g_top_icons_edge1);
-	if (gtopiconsedge1tex == nullptr) {
-		fprintf(stderr, "could not convert g_top_icons_edge1 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (gtopiconsedge2tex != nullptr) {SDL_DestroyTexture (gtopiconsedge2tex);}
-	gtopiconsedge2tex = SDL_CreateTextureFromSurface(renderer, g_top_icons_edge2);
-	if (gtopiconsedge2tex == nullptr) {
-		fprintf(stderr, "could not convert g_top_icons_edge2 to texture: %s\n", SDL_GetError());
-		return 1;
-	}		
-
-
-	if (g_mile_info_tex != nullptr) {SDL_DestroyTexture (g_mile_info_tex);}
-	g_mile_info_tex = SDL_CreateTextureFromSurface(renderer, g_mile_info);
-	if (g_mile_info_tex == nullptr) {
-		fprintf(stderr, "could not convert g_mile_info to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_fuel_gauge_tex != nullptr) {SDL_DestroyTexture (g_fuel_gauge_tex);}
-	g_fuel_gauge_tex = SDL_CreateTextureFromSurface(renderer, g_fuel_gauge);
-	if (g_fuel_gauge_tex == nullptr) {
-		fprintf(stderr, "could not convert g_fuel_gauge to texture: %s\n", SDL_GetError());
-		return 1;
-	}	
-
-	if (gfuelgaugewhitetex != nullptr) {SDL_DestroyTexture (gfuelgaugewhitetex);}
-	gfuelgaugewhitetex = SDL_CreateTextureFromSurface(renderer, g_fuel_white);
-	if (gfuelgaugewhitetex == nullptr) {
-		fprintf(stderr, "could not convert g_fuel_white to texture: %s\n", SDL_GetError());
-		return 1;
-	}	
-
-	if (g_light_options_tex != nullptr) {SDL_DestroyTexture (g_light_options_tex);}
-	g_light_options_tex = SDL_CreateTextureFromSurface(renderer, g_light_options);
-	if (g_light_options_tex == nullptr) {
-		fprintf(stderr, "could not convert g_light_options to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_white_thumb_tex != nullptr) {SDL_DestroyTexture (g_white_thumb_tex);}
-	g_white_thumb_tex = SDL_CreateTextureFromSurface(renderer, g_white_thumb);
-	if (g_white_thumb_tex == nullptr) {
-		fprintf(stderr, "could not convert g_white_thumb to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_bright_thumb_tex != nullptr) {SDL_DestroyTexture (g_bright_thumb_tex);}
-	g_bright_thumb_tex = SDL_CreateTextureFromSurface(renderer, g_bright_thumb);
-	if (g_bright_thumb_tex == nullptr) {
-		fprintf(stderr, "could not convert g_bright_thumb to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_dark_thumb_tex != nullptr) {SDL_DestroyTexture (g_dark_thumb_tex);}
-	g_dark_thumb_tex = SDL_CreateTextureFromSurface(renderer, g_dark_thumb);
-	if (g_dark_thumb_tex == nullptr) {
-		fprintf(stderr, "could not convert g_dark_thumb to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_green_thumb_tex != nullptr) {SDL_DestroyTexture (g_green_thumb_tex);}
-	g_green_thumb_tex = SDL_CreateTextureFromSurface(renderer, g_green_thumb);
-	if (g_green_thumb_tex == nullptr) {
-		fprintf(stderr, "could not convert g_green_thumb to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_red_thumb_tex != nullptr) {SDL_DestroyTexture (g_red_thumb_tex);}
-	g_red_thumb_tex = SDL_CreateTextureFromSurface(renderer, g_red_thumb);
-	if (g_red_thumb_tex == nullptr) {
-		fprintf(stderr, "could not convert g_red_thumb to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_blue_thumb_tex != nullptr) {SDL_DestroyTexture (g_blue_thumb_tex);}
-	g_blue_thumb_tex = SDL_CreateTextureFromSurface(renderer, g_blue_thumb);
-	if (g_blue_thumb_tex == nullptr) {
-		fprintf(stderr, "could not convert g_blue_thumb to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_orange_thumb_tex != nullptr) {SDL_DestroyTexture (g_orange_thumb_tex);}
-	g_orange_thumb_tex = SDL_CreateTextureFromSurface(renderer, g_orange_thumb);
-	if (g_orange_thumb_tex == nullptr) {
-		fprintf(stderr, "could not convert g_orange_thumb to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_yellow_thumb_tex != nullptr) {SDL_DestroyTexture (g_yellow_thumb_tex);}
-	g_yellow_thumb_tex = SDL_CreateTextureFromSurface(renderer, g_yellow_thumb);
-	if (g_yellow_thumb_tex == nullptr) {
-		fprintf(stderr, "could not convert g_yellow_thumb to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_night_thumb_tex != nullptr) {SDL_DestroyTexture (g_night_thumb_tex);}
-	g_night_thumb_tex = SDL_CreateTextureFromSurface(renderer, g_night_thumb);
-	if (g_night_thumb_tex == nullptr) {
-		fprintf(stderr, "could not convert g_night_thumb to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-
-	if (g_speed_correction_tex != nullptr) {SDL_DestroyTexture (g_speed_correction_tex);}
-	g_speed_correction_tex = SDL_CreateTextureFromSurface(renderer, g_speed_correction);
-	if (g_speed_correction_tex == nullptr) {
-		fprintf(stderr, "could not convert g_speed_correction to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_set_time_tex != nullptr) {SDL_DestroyTexture (g_set_time_tex);}
-	g_set_time_tex = SDL_CreateTextureFromSurface(renderer, g_set_time);
-	if (g_set_time_tex == nullptr) {
-		fprintf(stderr, "could not convert g_set_time to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_set_units_tex != nullptr) {SDL_DestroyTexture (g_set_units_tex);}
-	g_set_units_tex = SDL_CreateTextureFromSurface (renderer, g_set_units);
-	if (g_set_units_tex == nullptr) {
-		fprintf(stderr, "could not convert g_set_units to texture: %s\n", SDL_GetError());
-		return 1;
-	}	
-
-	if (g_select_on_tex != nullptr) {SDL_DestroyTexture (g_select_on_tex);}
-	g_select_on_tex = SDL_CreateTextureFromSurface (renderer, g_select_on);
-	if (g_select_on_tex == nullptr) {
-		fprintf(stderr, "could not convert g_select_on to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_menu_options_tex != nullptr) {SDL_DestroyTexture (g_menu_options_tex);}
-	g_menu_options_tex = SDL_CreateTextureFromSurface(renderer, g_menu_options);
-	if (g_menu_options_tex == nullptr) {
-		fprintf(stderr, "could not convert g_menu_options to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_control_options_tex != nullptr) {SDL_DestroyTexture (g_control_options_tex);}
-	g_control_options_tex = SDL_CreateTextureFromSurface(renderer, g_control_options);
-	if (g_control_options_tex == nullptr) {
-		fprintf(stderr, "could not convert g_control_options to texture: %s\n", SDL_GetError());
-		return 1;
-	}	
-
-	if (g_control_select_tex != nullptr) {SDL_DestroyTexture (g_control_select_tex);}
-	g_control_select_tex = SDL_CreateTextureFromSurface(renderer, g_control_select);
-	if (g_control_select_tex == nullptr) {
-		fprintf(stderr, "could not convert g_control_select to texture: %s\n", SDL_GetError());
-		return 1;
-	}	
-
-	if (g_tpms_options_tex != nullptr) {SDL_DestroyTexture (g_tpms_options_tex);}
-	g_tpms_options_tex = SDL_CreateTextureFromSurface(renderer, g_tpms_options);
-	if (g_tpms_options_tex == nullptr) {
-		fprintf(stderr, "could not convert g_tpms_options to texture: %s\n", SDL_GetError());
-		return 1;
-	}	
-
-	if (g_up_arrow_tex != nullptr) {SDL_DestroyTexture (g_up_arrow_tex);}
-	g_up_arrow_tex = SDL_CreateTextureFromSurface(renderer, g_up_arrow);
-	if (g_up_arrow_tex == nullptr) {
-		fprintf(stderr, "could not convert g_up_arrow to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_up_arrow_small_tex != nullptr) {SDL_DestroyTexture (g_up_arrow_small_tex);}
-	g_up_arrow_small_tex = SDL_CreateTextureFromSurface(renderer, g_up_arrow_small);
-	if (g_up_arrow_small_tex == nullptr) {
-		fprintf(stderr, "could not convert g_up_arrow_small to texture: %s\n", SDL_GetError());
-		return 1;
-	}	
-
-	if (g_menu_arrow_right_tex != nullptr) {SDL_DestroyTexture (g_menu_arrow_right_tex);}
-	g_menu_arrow_right_tex = SDL_CreateTextureFromSurface(renderer, g_menu_arrow_right);
-	if (g_menu_arrow_right_tex == nullptr) {
-		fprintf(stderr, "could not convert g_menu_arrow_right to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_menu_arrow_left_tex != nullptr) {SDL_DestroyTexture (g_menu_arrow_left_tex);}
-	g_menu_arrow_left_tex = SDL_CreateTextureFromSurface(renderer, g_menu_arrow_left);
-	if (g_menu_arrow_left_tex == nullptr) {
-		fprintf(stderr, "could not convert g_menu_arrow_left to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_menu_small_arrow_right_tex != nullptr) {SDL_DestroyTexture (g_menu_small_arrow_right_tex);}
-	g_menu_small_arrow_right_tex = SDL_CreateTextureFromSurface(renderer, g_menu_small_arrow_right);
-	if (g_menu_small_arrow_right_tex == nullptr) {
-		fprintf(stderr, "could not convert g_menu_small_arrow_right to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_menu_small_arrow_left_tex != nullptr) {SDL_DestroyTexture (g_menu_small_arrow_left_tex);}
-	g_menu_small_arrow_left_tex = SDL_CreateTextureFromSurface(renderer, g_menu_small_arrow_left);
-	if (g_menu_small_arrow_left_tex == nullptr) {
-		fprintf(stderr, "could not convert g_menu_small_arrow_left to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_coolant_tex != nullptr) {SDL_DestroyTexture (g_coolant_tex);}
-	g_coolant_tex = SDL_CreateTextureFromSurface(renderer, g_coolant);
-	if (g_coolant_tex == nullptr) {
-		fprintf(stderr, "could not convert g_coolant to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_coolant_f_tex != nullptr) {SDL_DestroyTexture (g_coolant_f_tex);}
-	g_coolant_f_tex = SDL_CreateTextureFromSurface(renderer, g_coolant_f);
-	if (g_coolant_f_tex == nullptr) {
-		fprintf(stderr, "could not convert g_coolant_f to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_km_tex != nullptr) {SDL_DestroyTexture (g_km_tex);}
-	g_km_tex = SDL_CreateTextureFromSurface(renderer, g_km);
-	if (g_km_tex == nullptr) {
-		fprintf(stderr, "could not convert g_km to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-
-	if (g_miles_tex != nullptr) {SDL_DestroyTexture (g_miles_tex);}
-	g_miles_tex = SDL_CreateTextureFromSurface(renderer, g_miles);
-	if (g_miles_tex == nullptr) {
-		fprintf(stderr, "could not convert g_miles to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-
-	if (g_kph_tex != nullptr) {SDL_DestroyTexture (g_kph_tex);}
-	g_kph_tex = SDL_CreateTextureFromSurface(renderer, g_kph);
-	if (g_kph_tex == nullptr) {
-		fprintf(stderr, "could not convert g_kph to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-
-	if (g_mph_tex != nullptr) {SDL_DestroyTexture (g_mph_tex);}
-	g_mph_tex = SDL_CreateTextureFromSurface(renderer, g_mph);
-	if (g_mph_tex == nullptr) {
-		fprintf(stderr, "could not convert g_mph to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_tyre_icon_tex != nullptr) {SDL_DestroyTexture (g_tyre_icon_tex);}
-	g_tyre_icon_tex = SDL_CreateTextureFromSurface(renderer, g_tyre_icon);
-	if (g_tyre_icon_tex == nullptr) {
-		fprintf(stderr, "could not convert g_tyre_icon to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_tyre_signal_tex != nullptr) {SDL_DestroyTexture (g_tyre_signal_tex);}
-	g_tyre_signal_tex = SDL_CreateTextureFromSurface(renderer, g_tyre_signal);
-	if (g_tyre_signal_tex == nullptr) {
-		fprintf(stderr, "could not convert g_tyre_signal to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_high_beam_light_tex != nullptr) {SDL_DestroyTexture (g_high_beam_light_tex);}
-	g_high_beam_light_tex = SDL_CreateTextureFromSurface(renderer, g_high_beam_light);
-	if (g_high_beam_light_tex == nullptr) {
-		fprintf(stderr, "could not convert g_high_beam_light to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_indicate_right_tex != nullptr) {SDL_DestroyTexture (g_indicate_right_tex);}
-	g_indicate_right_tex = SDL_CreateTextureFromSurface(renderer, g_indicate_right);
-	if (g_indicate_right_tex == nullptr) {
-		fprintf(stderr, "could not convert g_indicate_right to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_indicate_left_tex != nullptr) {SDL_DestroyTexture (g_indicate_left_tex);}
-	g_indicate_left_tex = SDL_CreateTextureFromSurface(renderer, g_indicate_left);
-	if (g_indicate_left_tex == nullptr) {
-		fprintf(stderr, "could not convert g_indicate_left to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_indicate_both_tex != nullptr) {SDL_DestroyTexture (g_indicate_both_tex);}
-	g_indicate_both_tex = SDL_CreateTextureFromSurface(renderer, g_indicate_both);
-	if (g_indicate_both == nullptr) {
-		fprintf(stderr, "could not convert g_indicate_both to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_indicate_right_far_tex != nullptr) {SDL_DestroyTexture (g_indicate_right_far_tex);}
-	g_indicate_right_far_tex = SDL_CreateTextureFromSurface(renderer, g_indicate_right_far);
-	if (g_indicate_right_far_tex == nullptr) {
-		fprintf(stderr, "could not convert g_indicate_right_far to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_indicate_left_far_tex != nullptr) {SDL_DestroyTexture (g_indicate_left_far_tex);}
-	g_indicate_left_far_tex = SDL_CreateTextureFromSurface(renderer, g_indicate_left_far);
-	if (g_indicate_left_far_tex == nullptr) {
-		fprintf(stderr, "could not convert g_indicate_left_far to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_oil_light_tex != nullptr) {SDL_DestroyTexture (g_oil_light_tex);}
-	g_oil_light_tex = SDL_CreateTextureFromSurface(renderer, g_oil_light);
-	if (g_oil_light_tex == nullptr) {
-		fprintf(stderr, "could not convert g_oil_light to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_oil_light_op_tex != nullptr) {SDL_DestroyTexture (g_oil_light_op_tex);}
-	g_oil_light_op_tex = SDL_CreateTextureFromSurface(renderer, g_oil_light_op);
-	if (g_oil_light_op_tex == nullptr) {
-		fprintf(stderr, "could not convert g_oil_light_op to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_neutral_light_tex != nullptr) {SDL_DestroyTexture (g_neutral_light_tex);}
-	g_neutral_light_tex = SDL_CreateTextureFromSurface(renderer, g_neutral_light);
-	if (g_neutral_light_tex == nullptr) {
-		fprintf(stderr, "could not convert g_neutral_light to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_engine_overheat_tex != nullptr) {SDL_DestroyTexture (g_engine_overheat_tex);}
-	g_engine_overheat_tex = SDL_CreateTextureFromSurface(renderer, g_engine_overheat);
-	if (g_engine_overheat_tex == nullptr) {
-		fprintf(stderr, "could not convert g_engine_overheat to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_overheat_badge_tex != nullptr) {SDL_DestroyTexture (g_overheat_badge_tex);}
-	g_overheat_badge_tex = SDL_CreateTextureFromSurface(renderer, g_overheat_badge);
-	if (g_overheat_badge_tex == nullptr) {
-		fprintf(stderr, "could not convert g_overheat_badge to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_low_oil_tex != nullptr) {SDL_DestroyTexture (g_low_oil_tex);}
-	g_low_oil_tex = SDL_CreateTextureFromSurface(renderer, g_low_oil);
-	if (g_low_oil_tex == nullptr) {
-		fprintf(stderr, "could not convert g_low_oil to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_low_oil_badge_tex != nullptr) {SDL_DestroyTexture (g_low_oil_badge_tex);}
-	g_low_oil_badge_tex = SDL_CreateTextureFromSurface(renderer, g_low_oil_badge);
-	if (g_low_oil_badge_tex == nullptr) {
-		fprintf(stderr, "could not convert g_low_oil_badge to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_low_fuel_tex != nullptr) {SDL_DestroyTexture (g_low_fuel_tex);}
-	g_low_fuel_tex = SDL_CreateTextureFromSurface(renderer, g_low_fuel);
-	if (g_low_fuel_tex == nullptr) {
-		fprintf(stderr, "could not convert g_low_fuel to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_low_fuel_badge_tex != nullptr) {SDL_DestroyTexture (g_low_fuel_badge_tex);}
-	g_low_fuel_badge_tex = SDL_CreateTextureFromSurface(renderer, g_low_fuel_badge);
-	if (g_low_fuel_badge_tex == nullptr) {
-		fprintf(stderr, "could not convert g_low_fuel_badge to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_info_bottom_diag_tex != nullptr) {SDL_DestroyTexture (g_info_bottom_diag_tex);}
-	g_info_bottom_diag_tex = SDL_CreateTextureFromSurface(renderer, g_info_bottom_diag);
-	if (g_info_bottom_diag_tex == nullptr) {
-		fprintf(stderr, "could not convert g_info_bottom_diag to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_info_top_diag_tex != nullptr) {SDL_DestroyTexture (g_info_top_diag_tex);}
-	g_info_top_diag_tex = SDL_CreateTextureFromSurface(renderer, g_info_top_diag);
-	if (g_info_top_diag_tex == nullptr) {
-		fprintf(stderr, "could not convert g_info_top_diag to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_info_bottom_tex != nullptr) {SDL_DestroyTexture (g_info_bottom_tex);}
-	g_info_bottom_tex = SDL_CreateTextureFromSurface(renderer, g_info_bottom);
-	if (g_info_bottom_tex == nullptr) {
-		fprintf(stderr, "could not convert g_info_bottom to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_info_top_tex != nullptr) {SDL_DestroyTexture (g_info_top_tex);}
-	g_info_top_tex = SDL_CreateTextureFromSurface(renderer, g_info_top);
-	if (g_info_top_tex == nullptr) {
-		fprintf(stderr, "could not convert g_info_top to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_info_top_km_tex != nullptr) {SDL_DestroyTexture (g_info_top_km_tex);}
-	g_info_top_km_tex = SDL_CreateTextureFromSurface(renderer, g_info_top_km);
-	if (g_info_top_km_tex == nullptr) {
-		fprintf(stderr, "could not convert g_info_top_km to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_tyre_bottom_tex != nullptr) {SDL_DestroyTexture (g_tyre_bottom_tex);}
-	g_tyre_bottom_tex = SDL_CreateTextureFromSurface(renderer, g_tyre_bottom);
-	if (g_tyre_bottom_tex == nullptr) {
-		fprintf(stderr, "could not convert g_tyre_bottom to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_tyre_top_tex != nullptr) {SDL_DestroyTexture (g_tyre_top_tex);}
-	g_tyre_top_tex = SDL_CreateTextureFromSurface(renderer, g_tyre_top);
-	if (g_tyre_top_tex == nullptr) {
-		fprintf(stderr, "could not convert g_tyre_top to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_coolant_icon_tex != nullptr) {SDL_DestroyTexture (g_coolant_icon_tex);}
-	g_coolant_icon_tex = SDL_CreateTextureFromSurface(renderer, g_coolant_icon);
-	if (g_coolant_icon_tex == nullptr) {
-		fprintf(stderr, "could not convert g_coolant_icon to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_theme_options_tex != nullptr) {SDL_DestroyTexture (g_theme_options_tex);}
-	g_theme_options_tex = SDL_CreateTextureFromSurface(renderer, g_theme_options);
-	if (g_theme_options_tex == nullptr) {
-		fprintf(stderr, "could not convert g_theme_options to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_arrow_right_theme_tex != nullptr) {SDL_DestroyTexture (g_arrow_right_theme_tex);}
-	g_arrow_right_theme_tex = SDL_CreateTextureFromSurface(renderer, g_arrow_right_theme);
-	if (g_arrow_right_theme_tex == nullptr) {
-		fprintf(stderr, "could not convert g_arrow_right_theme to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_arrow_left_theme_tex != nullptr) {SDL_DestroyTexture (g_arrow_left_theme_tex);}
-	g_arrow_left_theme_tex = SDL_CreateTextureFromSurface(renderer, g_arrow_left_theme);
-	if (g_arrow_left_theme_tex == nullptr) {
-		fprintf(stderr, "could not convert g_arrow_left_theme to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_down_arrow_tex != nullptr) {SDL_DestroyTexture (g_down_arrow_tex);}
-	g_down_arrow_tex = SDL_CreateTextureFromSurface(renderer, g_down_arrow);
-	if (g_down_arrow_tex == nullptr) {
-		fprintf(stderr, "could not convert g_down_arrow to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_set_odometer_tex != nullptr) {SDL_DestroyTexture (g_set_odometer_tex);}
-	g_set_odometer_tex = SDL_CreateTextureFromSurface(renderer, g_set_odometer);
-	if (g_set_odometer_tex == nullptr) {
-		fprintf(stderr, "could not convert g_set_odometer to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_odo_error1_tex != nullptr) {SDL_DestroyTexture (g_odo_error1_tex);}
-	g_odo_error1_tex = SDL_CreateTextureFromSurface(renderer, g_odo_error1);
-	if (g_odo_error1_tex == nullptr) {
-		fprintf(stderr, "could not convert g_odo_error1 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_odo_error2_tex != nullptr) {SDL_DestroyTexture (g_odo_error2_tex);}
-	g_odo_error2_tex = SDL_CreateTextureFromSurface(renderer, g_odo_error2);
-	if (g_odo_error2_tex == nullptr) {
-		fprintf(stderr, "could not convert g_odo_error2 to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_sprocket_setup_tex != nullptr) {SDL_DestroyTexture (g_sprocket_setup_tex);}
-	g_sprocket_setup_tex = SDL_CreateTextureFromSurface(renderer, g_sprocket_setup);
-	if (g_sprocket_setup_tex == nullptr) {
-		fprintf(stderr, "could not convert g_sprocket_setup to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_coolant_fan_temp_tex != nullptr) {SDL_DestroyTexture (g_coolant_fan_temp_tex);}
-	g_coolant_fan_temp_tex = SDL_CreateTextureFromSurface(renderer, g_coolant_fan_temp);
-	if (g_coolant_fan_temp_tex == nullptr) {
-		fprintf(stderr, "could not convert g_coolant_fan_temp to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_low_tyre_badge_tex != nullptr) {SDL_DestroyTexture (g_low_tyre_badge_tex);}
-	g_low_tyre_badge_tex = SDL_CreateTextureFromSurface(renderer, g_low_tyre_badge);
-	if (g_low_tyre_badge_tex == nullptr) {
-		fprintf(stderr, "could not convert g_low_tyre_badge to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_rear_tyre_low_tex != nullptr) {SDL_DestroyTexture (g_rear_tyre_low_tex);}
-	g_rear_tyre_low_tex = SDL_CreateTextureFromSurface(renderer, g_rear_tyre_low);
-	if (g_rear_tyre_low_tex == nullptr) {
-		fprintf(stderr, "could not convert g_rear_tyre_low to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_front_tyre_low_tex != nullptr) {SDL_DestroyTexture (g_front_tyre_low_tex);}
-	g_front_tyre_low_tex = SDL_CreateTextureFromSurface(renderer, g_front_tyre_low);
-	if (g_front_tyre_low_tex == nullptr) {
-		fprintf(stderr, "could not convert g_front_tyre_low to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_both_tyre_low_tex != nullptr) {SDL_DestroyTexture (g_both_tyre_low_tex);}
-	g_both_tyre_low_tex = SDL_CreateTextureFromSurface(renderer, g_both_tyre_low);
-	if (g_both_tyre_low_tex == nullptr) {
-		fprintf(stderr, "could not convert g_both_tyre_low to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_gear_tex != nullptr) {SDL_DestroyTexture (g_gear_tex);}
-	g_gear_tex = SDL_CreateTextureFromSurface(renderer, g_gear);
-	if (g_gear_tex == nullptr) {
-		fprintf(stderr, "could not convert g_gear to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_nav_bg_tex != nullptr) {SDL_DestroyTexture (g_nav_bg_tex);}
-	g_nav_bg_tex = SDL_CreateTextureFromSurface(renderer, g_nav_bg);
-	if (g_nav_bg_tex == nullptr) {
-		fprintf(stderr, "could not convert g_nav_bg to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (g_nav_icons_tex != nullptr) {SDL_DestroyTexture (g_nav_icons_tex);}
-	g_nav_icons_tex = SDL_CreateTextureFromSurface(renderer, g_nav_icons);
-	if (g_nav_icons == nullptr) {
-		fprintf(stderr, "could not convert g_nav_icons to texture: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	//g_nav_icons_tex
-
-	return 0;
-}
 
 bool file_exists (const char* name) {
 
@@ -2554,7 +1348,7 @@ void draw_small_grey_string (char* digits, int xpos, int ypos)
 				g_dst_rect.w = g_src_rect.w;
 				g_dst_rect.h = g_src_rect.h;
 
-				SDL_RenderCopy(renderer, g_small_numbers_tex, &g_src_rect, &g_dst_rect);
+				SDL_RenderCopy(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
 
 				x_offset+=g_src_rect.w;
 			}
@@ -2591,7 +1385,7 @@ void draw_small_blue_string (char* digits, int xpos, int ypos)
 				g_dst_rect.w = g_src_rect.w;
 				g_dst_rect.h = g_src_rect.h;
 
-				SDL_RenderCopy(renderer, g_small_numbers_tex, &g_src_rect, &g_dst_rect);
+				SDL_RenderCopy(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
 
 				x_offset+=g_src_rect.w;
 			}
@@ -2618,7 +1412,7 @@ void draw_medium_char (char digit, int xpos, int ypos)
 			g_dst_rect.w = g_src_rect.w;
 			g_dst_rect.h = g_src_rect.h;
 
-			SDL_RenderCopy(renderer, g_small_numbers_tex, &g_src_rect, &g_dst_rect);
+			SDL_RenderCopy(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
 
 			x_offset+=g_src_rect.w;
 		}
@@ -2648,7 +1442,7 @@ void draw_large_string (char *digits, int xpos, int ypos)
 				g_dst_rect.w = g_src_rect.w;
 				g_dst_rect.h = g_src_rect.h;
 
-				SDL_RenderCopy(renderer, g_small_numbers_tex, &g_src_rect, &g_dst_rect);
+				SDL_RenderCopy(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
 
 				x_offset+=g_src_rect.w;
 			}
@@ -2677,7 +1471,7 @@ void draw_medium_string (char* digits, int xpos, int ypos)
 				g_dst_rect.w = g_src_rect.w;
 				g_dst_rect.h = g_src_rect.h;
 
-				SDL_RenderCopy(renderer, g_small_numbers_tex, &g_src_rect, &g_dst_rect);
+				SDL_RenderCopy(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
 
 				x_offset+=g_src_rect.w;
 			}
@@ -2714,7 +1508,7 @@ void draw_nav_large_string (char *digits, int xpos, int ypos) {
 					g_dst_rect.w = g_src_rect.w;
 					g_dst_rect.h = g_src_rect.h;
 
-					SDL_RenderCopy(renderer, g_nav_icons_tex, &g_src_rect, &g_dst_rect);
+					SDL_RenderCopy(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
 
 					x_offset+=g_src_rect.w + 2;				
 				}
@@ -2751,7 +1545,7 @@ void draw_nav_small_string (char *digits, int xpos, int ypos) {
 					g_dst_rect.w = g_src_rect.w;
 					g_dst_rect.h = g_src_rect.h;
 
-					SDL_RenderCopy(renderer, g_nav_icons_tex, &g_src_rect, &g_dst_rect);
+					SDL_RenderCopy(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
 
 					x_offset+=g_src_rect.w + 2;				
 				}
@@ -2791,7 +1585,7 @@ void draw_nav_digits (char *digits, int xpos, int ypos) {
 					g_dst_rect.y = ypos + 71;
 				}
 
-				SDL_RenderCopy(renderer, g_nav_icons_tex, &g_src_rect, &g_dst_rect);
+				SDL_RenderCopy(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
 
 				x_offset+=g_src_rect.w + 2;				
 			}
@@ -2822,7 +1616,7 @@ void draw_nav_symbol (int sym, int xpos, int ypos)
 	g_dst_rect.w = g_src_rect.w;
 	g_dst_rect.h = g_src_rect.h;
 
-	SDL_RenderCopy(renderer, g_nav_icons_tex, &g_src_rect, &g_dst_rect);
+	SDL_RenderCopy(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
 }
 
 void draw_medium_num (int singledigit, int xpos, int ypos) {
@@ -2855,19 +1649,19 @@ void draw_speed_digit (char digit, int position)
 			if (position == 3) {
 				spd_digit_three.w = g_speed_src_tex_loc[2][d];
 				spd_digit_three.h = g_speed_src_tex_loc[3][d];
-				SDL_RenderCopy(renderer, g_speed_numbers_tex, &g_src_rect, &spd_digit_three);
+				SDL_RenderCopy(renderer, tex("Speednumbers.bmp"), &g_src_rect, &spd_digit_three);
 			}
 
 			if (position == 2) {
 				spd_digit_two.w = g_speed_src_tex_loc[2][d];
 				spd_digit_two.h = g_speed_src_tex_loc[3][d];
-				SDL_RenderCopy(renderer, g_speed_numbers_tex, &g_src_rect, &spd_digit_two);
+				SDL_RenderCopy(renderer, tex("Speednumbers.bmp"), &g_src_rect, &spd_digit_two);
 			}
 
 			if (position == 1) {
 				spd_digit_one.w = g_speed_src_tex_loc[2][d];
 				spd_digit_one.h = g_speed_src_tex_loc[3][d];
-				SDL_RenderCopy(renderer, g_speed_numbers_tex, &g_src_rect, &spd_digit_one);
+				SDL_RenderCopy(renderer, tex("Speednumbers.bmp"), &g_src_rect, &spd_digit_one);
 			}
 		}
 	}	
@@ -4036,9 +2830,9 @@ int render_top_icon_grey_texture (int x, int y, int w, int h)
 	dst_rect.h = h;
 
 	if (oil_pressure_available) {
-		return SDL_RenderCopy(renderer, g_top_icons_grey_op_tex, nullptr, &dst_rect);	
+		return SDL_RenderCopy(renderer, tex("TopiconsgreyOP.bmp"), nullptr, &dst_rect);
 	} else {
-		return SDL_RenderCopy(renderer, g_top_icons_grey_tex, nullptr, &dst_rect);	
+		return SDL_RenderCopy(renderer, tex("Topiconsgrey.bmp"), nullptr, &dst_rect);
 	}
 }
 
@@ -4051,9 +2845,9 @@ int render_oil_light_texture (int x, int y, int w, int h)
 	dst_rect.h = h;
 
 	if (oil_pressure_available) {
-		return SDL_RenderCopy(renderer, g_oil_light_op_tex, nullptr, &dst_rect);	
+		return SDL_RenderCopy(renderer, tex("OillightOP.bmp"), nullptr, &dst_rect);
 	} else {
-		return SDL_RenderCopy(renderer, g_oil_light_tex, nullptr, &dst_rect);	
+		return SDL_RenderCopy(renderer, tex("Oillight.bmp"), nullptr, &dst_rect);
 	}
 }
 
@@ -4215,51 +3009,51 @@ void draw_menu (int state) {
 	SDL_RenderClear(renderer);
 
 	// COOLANT FAN TEMP MENU
-	if (state >= 500 && state < 590) {render_texture (g_coolant_fan_temp_tex, 0, 0, 1024, 600);}
+	if (state >= 500 && state < 590) {render_texture (tex("Coolantfantemp.bmp"), 0, 0, 1024, 600);}
 
 	if (state >= 500 && state < 590) {
-		if (state == 500) {render_texture (g_up_arrow_small_tex, 115, 185, 60, 62);}
-		if (state == 510) {render_texture (g_up_arrow_small_tex, 341, 173, 60, 62);}
-		if (state == 520) {render_texture (g_up_arrow_small_tex, 625, 173, 60, 62);}
-		if (state == 530) {render_texture (g_menu_small_arrow_left_tex, 667, 300, 56, 50);}
-		if (state == 540) {render_texture (g_menu_small_arrow_left_tex, 667, 378, 56, 50);}
-		if (state == 550) {render_texture (g_menu_small_arrow_left_tex, 667, 454, 56, 50);}
-		if (state == 560) {render_texture (g_menu_small_arrow_left_tex, 667, 532, 56, 50);}
-		//g_menu_small_arrow_left_tex
+		if (state == 500) {render_texture (tex("Uparrowsmall.bmp"), 115, 185, 60, 62);}
+		if (state == 510) {render_texture (tex("Uparrowsmall.bmp"), 341, 173, 60, 62);}
+		if (state == 520) {render_texture (tex("Uparrowsmall.bmp"), 625, 173, 60, 62);}
+		if (state == 530) {render_texture (tex("Leftmenuarrowex.bmp"), 667, 300, 56, 50);}
+		if (state == 540) {render_texture (tex("Leftmenuarrowex.bmp"), 667, 378, 56, 50);}
+		if (state == 550) {render_texture (tex("Leftmenuarrowex.bmp"), 667, 454, 56, 50);}
+		if (state == 560) {render_texture (tex("Leftmenuarrowex.bmp"), 667, 532, 56, 50);}
+		//tex("Leftmenuarrowex.bmp")
 
-		if (state == 570) {render_texture (g_up_arrow_small_tex, 884, 534, 60, 62);}
+		if (state == 570) {render_texture (tex("Uparrowsmall.bmp"), 884, 534, 60, 62);}
 
 		draw_medium_num (coolant_fan_temp, 467, 114);
 
 		if (fan_neutral_option == 0) {
-			render_texture (g_select_on_tex, 741, 306, 55, 38); // Coolant temp fan always on in Neutral
+			render_texture (tex("Selecton.bmp"), 741, 306, 55, 38); // Coolant temp fan always on in Neutral
 		}
 
 		if (fan_neutral_option == 1) {
-			render_texture (g_select_on_tex, 741, 383, 55, 38); // Coolant temp fan on after 1 minute
+			render_texture (tex("Selecton.bmp"), 741, 383, 55, 38); // Coolant temp fan on after 1 minute
 		}
 
 		if (fan_neutral_option == 2) {
-			render_texture (g_select_on_tex, 741, 460, 55, 38); // Coolant temp fan on after 50 degrees engine temp
+			render_texture (tex("Selecton.bmp"), 741, 460, 55, 38); // Coolant temp fan on after 50 degrees engine temp
 		}
 
 		if (fan_neutral_option == 3) {
-			render_texture (g_select_on_tex, 741, 537, 55, 38); // Coolant temp fan on after throttle blip
+			render_texture (tex("Selecton.bmp"), 741, 537, 55, 38); // Coolant temp fan on after throttle blip
 		}
 	}
 
 	// SPROCKET SETUP MENU
-	if (state >= 400 && state < 490) {render_texture (g_sprocket_setup_tex, 0, 0, 1024, 600);}
+	if (state >= 400 && state < 490) {render_texture (tex("Sprocketsetup.bmp"), 0, 0, 1024, 600);}
 	
 	if (state >= 400 && state < 490) {
-		if (state == 400) {render_texture (g_up_arrow_small_tex, 113, 296, 60, 62);}
-		if (state == 410) {render_texture (g_up_arrow_small_tex, 286, 300, 60, 62);}
-		if (state == 420) {render_texture (g_up_arrow_small_tex, 373, 300, 60, 62);}
-		if (state == 430) {render_texture (g_up_arrow_small_tex, 590, 300, 60, 62);}
-		if (state == 440) {render_texture (g_up_arrow_small_tex, 678, 300, 60, 62);}
-		if (state == 450) {render_texture (g_up_arrow_small_tex, 594, 485, 60, 62);}
-		if (state == 460) {render_texture (g_up_arrow_small_tex, 861, 485, 60, 62);}
-		if (state == 470) {render_texture (g_up_arrow_small_tex, 848, 300, 60, 62);}
+		if (state == 400) {render_texture (tex("Uparrowsmall.bmp"), 113, 296, 60, 62);}
+		if (state == 410) {render_texture (tex("Uparrowsmall.bmp"), 286, 300, 60, 62);}
+		if (state == 420) {render_texture (tex("Uparrowsmall.bmp"), 373, 300, 60, 62);}
+		if (state == 430) {render_texture (tex("Uparrowsmall.bmp"), 590, 300, 60, 62);}
+		if (state == 440) {render_texture (tex("Uparrowsmall.bmp"), 678, 300, 60, 62);}
+		if (state == 450) {render_texture (tex("Uparrowsmall.bmp"), 594, 485, 60, 62);}
+		if (state == 460) {render_texture (tex("Uparrowsmall.bmp"), 861, 485, 60, 62);}
+		if (state == 470) {render_texture (tex("Uparrowsmall.bmp"), 848, 300, 60, 62);}
 
 		draw_medium_num (front_sprocket, 332, 127);
 		draw_medium_num (rear_sprocket, 638, 127);
@@ -4269,23 +3063,23 @@ void draw_menu (int state) {
 
 
 	// SET ODOMETER MENU
-	if (state >= 300 && state < 390) {render_texture (g_set_odometer_tex, 0, 0, 1024, 600);}
+	if (state >= 300 && state < 390) {render_texture (tex_from("default", "Setodometer.bmp"), 0, 0, 1024, 600);}
 
 	// Arrow positions for odometer first line
-	if (state == 300) {render_texture (g_up_arrow_tex, 175, 279, 104, 107);}
-	if (state == 305) {render_texture (g_up_arrow_tex, 286, 279, 104, 107);}
-	if (state == 310) {render_texture (g_up_arrow_tex, 399, 279, 104, 107);}
-	if (state == 315) {render_texture (g_up_arrow_tex, 510, 279, 104, 107);}
-	if (state == 320) {render_texture (g_up_arrow_tex, 620, 279, 104, 107);}
-	if (state == 325) {render_texture (g_up_arrow_tex, 733, 279, 104, 107);}
+	if (state == 300) {render_texture (tex("Uparrow.bmp"), 175, 279, 104, 107);}
+	if (state == 305) {render_texture (tex("Uparrow.bmp"), 286, 279, 104, 107);}
+	if (state == 310) {render_texture (tex("Uparrow.bmp"), 399, 279, 104, 107);}
+	if (state == 315) {render_texture (tex("Uparrow.bmp"), 510, 279, 104, 107);}
+	if (state == 320) {render_texture (tex("Uparrow.bmp"), 620, 279, 104, 107);}
+	if (state == 325) {render_texture (tex("Uparrow.bmp"), 733, 279, 104, 107);}
 	// Arrow positions for odometer second line
-	if (state == 330) {render_texture (g_up_arrow_tex, 175, 493, 104, 107);}
-	if (state == 335) {render_texture (g_up_arrow_tex, 286, 493, 104, 107);}
-	if (state == 340) {render_texture (g_up_arrow_tex, 399, 493, 104, 107);}
-	if (state == 345) {render_texture (g_up_arrow_tex, 510, 493, 104, 107);}
-	if (state == 350) {render_texture (g_up_arrow_tex, 620, 493, 104, 107);}
-	if (state == 355) {render_texture (g_up_arrow_tex, 733, 493, 104, 107);}
-	if (state == 360) {render_texture (g_up_arrow_tex, 877, 493, 104, 107);} // Ok button
+	if (state == 330) {render_texture (tex("Uparrow.bmp"), 175, 493, 104, 107);}
+	if (state == 335) {render_texture (tex("Uparrow.bmp"), 286, 493, 104, 107);}
+	if (state == 340) {render_texture (tex("Uparrow.bmp"), 399, 493, 104, 107);}
+	if (state == 345) {render_texture (tex("Uparrow.bmp"), 510, 493, 104, 107);}
+	if (state == 350) {render_texture (tex("Uparrow.bmp"), 620, 493, 104, 107);}
+	if (state == 355) {render_texture (tex("Uparrow.bmp"), 733, 493, 104, 107);}
+	if (state == 360) {render_texture (tex("Uparrow.bmp"), 877, 493, 104, 107);} // Ok button
 
 	// Odo digits
 	if (state >= 300 && state < 390) {
@@ -4307,60 +3101,60 @@ void draw_menu (int state) {
 
 	// If the odo error flag has been set then show the error
 	if (odoerror == 1) {
-		render_texture (g_odo_error1_tex, 130, 524, 758, 45);
+		render_texture (tex_from("default", "Odoerror1.bmp"), 130, 524, 758, 45);
 	}
 	if (odoerror == 2) {
-		render_texture (g_odo_error2_tex, 130, 524, 758, 45);	
+		render_texture (tex_from("default", "Odoerror2.bmp"), 130, 524, 758, 45);	
 	}
 
 	// THEME MENU
 	if (state >= 200 && state < 290) {
-		render_texture (g_theme_options_tex, 0, 0, 1024, 600);
+		render_texture (tex_from("default", "Themeoptions.bmp"), 0, 0, 1024, 600);
 	}
 
 	if (state == 200) { // Default theme 0
-		render_texture (g_arrow_left_theme_tex, 8, 28, 48, 159);
-		render_texture (g_arrow_right_theme_tex, 330, 29, 48, 159);
+		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 8, 28, 48, 159);
+		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 330, 29, 48, 159);
 	}
 	if (state == 210) { // theme 1
-		render_texture (g_arrow_left_theme_tex, 330, 28, 48, 159);
-		render_texture (g_arrow_right_theme_tex, 652, 29, 48, 159);		
+		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 330, 28, 48, 159);
+		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 652, 29, 48, 159);		
 	}
 	if (state == 220) { // theme 2
-		render_texture (g_arrow_left_theme_tex, 660, 28, 48, 159);
-		render_texture (g_arrow_right_theme_tex, 982, 29, 48, 159);		
+		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 660, 28, 48, 159);
+		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 982, 29, 48, 159);		
 	}
 	if (state == 230) { // theme 3
-		render_texture (g_arrow_left_theme_tex, 3, 221, 48, 159);
-		render_texture (g_arrow_right_theme_tex, 325, 221, 48, 159);		
+		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 3, 221, 48, 159);
+		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 325, 221, 48, 159);		
 	}
 	if (state == 240) { // theme 4
-		render_texture (g_arrow_left_theme_tex, 331, 221, 48, 159);
-		render_texture (g_arrow_right_theme_tex, 653, 221, 48, 159);		
+		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 331, 221, 48, 159);
+		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 653, 221, 48, 159);		
 	}
 	if (state == 250) { // theme 5
-		render_texture (g_arrow_left_theme_tex, 661, 221, 48, 159);
-		render_texture (g_arrow_right_theme_tex, 983, 221, 48, 159);		
+		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 661, 221, 48, 159);
+		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 983, 221, 48, 159);		
 	}
 	if (state == 260) { // theme 6
-		render_texture (g_arrow_left_theme_tex, 8, 423, 48, 159);
-		render_texture (g_arrow_right_theme_tex, 330, 423, 48, 159);		
+		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 8, 423, 48, 159);
+		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 330, 423, 48, 159);		
 	}
 
 	if (state == 270) { // theme 7
-		render_texture (g_arrow_left_theme_tex, 328, 423, 48, 159);
-		render_texture (g_arrow_right_theme_tex, 650, 423, 48, 159);		
+		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 328, 423, 48, 159);
+		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 650, 423, 48, 159);		
 	}
 
 	if (state == 280) { // theme 8
-		render_texture (g_arrow_left_theme_tex, 653, 423, 48, 159);
-		render_texture (g_arrow_right_theme_tex, 982, 423, 48, 159);		
+		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 653, 423, 48, 159);
+		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 982, 423, 48, 159);		
 	}
 
 
 	// SPEED CORRECTION MENU
 	if (state >= 100 && state < 170) {
-		render_texture (g_speed_correction_tex, 0, 0, 1024, 600);
+		render_texture (tex("Speedcorrection.bmp"), 0, 0, 1024, 600);
 
 		if (spcdigit0 == 0) {
 			strcpy (str_spc_digit0, "-");
@@ -4381,33 +3175,33 @@ void draw_menu (int state) {
 	}
 
 	if (state == 100) { // Speed correction cancel
-		render_texture (g_up_arrow_tex, 83, 352, 104, 107);
+		render_texture (tex("Uparrow.bmp"), 83, 352, 104, 107);
 	}
 
 	if (state == 110) { // Speed correction digit 1
-		render_texture (g_up_arrow_tex, 262, 352, 104, 107);
+		render_texture (tex("Uparrow.bmp"), 262, 352, 104, 107);
 	}
 
 	if (state == 120) { // Speed correction digit 2
-		render_texture (g_up_arrow_tex, 372, 352, 104, 107);
+		render_texture (tex("Uparrow.bmp"), 372, 352, 104, 107);
 	}
 
 	if (state == 130) { // Speed correction digit 3
-		render_texture (g_up_arrow_tex, 477, 352, 104, 107);
+		render_texture (tex("Uparrow.bmp"), 477, 352, 104, 107);
 	}
 
 	if (state == 140) { // Speed correction digit 4
-		render_texture (g_up_arrow_tex, 657, 352, 104, 107);
+		render_texture (tex("Uparrow.bmp"), 657, 352, 104, 107);
 	}
 
 	if (state == 150) { // Speed correction ok
-		render_texture (g_up_arrow_tex, 824, 352, 104, 107);
+		render_texture (tex("Uparrow.bmp"), 824, 352, 104, 107);
 	}
 
 	// SET TPMS MENU
 	if (state >= 700 && state < 790) { // Set TPMS menu options
 
-		render_texture (g_tpms_options_tex, 0, 0, 1024, 600);
+		render_texture (tex("TPMSsetup.bmp"), 0, 0, 1024, 600);
 		
 		sprintf(str_front_sensor_id, "%d", front_sensor_id);
 		sprintf(str_rear_sensor_id, "%d", rear_sensor_id);
@@ -4420,89 +3214,79 @@ void draw_menu (int state) {
 		draw_medium_string (str_rear_pressure_low, 830, 405);
 
 		if (state == 700) { // TPMS menu cancel
-			render_texture (g_up_arrow_small_tex, 65, 182, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 65, 182, 60, 62);
 		}				
 
 		if (state == 705) { // Front sensor +
-			render_texture (g_up_arrow_small_tex, 420, 220, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 420, 220, 60, 62);
 		}
 
 		if (state == 710) { // Front sensor -
-			render_texture (g_up_arrow_small_tex, 610, 220, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 610, 220, 60, 62);
 		}
 
 		if (state == 715) { // Rear sensor +
-			render_texture (g_up_arrow_small_tex, 726, 220, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 726, 220, 60, 62);
 		}
 
 		if (state == 720) { // Rear sensor -
-			render_texture (g_up_arrow_small_tex, 917, 220, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 917, 220, 60, 62);
 		}
 
 		if (state == 725) { // Front pressure warning +
-			render_texture (g_up_arrow_small_tex, 727, 337, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 727, 337, 60, 62);
 		}
 
 		if (state == 730) { // Front pressure warning -
-			render_texture (g_up_arrow_small_tex, 918, 337, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 918, 337, 60, 62);
 		}
 
 		if (state == 735) { // Rear pressure warning  +
-			render_texture (g_up_arrow_small_tex, 728, 456, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 728, 456, 60, 62);
 		}
 
 		if (state == 740) { // Rear pressure warning -
-			render_texture (g_up_arrow_small_tex, 918, 456, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 918, 456, 60, 62);
 		}
 
 		if (state == 745) { // TPMS setup OK
-			render_texture (g_up_arrow_small_tex, 65, 528, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 65, 528, 60, 62);
 		}
 	}
 
 	// SET CONTROL MENU
 	if (state >= 800 && state < 830) { // Set control options
-		render_texture (g_control_options_tex, 0, 0, 1024, 600);	
+		render_texture (tex("Controloptions.bmp"), 0, 0, 1024, 600);	
 
 		if (control_layout == 0) {
-			render_texture (g_control_select_tex, 230, 195, 236, 30);
+			render_texture (tex("Selectedcontrol.bmp"), 230, 195, 236, 30);
 		}
 
 		if (control_layout == 1) {
-			render_texture (g_control_select_tex, 555, 195, 236, 30);
+			render_texture (tex("Selectedcontrol.bmp"), 555, 195, 236, 30);
 		}
 
 		if (state == 800) { // Control cancel
-			render_texture (g_up_arrow_small_tex, 69, 363, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 69, 363, 60, 62);
 		}
 
 		if (state == 805) { // Control layout 1
-			render_texture (g_up_arrow_small_tex, 316, 394, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 316, 394, 60, 62);
 		}
 
 		if (state == 810) { // Control layout 2
-			render_texture (g_up_arrow_small_tex, 648, 394, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 648, 394, 60, 62);
 		}
 
 		if (state == 815) { // OK
-			render_texture (g_up_arrow_small_tex, 890, 363, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 890, 363, 60, 62);
 		}
 	}
 
 
 	// LIGHT SETUP MENU
-/*
-	SDL_Texture *g_light_options_tex;
-SDL_Texture *g_white_thumb_tex;
-SDL_Texture *g_green_thumb_tex;
-SDL_Texture *g_red_thumb_tex;
-SDL_Texture *g_blue_thumb_tex;
-SDL_Texture *g_orange_thumb_tex;
-SDL_Texture *g_yellow_thumb_tex;
-SDL_Texture *g_night_thumb_tex;
-*/
 	if (state >= 900 && state < 950) { // Set light options		
-		render_texture (g_light_options_tex, 0, 0, 1024, 600);	
+		render_texture (tex("Lightoptions.bmp"), 0, 0, 1024, 600);	
 
 		sprintf(str_light_switch_value, "%d", light_switch_value);
 		sprintf(str_current_light_level, "%d", current_light_level);
@@ -4511,170 +3295,170 @@ SDL_Texture *g_night_thumb_tex;
 		draw_medium_string (str_current_light_level, 625, 396);
 
 		if (day_theme == 0) {
-			render_texture (g_white_thumb_tex, 772, 118, 126, 74);
+			render_texture (tex_from("default", "whitethumb.bmp"), 772, 118, 126, 74);
 		}
 
 		if (day_theme == 1) {
-			render_texture (g_green_thumb_tex, 772, 118, 126, 74);
+			render_texture (tex_from("green", "greenthumb.bmp"), 772, 118, 126, 74);
 		}
 
 		if (day_theme == 2) {
-			render_texture (g_red_thumb_tex, 772, 118, 126, 74);
+			render_texture (tex_from("red", "redthumb.bmp"), 772, 118, 126, 74);
 		}
 
 		if (day_theme == 3) {
-			render_texture (g_blue_thumb_tex, 772, 118, 126, 74);
+			render_texture (tex_from("blue", "bluethumb.bmp"), 772, 118, 126, 74);
 		}
 
 		if (day_theme == 4) {
-			render_texture (g_orange_thumb_tex, 772, 118, 126, 74);
+			render_texture (tex_from("orange", "orangethumb.bmp"), 772, 118, 126, 74);
 		}
 
 		if (day_theme == 5) {
-			render_texture (g_yellow_thumb_tex, 772, 118, 126, 74);
+			render_texture (tex_from("yellow", "yellowthumb.bmp"), 772, 118, 126, 74);
 		}
 
 		if (day_theme == 6) {
-			render_texture (g_night_thumb_tex, 772, 118, 126, 74);
+			render_texture (tex_from("night", "nightthumb.bmp"), 772, 118, 126, 74);
 		}
 
 		if (day_theme == 7) {
-			render_texture (g_bright_thumb_tex, 772, 118, 126, 74);
+			render_texture (tex_from("bright", "brightthumb.bmp"), 772, 118, 126, 74);
 		}
 
 		if (day_theme == 8) {
-			render_texture (g_dark_thumb_tex, 772, 118, 126, 74);
+			render_texture (tex_from("dark", "darkthumb.bmp"), 772, 118, 126, 74);
 		}
 
 		if (night_theme == 0) {
-			render_texture (g_white_thumb_tex, 772, 236, 126, 74);
+			render_texture (tex_from("default", "whitethumb.bmp"), 772, 236, 126, 74);
 		}
 
 		if (night_theme == 1) {
-			render_texture (g_green_thumb_tex, 772, 236, 126, 74);
+			render_texture (tex_from("green", "greenthumb.bmp"), 772, 236, 126, 74);
 		}
 
 		if (night_theme == 2) {
-			render_texture (g_red_thumb_tex, 772, 236, 126, 74);
+			render_texture (tex_from("red", "redthumb.bmp"), 772, 236, 126, 74);
 		}
 
 		if (night_theme == 3) {
-			render_texture (g_blue_thumb_tex, 772, 236, 126, 74);
+			render_texture (tex_from("blue", "bluethumb.bmp"), 772, 236, 126, 74);
 		}
 
 		if (night_theme == 4) {
-			render_texture (g_orange_thumb_tex, 772, 236, 126, 74);
+			render_texture (tex_from("orange", "orangethumb.bmp"), 772, 236, 126, 74);
 		}
 
 		if (night_theme == 5) {
-			render_texture (g_yellow_thumb_tex, 772, 236, 126, 74);
+			render_texture (tex_from("yellow", "yellowthumb.bmp"), 772, 236, 126, 74);
 		}
 
 		if (night_theme == 6) {
-			render_texture (g_night_thumb_tex, 772, 236, 126, 74);
+			render_texture (tex_from("night", "nightthumb.bmp"), 772, 236, 126, 74);
 		}
 
 		if (night_theme == 7) {
-			render_texture (g_bright_thumb_tex, 772, 236, 126, 74);
+			render_texture (tex_from("bright", "brightthumb.bmp"), 772, 236, 126, 74);
 		}
 
 		if (night_theme == 8) {
-			render_texture (g_dark_thumb_tex, 772, 236, 126, 74);
+			render_texture (tex_from("dark", "darkthumb.bmp"), 772, 236, 126, 74);
 		}
 
 
 		if (state == 900) {
-			render_texture (g_up_arrow_small_tex, 66, 207, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 66, 207, 60, 62);
 		}
 
 		if (state == 905) {
-			render_texture (g_up_arrow_small_tex, 708, 183, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 708, 183, 60, 62);
 		}
 
 		if (state == 910) {
-			render_texture (g_up_arrow_small_tex, 899, 183, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 899, 183, 60, 62);
 		}
 
 		if (state == 915) {
-			render_texture (g_up_arrow_small_tex, 708, 302, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 708, 302, 60, 62);
 		}
 
 		if (state == 920) {
-			render_texture (g_up_arrow_small_tex, 898, 302, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 898, 302, 60, 62);
 		}
 
 		if (state == 925) {
-			render_texture (g_up_arrow_small_tex, 531, 529, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 531, 529, 60, 62);
 		}
 
 		if (state == 930) {
-			render_texture (g_up_arrow_small_tex, 722, 529, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 722, 529, 60, 62);
 		}
 
 		if (state == 935) {
-			render_texture (g_up_arrow_small_tex, 890, 529, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 890, 529, 60, 62);
 		}		
 	}
 
 	// SET UNITS MENU
 	if (state >= 600 && state < 690) { // Set units options
-		render_texture (g_set_units_tex, 0, 0, 1024, 600);	
+		render_texture (tex("Setunits.bmp"), 0, 0, 1024, 600);	
 
 		if (using_km) {
-			render_texture (g_select_on_tex, 894, 101, 55, 38);
+			render_texture (tex("Selecton.bmp"), 894, 101, 55, 38);
 		} else {
-			render_texture (g_select_on_tex, 784, 101, 55, 38);
+			render_texture (tex("Selecton.bmp"), 784, 101, 55, 38);
 		}
 
 		if (using_fh) {
-			render_texture (g_select_on_tex, 894, 262, 55, 38);
+			render_texture (tex("Selecton.bmp"), 894, 262, 55, 38);
 		} else {	
-			render_texture (g_select_on_tex, 784, 262, 55, 38);
+			render_texture (tex("Selecton.bmp"), 784, 262, 55, 38);
 		}
 
 		if (using_bar) {
-			render_texture (g_select_on_tex, 894, 423, 55, 38);
+			render_texture (tex("Selecton.bmp"), 894, 423, 55, 38);
 		} else {
-			render_texture (g_select_on_tex, 784, 423, 55, 38);
+			render_texture (tex("Selecton.bmp"), 784, 423, 55, 38);
 		}
 		
 
 		if (state == 600) { // Set units cancel
-			render_texture (g_up_arrow_small_tex, 34, 197, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 34, 197, 60, 62);
 		}
 
 		if (state == 605) { // Set units digit 1
-			render_texture (g_up_arrow_small_tex, 780, 154, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 780, 154, 60, 62);
 		}
 
 		if (state == 610) { // Set units digit 2
-			render_texture (g_up_arrow_small_tex, 891, 154, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 891, 154, 60, 62);
 		}
 
 		if (state == 615) { // Set units digit 3
-			render_texture (g_up_arrow_small_tex, 780, 314, 60, 62); 
+			render_texture (tex("Uparrowsmall.bmp"), 780, 314, 60, 62); 
 		}
 
 		if (state == 620) { // Set units digit 4
-			render_texture (g_up_arrow_small_tex, 891, 314, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 891, 314, 60, 62);
 		}
 
 		if (state == 625) { // Set units ok
-			render_texture (g_up_arrow_small_tex, 780, 475, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 780, 475, 60, 62);
 		}
 
 		if (state == 630) { // Set units ok
-			render_texture (g_up_arrow_small_tex, 891, 475, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 891, 475, 60, 62);
 		}
 
 		if (state == 635) { // Set units ok
-			render_texture (g_up_arrow_small_tex, 35, 539, 60, 62);
+			render_texture (tex("Uparrowsmall.bmp"), 35, 539, 60, 62);
 		}
 	}
 
 	//SET TIME MENU
 	if (state >= 20 && state < 90) { // Set time options
-		render_texture (g_set_time_tex, 0, 0, 1024, 600);	
+		render_texture (tex("Settime.bmp"), 0, 0, 1024, 600);	
 
 		sprintf(str_set_time_digit0, "%d", settimedigit0);
 		sprintf(str_set_time_digit1, "%d", settimedigit1);
@@ -4688,93 +3472,93 @@ SDL_Texture *g_night_thumb_tex;
 	}
 
 	if (state == 20) { // Set time cancel
-		render_texture (g_up_arrow_tex, 92, 355, 104, 107);
+		render_texture (tex("Uparrow.bmp"), 92, 355, 104, 107);
 	}
 
 	if (state == 30) { // Set time digit 1
-		render_texture (g_up_arrow_tex, 262, 355, 104, 107);
+		render_texture (tex("Uparrow.bmp"), 262, 355, 104, 107);
 	}
 
 	if (state == 40) { // Set time digit 2
-		render_texture (g_up_arrow_tex, 371, 355, 104, 107);
+		render_texture (tex("Uparrow.bmp"), 371, 355, 104, 107);
 	}
 
 	if (state == 50) { // Set time digit 3
-		render_texture (g_up_arrow_tex, 545, 355, 104, 107);
+		render_texture (tex("Uparrow.bmp"), 545, 355, 104, 107);
 	}
 
 	if (state == 60) { // Set time digit 4
-		render_texture (g_up_arrow_tex, 657, 355, 104, 107);
+		render_texture (tex("Uparrow.bmp"), 657, 355, 104, 107);
 	}
 
 	if (state == 70) { // Set time ok
-		render_texture (g_up_arrow_tex, 824, 355, 104, 107);
+		render_texture (tex("Uparrow.bmp"), 824, 355, 104, 107);
 	}
 
 	//MAIN MENU
 	if (state > 0 && state < 20) {
-		render_texture (g_menu_options_tex, 0, 0, 1024, 600);	
+		render_texture (tex("Menuoptionsex.bmp"), 0, 0, 1024, 600);	
 	}
 
 	int yarrowoffset = 51;
 	if (state == 1) { // Reset trip 1
-		render_texture (g_menu_small_arrow_left_tex, 77, 94, 56, 50);
-		render_texture (g_menu_small_arrow_right_tex, 465, 94, 56, 50);
+		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94, 56, 50);
+		render_texture (tex("Rightmenuarrowex.bmp"), 465, 94, 56, 50);
 	}
 
 	if (state == 2) { // Reset trip 2
-		render_texture (g_menu_small_arrow_left_tex, 505, 94, 56, 50);
-		render_texture (g_menu_small_arrow_right_tex, 897, 94, 56, 50);
+		render_texture (tex("Leftmenuarrowex.bmp"), 505, 94, 56, 50);
+		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94, 56, 50);
 	}
 
 	if (state == 3) { // Control setup
-		render_texture (g_menu_small_arrow_left_tex, 77, 94+(yarrowoffset), 56, 50);
-		render_texture (g_menu_small_arrow_right_tex, 465, 94+(yarrowoffset), 56, 50);
+		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset), 56, 50);
+		render_texture (tex("Rightmenuarrowex.bmp"), 465, 94+(yarrowoffset), 56, 50);
 	}
 
 	if (state == 4) { // Set units
-		render_texture (g_menu_small_arrow_left_tex, 505, 94+(yarrowoffset), 56, 50);
-		render_texture (g_menu_small_arrow_right_tex, 897, 94+(yarrowoffset), 56, 50);
+		render_texture (tex("Leftmenuarrowex.bmp"), 505, 94+(yarrowoffset), 56, 50);
+		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset), 56, 50);
 	}
 
 	if (state == 5) { // Set time
-		render_texture (g_menu_small_arrow_left_tex, 77, 94+(yarrowoffset*2), 56, 50);
-		render_texture (g_menu_small_arrow_right_tex, 897, 94+(yarrowoffset*2), 56, 50);
+		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*2), 56, 50);
+		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*2), 56, 50);
 	}
 
 	//if (state == 6) { // Accel timer - skipping this feature for the July August 2020 update due to time constraints
-		//render_texture (g_menu_small_arrow_left_tex, 505, 94+(yarrowoffset*2), 56, 50);
-		//render_texture (g_menu_small_arrow_right_tex, 897, 94+(yarrowoffset*2), 56, 50);
+		//render_texture (tex("Leftmenuarrowex.bmp"), 505, 94+(yarrowoffset*2), 56, 50);
+		//render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*2), 56, 50);
 	//}
 
 	if (state == 6) { // Ambient light setup
-		render_texture (g_menu_small_arrow_left_tex, 77, 94+(yarrowoffset*3), 56, 50);
-		render_texture (g_menu_small_arrow_right_tex, 897, 94+(yarrowoffset*3), 56, 50);
+		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*3), 56, 50);
+		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*3), 56, 50);
 	}
 
 	if (state == 7) { // Speed correction menu
-		render_texture (g_menu_small_arrow_left_tex, 77, 94+(yarrowoffset*4), 56, 50);
-		render_texture (g_menu_small_arrow_right_tex, 897, 94+(yarrowoffset*4), 56, 50);
+		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*4), 56, 50);
+		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*4), 56, 50);
 	}
 
 	if (state == 8) { // Set theme
-		render_texture (g_menu_small_arrow_left_tex, 77, 94+(yarrowoffset*5), 56, 50);
-		render_texture (g_menu_small_arrow_right_tex, 897, 94+(yarrowoffset*5), 56, 50);
+		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*5), 56, 50);
+		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*5), 56, 50);
 	}
 
 	if (state == 9) { // Gear indicator setup
-		render_texture (g_menu_small_arrow_left_tex, 77, 94+(yarrowoffset*6), 56, 50);
-		render_texture (g_menu_small_arrow_right_tex, 897, 94+(yarrowoffset*6), 56, 50);
+		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*6), 56, 50);
+		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*6), 56, 50);
 	}
 
 	if (state == 10) { // Coolant fan setup
-		render_texture (g_menu_small_arrow_left_tex, 77, 94+(yarrowoffset*7), 56, 50);
-		render_texture (g_menu_small_arrow_right_tex, 897, 94+(yarrowoffset*7), 56, 50);
+		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*7), 56, 50);
+		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*7), 56, 50);
 	}
 
 	if (state == 11) { // TPMS Setup
-		render_texture (g_menu_small_arrow_left_tex, 77, 94+(yarrowoffset*8), 56, 50);
-		render_texture (g_menu_small_arrow_right_tex, 897, 94+(yarrowoffset*8), 56, 50);
+		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*8), 56, 50);
+		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*8), 56, 50);
 	}
 
 
@@ -4809,94 +3593,94 @@ void dashboard_startup () {
 
 		if (startup_anim_count < 1000) {
 			render_top_icon_grey_texture ((0-1000)+startup_anim_count, 0, 627, 138);		
-			render_texture (gtopiconsedge1tex, (625-1000)+startup_anim_count, 0, 98, 75);
-			render_texture (gtopiconsedge2tex, (721-1000)+startup_anim_count, 0, 84, 24);	
+			render_texture (tex("Topiconedge1.bmp"), (625-1000)+startup_anim_count, 0, 98, 75);
+			render_texture (tex("Topiconedge2.bmp"), (721-1000)+startup_anim_count, 0, 84, 24);	
 			
 			// Trip 1 and 2 and Odometer, Ambient Temp and Time section
-			render_texture (g_mile_info_tex, (0-1000)+startup_anim_count, 434, 435, 169);
+			render_texture (tex("Mileinfo.bmp"), (0-1000)+startup_anim_count, 434, 435, 169);
 
 			if (info_mode == 0) {
 				if (using_km) {
-					render_texture (g_info_top_km_tex, (0-1000)+startup_anim_count, 176, 510, 97);
+					render_texture (tex("InfotopKM.bmp"), (0-1000)+startup_anim_count, 176, 510, 97);
 				} else {
-					render_texture (g_info_top_tex, (0-1000)+startup_anim_count, 176, 510, 97);	
+					render_texture (tex("Infotop.bmp"), (0-1000)+startup_anim_count, 176, 510, 97);	
 				}
 				
-				render_texture (g_info_bottom_tex, (0-1000)+startup_anim_count, 273, 454, 125);
+				render_texture (tex("Infobottom.bmp"), (0-1000)+startup_anim_count, 273, 454, 125);
 			}
 		}
 
 		if (startup_anim_count >= 1000) {
 			render_top_icon_grey_texture (0, 0, 627, 138);		
-			render_texture (gtopiconsedge1tex, 625, 0, 98, 75);
-			render_texture (gtopiconsedge2tex, 721, 0, 84, 24);	
+			render_texture (tex("Topiconedge1.bmp"), 625, 0, 98, 75);
+			render_texture (tex("Topiconedge2.bmp"), 721, 0, 84, 24);	
 
 			// Trip 1 and 2 and Odometer, Ambient Temp and Time section
-			render_texture (g_mile_info_tex, 0, 434, 435, 169);
+			render_texture (tex("Mileinfo.bmp"), 0, 434, 435, 169);
 
 			if (info_mode == 0) {
 				if (using_km) {
-					render_texture (g_info_top_km_tex, 0, 176, 510, 97);
+					render_texture (tex("InfotopKM.bmp"), 0, 176, 510, 97);
 				} else {
-					render_texture (g_info_top_tex, 0, 176, 510, 97);	
+					render_texture (tex("Infotop.bmp"), 0, 176, 510, 97);	
 				}
 				
-				render_texture (g_info_bottom_tex, 0, 273, 454, 125);
+				render_texture (tex("Infobottom.bmp"), 0, 273, 454, 125);
 			}
 		}
 
 		int revamountinc = 10;
 		int revinc = 100;
 		if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r0_tex, nullptr, &rectg0);
+			SDL_RenderCopy(renderer, tex("R0.bmp"), nullptr, &rectg0);
 		}
 		revamountinc+=revinc;
 		if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r1_tex, nullptr, &rectg1);
+			SDL_RenderCopy(renderer, tex("R1.bmp"), nullptr, &rectg1);
 		}
 		revamountinc+=revinc;
 		if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r2_tex, nullptr, &rectg2);
+			SDL_RenderCopy(renderer, tex("R2.bmp"), nullptr, &rectg2);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r3_tex, nullptr, &rectg3);
+			SDL_RenderCopy(renderer, tex("R3.bmp"), nullptr, &rectg3);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r4_tex, nullptr, &rect_g4);
+			SDL_RenderCopy(renderer, tex("R4.bmp"), nullptr, &rect_g4);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r5_tex, nullptr, &rect_g5);
+			SDL_RenderCopy(renderer, tex("R5.bmp"), nullptr, &rect_g5);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r6_tex, nullptr, &rect_g6);
+			SDL_RenderCopy(renderer, tex("R6.bmp"), nullptr, &rect_g6);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r7_tex, nullptr, &rect_g7);
+			SDL_RenderCopy(renderer, tex("R7.bmp"), nullptr, &rect_g7);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r8_tex, nullptr, &rect_g8);
+			SDL_RenderCopy(renderer, tex("R8.bmp"), nullptr, &rect_g8);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r9_tex, nullptr, &rect_g9);
+			SDL_RenderCopy(renderer, tex("R9.bmp"), nullptr, &rect_g9);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r10_tex, nullptr, &rect_g10);
+			SDL_RenderCopy(renderer, tex("R10.bmp"), nullptr, &rect_g10);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r11_tex, nullptr, &rect_g11);
+			SDL_RenderCopy(renderer, tex("R11.bmp"), nullptr, &rect_g11);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, g_r1213_tex, nullptr, &rect_g1213);
+			SDL_RenderCopy(renderer, tex("R12-13.bmp"), nullptr, &rect_g1213);
 		}
 	}
 
@@ -4904,30 +3688,30 @@ void dashboard_startup () {
 		
 		if (startup_anim_count < 1000) {
 			// Fuel Gauge		
-			render_texture (g_fuel_gauge_tex, (676+500)-(startup_anim_count-500), 294, 316, 44);
-			render_texture (gfuelgaugewhitetex, (714+(spin_angle*3)+500)-(startup_anim_count-500), 303, 274, 28);
+			render_texture (tex("Fuelgauge.bmp"), (676+500)-(startup_anim_count-500), 294, 316, 44);
+			render_texture (tex("Fuelgaugewhite.bmp"), (714+(spin_angle*3)+500)-(startup_anim_count-500), 303, 274, 28);
 
 			// Coolant Temp
 			if (using_fh) {
-				render_texture (g_coolant_f_tex, (808+500)-(startup_anim_count-500), 196, 209, 80);
+				render_texture (tex("CoolantF.bmp"), (808+500)-(startup_anim_count-500), 196, 209, 80);
 			} else {
-				render_texture (g_coolant_tex, (808+500)-(startup_anim_count-500), 196, 209, 80);	
+				render_texture (tex("Coolant.bmp"), (808+500)-(startup_anim_count-500), 196, 209, 80);	
 			}
 			
-			render_texture (g_coolant_icon_tex, (772+500)-(startup_anim_count-500), 221, 41, 39);
+			render_texture (tex("Coolanticon.bmp"), (772+500)-(startup_anim_count-500), 221, 41, 39);
 		} else {
 						// Fuel Gauge
-			render_texture (g_fuel_gauge_tex, 676, 294, 316, 44);
-			render_texture (gfuelgaugewhitetex, 714+(spin_angle*3), 303, 274, 28);
+			render_texture (tex("Fuelgauge.bmp"), 676, 294, 316, 44);
+			render_texture (tex("Fuelgaugewhite.bmp"), 714+(spin_angle*3), 303, 274, 28);
 
 			// Coolant Temp
 			if (using_fh) {
-				render_texture (g_coolant_f_tex, 808, 196, 209, 80);
+				render_texture (tex("CoolantF.bmp"), 808, 196, 209, 80);
 			} else {
-				render_texture (g_coolant_tex, 808, 196, 209, 80);	
+				render_texture (tex("Coolant.bmp"), 808, 196, 209, 80);	
 			}
 			
-			render_texture (g_coolant_icon_tex, 772, 221, 41, 39);
+			render_texture (tex("Coolanticon.bmp"), 772, 221, 41, 39);
 		}
 	}
 
@@ -4955,13 +3739,13 @@ void animate_info_mode() {
 	if (info_mode == 3 && currentinfomode == 2) {
 		
 		if (infoanimationreverse == false) {
-			render_texture(g_tyre_top_tex, 0-info_animation_count, 176, 510, 97);
-			render_texture(g_tyre_bottom_tex, 0-info_animation_count, 273, 454, 125);
+			render_texture(tex("tyretop.bmp"), 0-info_animation_count, 176, 510, 97);
+			render_texture(tex("tyrebottom.bmp"), 0-info_animation_count, 273, 454, 125);
 		}
 
 		if (infoanimationreverse == true) {
-			render_texture(g_nav_bg_tex, 0 - info_animation_count, 158, 434, 268);
-			//render_texture(g_info_bottom_diag_tex, 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Navbg.bmp"), 0 - info_animation_count, 158, 434, 268);
+			//render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -4974,13 +3758,13 @@ void animate_info_mode() {
 	if (info_mode == 3 && currentinfomode == 1) {
 		
 		if (infoanimationreverse == false) {
-			render_texture(g_info_top_diag_tex, 0 - info_animation_count, 176, 510, 97);
-			render_texture(g_info_bottom_diag_tex, 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Infotopdiag.bmp"), 0 - info_animation_count, 176, 510, 97);
+			render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (infoanimationreverse == true) {
-			render_texture(g_nav_bg_tex, 0 - info_animation_count, 158, 434, 268);
-			//render_texture(g_info_bottom_diag_tex, 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Navbg.bmp"), 0 - info_animation_count, 158, 434, 268);
+			//render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -4994,17 +3778,17 @@ void animate_info_mode() {
 		
 		if (infoanimationreverse == false) {
 			if (using_km) {
-				render_texture(g_info_top_km_tex, 0 - info_animation_count, 176, 510, 97);
+				render_texture(tex("InfotopKM.bmp"), 0 - info_animation_count, 176, 510, 97);
 			} else {
-				render_texture(g_info_top_tex, 0 - info_animation_count, 176, 510, 97);	
+				render_texture(tex("Infotop.bmp"), 0 - info_animation_count, 176, 510, 97);	
 			}
 			
-			render_texture(g_info_bottom_tex, 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Infobottom.bmp"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (infoanimationreverse == true) {
-			render_texture(g_nav_bg_tex, 0 - info_animation_count, 158, 434, 268);
-			//render_texture(g_info_bottom_diag_tex, 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Navbg.bmp"), 0 - info_animation_count, 158, 434, 268);
+			//render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -5017,13 +3801,13 @@ void animate_info_mode() {
 	if (info_mode == 2 && currentinfomode == 1) {
 		
 		if (infoanimationreverse == false) {
-			render_texture(g_info_top_diag_tex, 0 - info_animation_count, 176, 510, 97);
-			render_texture(g_info_bottom_diag_tex, 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Infotopdiag.bmp"), 0 - info_animation_count, 176, 510, 97);
+			render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (infoanimationreverse == true) {
-			render_texture(g_tyre_top_tex, 0-info_animation_count, 176, 510, 97);
-			render_texture(g_tyre_bottom_tex, 0-info_animation_count, 273, 454, 125);
+			render_texture(tex("tyretop.bmp"), 0-info_animation_count, 176, 510, 97);
+			render_texture(tex("tyrebottom.bmp"), 0-info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -5037,17 +3821,17 @@ void animate_info_mode() {
 		
 		if (infoanimationreverse == false) {
 			if (using_km) {
-				render_texture(g_info_top_km_tex, 0 - info_animation_count, 176, 510, 97);
+				render_texture(tex("InfotopKM.bmp"), 0 - info_animation_count, 176, 510, 97);
 			} else {
-				render_texture(g_info_top_tex, 0 - info_animation_count, 176, 510, 97);	
+				render_texture(tex("Infotop.bmp"), 0 - info_animation_count, 176, 510, 97);	
 			}
 			
-			render_texture(g_info_bottom_tex, 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Infobottom.bmp"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (infoanimationreverse == true) {
-			render_texture(g_info_top_diag_tex, 0-info_animation_count, 176, 510, 97);
-			render_texture(g_info_bottom_diag_tex, 0-info_animation_count, 273, 454, 125);
+			render_texture(tex("Infotopdiag.bmp"), 0-info_animation_count, 176, 510, 97);
+			render_texture(tex("Infobottomdiag.bmp"), 0-info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -5059,19 +3843,19 @@ void animate_info_mode() {
 
 	if (info_mode == 0 && currentinfomode == 3) {
 		if (infoanimationreverse == false) {
-			//render_texture(g_info_top_diag_tex, 0 - info_animation_count, 176, 510, 97);
-			//render_texture(g_info_bottom_diag_tex, 0 - info_animation_count, 273, 454, 125);
-			render_texture(g_nav_bg_tex, 0 - info_animation_count, 158, 434, 268);
+			//render_texture(tex("Infotopdiag.bmp"), 0 - info_animation_count, 176, 510, 97);
+			//render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Navbg.bmp"), 0 - info_animation_count, 158, 434, 268);
 		}
 
 		if (infoanimationreverse == true) {
 			if (using_km) {
-				render_texture(g_info_top_km_tex, 0- info_animation_count, 176, 510, 97);
+				render_texture(tex("InfotopKM.bmp"), 0- info_animation_count, 176, 510, 97);
 			} else {
-				render_texture(g_info_top_tex, 0- info_animation_count, 176, 510, 97);	
+				render_texture(tex("Infotop.bmp"), 0- info_animation_count, 176, 510, 97);	
 			}
 			
-			render_texture(g_info_bottom_tex, 0- info_animation_count, 273, 454, 125);
+			render_texture(tex("Infobottom.bmp"), 0- info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -5085,19 +3869,19 @@ void animate_info_mode() {
 		
 		// This one goes away
 		if (infoanimationreverse == false) {
-			render_texture(g_tyre_top_tex, 0-info_animation_count, 176, 510, 97);
-			render_texture(g_tyre_bottom_tex, 0-info_animation_count, 273, 454, 125);
+			render_texture(tex("tyretop.bmp"), 0-info_animation_count, 176, 510, 97);
+			render_texture(tex("tyrebottom.bmp"), 0-info_animation_count, 273, 454, 125);
 		}
 
 		// This one comes in
 		if (infoanimationreverse == true) {
 			if (using_km) {
-				render_texture(g_info_top_km_tex, 0- info_animation_count, 176, 510, 97);
+				render_texture(tex("InfotopKM.bmp"), 0- info_animation_count, 176, 510, 97);
 			} else {
-				render_texture(g_info_top_tex, 0- info_animation_count, 176, 510, 97);	
+				render_texture(tex("Infotop.bmp"), 0- info_animation_count, 176, 510, 97);	
 			}
 			
-			render_texture(g_info_bottom_tex, 0- info_animation_count, 273, 454, 125);
+			render_texture(tex("Infobottom.bmp"), 0- info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -5130,7 +3914,7 @@ void draw_dashboard () {
 
 
 	// Rev counter rev line texture
-	SDL_RenderCopy(renderer, g_revline_tex, nullptr, &grevline);
+	SDL_RenderCopy(renderer, tex("Revline.bmp"), nullptr, &grevline);
 
 	target_rpm_rotation = get_rpm_rotation (rpm);
 	if (target_rpm_rotation > current_rpm_rotation) {
@@ -5146,54 +3930,54 @@ void draw_dashboard () {
 	}
 
 	// White rev counter cover to reveal the rev line
-	SDL_RenderCopyEx(renderer, g_revwhite_tex, nullptr, &grrevwhite, current_rpm_rotation , &gwhitepoint, SDL_FLIP_NONE);
+	SDL_RenderCopyEx(renderer, tex("Whitesq.bmp"), nullptr, &grrevwhite, current_rpm_rotation , &gwhitepoint, SDL_FLIP_NONE);
 
 	// Top grey icons
 	render_top_icon_grey_texture (0, 0, 627, 138);
-	render_texture (gtopiconsedge1tex, 625, 0, 98, 75);
-	render_texture (gtopiconsedge2tex, 721, 0, 84, 24);
+	render_texture (tex("Topiconedge1.bmp"), 625, 0, 98, 75);
+	render_texture (tex("Topiconedge2.bmp"), 721, 0, 84, 24);
 
 	// Trip 1 and 2 and Odometer, Ambient Temp and Time section
-	render_texture (g_mile_info_tex, 0, 434, 435, 169);
+	render_texture (tex("Mileinfo.bmp"), 0, 434, 435, 169);
 
 	// Fuel Gauge
 	if (fuelwarning == true && enginerunning == true) {
 		if (flash) 
 		{
-			render_texture (g_fuel_gauge_tex, 676, 294, 316, 44);
-			render_texture (gfuelgaugewhitetex, 714+get_fuel_reveal_from_bars (get_num_fuel_bars(fuel_float)), 303, 274, 28);
+			render_texture (tex("Fuelgauge.bmp"), 676, 294, 316, 44);
+			render_texture (tex("Fuelgaugewhite.bmp"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(fuel_float)), 303, 274, 28);
 		}
 	} else {
-		render_texture (g_fuel_gauge_tex, 676, 294, 316, 44);
-		render_texture (gfuelgaugewhitetex, 714+get_fuel_reveal_from_bars (get_num_fuel_bars(fuel_float)), 303, 274, 28);
+		render_texture (tex("Fuelgauge.bmp"), 676, 294, 316, 44);
+		render_texture (tex("Fuelgaugewhite.bmp"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(fuel_float)), 303, 274, 28);
 	}
 	// Coolant Temp
 	if (overheatwarning == true && enginerunning == true) {
 		if (flash) {
 			if (using_fh) {
-				render_texture (g_coolant_f_tex, 808, 196, 209, 80);
+				render_texture (tex("CoolantF.bmp"), 808, 196, 209, 80);
 			} else {
-				render_texture (g_coolant_tex, 808, 196, 209, 80);	
+				render_texture (tex("Coolant.bmp"), 808, 196, 209, 80);	
 			}	
 		}
 	} else {
 		if (using_fh) {
-			render_texture (g_coolant_f_tex, 808, 196, 209, 80);
+			render_texture (tex("CoolantF.bmp"), 808, 196, 209, 80);
 		} else {
-			render_texture (g_coolant_tex, 808, 196, 209, 80);	
+			render_texture (tex("Coolant.bmp"), 808, 196, 209, 80);	
 		}
 	}
 
-	render_texture (g_coolant_icon_tex, 772, 221, 41, 39);
+	render_texture (tex("Coolanticon.bmp"), 772, 221, 41, 39);
 
 	// Top light icons (Neutral, Oil, Indicator, High beam)
 
 	if (neutral) {
-		render_texture (g_neutral_light_tex, 0, 0, 130, 136);
+		render_texture (tex("Neutrallight.bmp"), 0, 0, 130, 136);
 	}
 
 	if (!neutral && current_gear != 0) {
-		render_texture (g_gear_tex, 0, 0, 131, 136);
+		render_texture (tex("Gear.bmp"), 0, 0, 131, 136);
 		draw_large_num (current_gear, 30, 22);
 	}
 
@@ -5202,51 +3986,51 @@ void draw_dashboard () {
 	}
 
 	if (indicate_right && !indicate_left) {
-		render_texture (g_indicate_right_tex, 267, 0, 135, 136);
+		render_texture (tex("Indicateright.bmp"), 267, 0, 135, 136);
 	}
 
 	if (indicate_left && !indicate_right) {
-		render_texture (g_indicate_left_tex, 267, 0, 135, 136);		
+		render_texture (tex("Indicateleft.bmp"), 267, 0, 135, 136);		
 	}
 
 	if (indicate_left && indicate_right) {
-		render_texture (g_indicate_both_tex, 267, 0, 135, 136);			
+		render_texture (tex("Indicateboth.bmp"), 267, 0, 135, 136);			
 	}
 
 	if (high_beam) {
-		render_texture (g_high_beam_light_tex, 404, 0, 133, 136);
+		render_texture (tex("Highbeamlight.bmp"), 404, 0, 133, 136);
 	}
 
 	// Middle info section (Tank Range, MPG, etc..)
 	if (info_mode == 0 && !warningbadgeactive) {
 		if (info_animation_in_progress == false) {
 			if (using_km) {
-				render_texture(g_info_top_km_tex, 0, 176, 510, 97);
+				render_texture(tex("InfotopKM.bmp"), 0, 176, 510, 97);
 			} else {
-				render_texture(g_info_top_tex, 0, 176, 510, 97);	
+				render_texture(tex("Infotop.bmp"), 0, 176, 510, 97);	
 			}
 			
-			render_texture(g_info_bottom_tex, 0, 273, 454, 125);
+			render_texture(tex("Infobottom.bmp"), 0, 273, 454, 125);
 		} 
 	}
 
 	if (info_mode == 1 && !warningbadgeactive) {
 		if (info_animation_in_progress == false) {
-			render_texture(g_info_top_diag_tex, 0, 176, 510, 97);
-			render_texture(g_info_bottom_diag_tex, 0, 273, 454, 125);
+			render_texture(tex("Infotopdiag.bmp"), 0, 176, 510, 97);
+			render_texture(tex("Infobottomdiag.bmp"), 0, 273, 454, 125);
 		} 
 	}
 
 	if (info_mode == 2 && !warningbadgeactive) {
 		if (info_animation_in_progress == false) {
-			render_texture(g_tyre_top_tex, 0, 176, 510, 97);
-			render_texture(g_tyre_bottom_tex, 0, 273, 454, 125);
+			render_texture(tex("tyretop.bmp"), 0, 176, 510, 97);
+			render_texture(tex("tyrebottom.bmp"), 0, 273, 454, 125);
 		} 
 	}
 
 	if (info_mode == 3 && !warningbadgeactive) {
 		if (info_animation_in_progress == false) {			
-			render_texture(g_nav_bg_tex, 0, 158, 434, 268);
+			render_texture(tex("Navbg.bmp"), 0, 158, 434, 268);
 		} 
 	}
 
@@ -5262,9 +4046,9 @@ void draw_dashboard () {
 
 	/*
 	if (info_mode == 2) { // Low Fuel
-		render_texture (g_low_fuel_badge_tex, 0, 163, 444, 249);
+		render_texture (tex("Fuelwarningbadge.bmp"), 0, 163, 444, 249);
 		if (neutral) {
-			render_texture (g_low_fuel_tex, 222, 236, 134, 105);
+			render_texture (tex("Lowfuel.bmp"), 222, 236, 134, 105);
 		}
 	}
 	*/
@@ -5291,22 +4075,22 @@ void draw_dashboard () {
 		if (front_tyre_warning_triggered || rear_tyre_warning_triggered) {
 			
 			warningbadgeactive = true;
-			render_texture (g_low_tyre_badge_tex, 0, 163, 444, 249);
+			render_texture (tex("Lowtyrebadge.bmp"), 0, 163, 444, 249);
 
 			if (flash) {
 				if (front_tyre_warning_triggered && !rear_tyre_warning_triggered) {
 					// Front only
-					render_texture (g_front_tyre_low_tex, 168, 244, 257, 76);
+					render_texture (tex("Fronttyrelow.bmp"), 168, 244, 257, 76);
 				}
 
 				if (rear_tyre_warning_triggered && !front_tyre_warning_triggered) {
 					// Rear only
-					render_texture (g_rear_tyre_low_tex, 168, 244, 257, 76);
+					render_texture (tex("Reartyrelow.bmp"), 168, 244, 257, 76);
 				}
 
 				if (rear_tyre_warning_triggered && front_tyre_warning_triggered) {
 					// Front and Rear
-					render_texture (g_both_tyre_low_tex, 168, 244, 257, 76);
+					render_texture (tex("Frontrearlow.bmp"), 168, 244, 257, 76);
 				}
 
 			}
@@ -5316,27 +4100,27 @@ void draw_dashboard () {
 			if (oil_warning == true && enginerunning == true) { // Oil warning takes priority
 				
 				warningbadgeactive = true;
-				render_texture (g_low_oil_badge_tex, 0, 163, 444, 249);
+				render_texture (tex("Lowoilbadge.bmp"), 0, 163, 444, 249);
 				
 				if (flash) {
-					render_texture (g_low_oil_tex, 222, 236, 134, 105);
+					render_texture (tex("Lowoil.bmp"), 222, 236, 134, 105);
 				}
 
 			} else {
 				
 				if (overheatwarning == true && enginerunning == true) { // Second priority is engine overheat warning
 					warningbadgeactive = true;
-					render_texture(g_overheat_badge_tex, 0, 163, 444, 249);
+					render_texture(tex("Overheatbadge.bmp"), 0, 163, 444, 249);
 					if (flash) {
-						render_texture(g_engine_overheat_tex, 189, 237, 212, 95);
+						render_texture(tex("Engineoverheat.bmp"), 189, 237, 212, 95);
 					}
 				} else {
 					
 					if (fuelwarning == true && enginerunning == true && info_mode != 3) { // Third priority is fuel warning
 						warningbadgeactive = true;
-						render_texture(g_low_fuel_badge_tex, 0, 163, 444, 249);
+						render_texture(tex("Fuelwarningbadge.bmp"), 0, 163, 444, 249);
 						if (flash) {
-							render_texture(g_low_fuel_tex, 222, 236, 134, 105);
+							render_texture(tex("Lowfuel.bmp"), 222, 236, 134, 105);
 						}
 					} else {
 						warningbadgeactive = false;
@@ -5349,28 +4133,28 @@ void draw_dashboard () {
 
 	// Units - either MPH or KM
 	if (using_km == 1) {
-		render_texture (g_kph_tex, 844, 553, 179, 44);
-		render_texture (g_km_tex, 350, 448, 57, 18);
+		render_texture (tex("kph.bmp"), 844, 553, 179, 44);
+		render_texture (tex("km.bmp"), 350, 448, 57, 18);
 	} else {
-		render_texture (g_mph_tex, 844, 553, 142, 45);
-		render_texture (g_miles_tex, 350, 448, 57, 18);	
+		render_texture (tex("mph.bmp"), 844, 553, 142, 45);
+		render_texture (tex("Miles.bmp"), 350, 448, 57, 18);	
 	}
 	
 
 	// Rev counter numbers
-	SDL_RenderCopy(renderer, g_r1213_tex, nullptr, &rect_g1213);
-	SDL_RenderCopy(renderer, g_r11_tex, nullptr, &rect_g11);
-	SDL_RenderCopy(renderer, g_r10_tex, nullptr, &rect_g10);
-	SDL_RenderCopy(renderer, g_r9_tex, nullptr, &rect_g9);
-	SDL_RenderCopy(renderer, g_r8_tex, nullptr, &rect_g8);
-	SDL_RenderCopy(renderer, g_r7_tex, nullptr, &rect_g7);
-	SDL_RenderCopy(renderer, g_r6_tex, nullptr, &rect_g6);
-	SDL_RenderCopy(renderer, g_r5_tex, nullptr, &rect_g5);
-	SDL_RenderCopy(renderer, g_r4_tex, nullptr, &rect_g4);
-	SDL_RenderCopy(renderer, g_r3_tex, nullptr, &rectg3);
-	SDL_RenderCopy(renderer, g_r2_tex, nullptr, &rectg2);
-	SDL_RenderCopy(renderer, g_r1_tex, nullptr, &rectg1);
-	SDL_RenderCopy(renderer, g_r0_tex, nullptr, &rectg0);
+	SDL_RenderCopy(renderer, tex("R12-13.bmp"), nullptr, &rect_g1213);
+	SDL_RenderCopy(renderer, tex("R11.bmp"), nullptr, &rect_g11);
+	SDL_RenderCopy(renderer, tex("R10.bmp"), nullptr, &rect_g10);
+	SDL_RenderCopy(renderer, tex("R9.bmp"), nullptr, &rect_g9);
+	SDL_RenderCopy(renderer, tex("R8.bmp"), nullptr, &rect_g8);
+	SDL_RenderCopy(renderer, tex("R7.bmp"), nullptr, &rect_g7);
+	SDL_RenderCopy(renderer, tex("R6.bmp"), nullptr, &rect_g6);
+	SDL_RenderCopy(renderer, tex("R5.bmp"), nullptr, &rect_g5);
+	SDL_RenderCopy(renderer, tex("R4.bmp"), nullptr, &rect_g4);
+	SDL_RenderCopy(renderer, tex("R3.bmp"), nullptr, &rectg3);
+	SDL_RenderCopy(renderer, tex("R2.bmp"), nullptr, &rectg2);
+	SDL_RenderCopy(renderer, tex("R1.bmp"), nullptr, &rectg1);
+	SDL_RenderCopy(renderer, tex("R0.bmp"), nullptr, &rectg0);
 
 	sprintf( str_current_speed, "%d", current_speed);
 	sprintf( str_trip1, "%.1f", trip1);
@@ -5685,12 +4469,12 @@ void draw_dashboard () {
 
 	if (indicate_left && !warningbadgeactive) {		
 		if (info_mode == 0 || info_mode == 1) {
-			render_texture (g_indicate_left_far_tex, 2, 186, 250, 98);
+			render_texture (tex("Indicateleftfar.bmp"), 2, 186, 250, 98);
 		}		
 	}
 
 	if (indicate_right && !warningbadgeactive) {		
-		render_texture (g_indicate_right_far_tex, 802, 192, 209, 84);
+		render_texture (tex("Indicaterightfar.bmp"), 802, 192, 209, 84);
 	}
 	
 
@@ -5706,11 +4490,11 @@ void draw_dashboard () {
 	}
 
 	if (tpms_connected) {
-		render_texture (g_tyre_icon_tex, 630, 553, 22, 45);
+		render_texture (tex("tyreicon.bmp"), 630, 553, 22, 45);
 	}
 
 	if (tpms_connected && tpms_signal && tpms_signal_count < 300) {
-		render_texture (g_tyre_signal_tex, 653, 559, 33, 34);
+		render_texture (tex("tyresignal.bmp"), 653, 559, 33, 34);
 		tpms_signal_count++;
 	}
 
@@ -5793,71 +4577,19 @@ int main(int argc, char* args[]) {
 
 	screen_surface = SDL_GetWindowSurface(window);
 
-	if (theme == 0) {
-		if (load_surfaces(nullptr) != 0) {
-			return 1;
-		}
-	}
-
-	if (theme == 1) {
-		if (load_surfaces("green") != 0) {
-			return 1;
-		}
-	}
-
-	if (theme == 2) {
-		if (load_surfaces("red") != 0) {
-			return 1;
-		}
-	}
-
-	if (theme == 3) {
-
-		if (load_surfaces("blue") != 0) {
-			return 1;
-		}
-	}
-
-	if (theme == 4) {
-		if (load_surfaces("orange") != 0) {
-			return 1;
-		}
-	}
-
-	if (theme == 5) {
-		if (load_surfaces("yellow") != 0) {
-			return 1;
-		}
-	}
-
-	if (theme == 6) {
-		if (load_surfaces("night") != 0) {
-			return 1;
-		}
-	}
-
-	if (theme == 7) {
-		if (load_surfaces("bright") != 0) {
-			return 1;
-		}
-	}
-
-	if (theme == 8) {
-		if (load_surfaces("dark") != 0) {
-			return 1;
-		}
-	}
-
-	
-	init_rects();
-
-	//if (load_surfaces() != 0) {
-	//	return 1;
-	//}
-
-	if (init_textures() != 0) {
+	g_assets = asset_store_create(renderer);
+	if (!g_assets) {
+		fprintf(stderr, "Failed to create asset store\n");
 		return 1;
 	}
+	for (int i = 0; i < THEME_COUNT; i++) {
+		char dir[256];
+		snprintf(dir, sizeof(dir), "assets/themes/%s", THEME_NAMES[i]);
+		asset_store_load_theme(g_assets, THEME_NAMES[i], dir);
+	}
+	g_current_theme = theme_name_from_id(theme);
+
+	init_rects();
 
 	SDL_ShowCursor(SDL_DISABLE);
 
@@ -5915,44 +4647,9 @@ int main(int argc, char* args[]) {
 
 		//run_partial_test();
 
-		if (theme != currenttheme) {			
+		if (theme != currenttheme) {
 			currenttheme = theme;
-			if (theme == 0) {
-				load_surfaces(nullptr);
-			}
-
-			if (theme == 1) {
-				load_surfaces("green");
-			}
-
-			if (theme == 2) {
-				load_surfaces("red");
-			}
-
-			if (theme == 3) {
-				load_surfaces("blue");
-			}
-
-			if (theme == 4) {
-				load_surfaces("orange");
-			}
-
-			if (theme == 5) {
-				load_surfaces("yellow");
-			}
-
-			if (theme == 6) {
-				load_surfaces("night");
-			}
-
-			if (theme == 7) {
-				load_surfaces("bright");
-			}
-
-			if (theme == 8) {
-				load_surfaces("dark");
-			}
-			init_textures();
+			g_current_theme = theme_name_from_id(theme);
 		}
 
 		//odo = spin_angle;
@@ -6015,6 +4712,8 @@ int main(int argc, char* args[]) {
 
 		//fprintf(stderr, "Main thread: %s\n", g_sz_comms_msg);
 	}
+
+	asset_store_destroy(g_assets);
 
 	if (renderer) {
 		SDL_DestroyRenderer(renderer);

@@ -17,6 +17,16 @@
 - Test suite in `test_assets.c` (7 tests, all passing)
 - `zig build test` runs both parser and asset tests
 
+### Asset store integration into testsdl.cpp
+- Replaced 143 global variables (72 `SDL_Surface*` + 71 `SDL_Texture*`) with 2 (`g_assets` + `g_current_theme`)
+- Deleted `load_surface()`, `load_surfaces()`, and `init_textures()` (~1000 lines of boilerplate)
+- All 9 themes loaded upfront at startup — no per-switch disk I/O
+- Theme switching is now a string assignment instead of full surface reload + texture recreation
+- `tex("Name.bmp")` helper for current-theme lookups, `tex_from("theme", "Name.bmp")` for fixed-theme
+- Default-only assets (odometer setup, theme arrows) use `tex_from("default", ...)`
+- Per-theme thumbnails use `tex_from("green", "greenthumb.bmp")` etc.
+- ~1250 lines deleted, ~40 lines added
+
 ### snake_case naming convention
 - All functions, globals, locals, struct types and members converted to snake_case
 - Constants remain UPPER_CASE (already correct)
@@ -30,13 +40,13 @@
 
 Roughly in order of impact:
 
-1. **Texture loading boilerplate** (~300 lines) — 100+ textures loaded with identical error-checking. Replace with a generic helper or data-driven asset table.
+1. ~~**Texture loading boilerplate**~~ — **Done.** Replaced by asset store integration.
 
 2. **Drawing function duplication** (~200 lines) — 7 near-identical `draw_*_string()` functions. Parameterise into one generic glyph renderer.
 
 3. **Global state grouping** (~100 globals) — Group into structs: `bike_state`, `tpms_state`, `animation_state`, `display_strings`, etc.
 
-4. **Theme descriptor table** — Replace scattered `if (theme == X)` checks with a theme struct and index lookup.
+4. ~~**Theme descriptor table**~~ — **Done.** `THEME_NAMES[]` array + `theme_name_from_id()` replaces all `if (theme == X)` ladders.
 
 5. **Nav symbol lookup table** — Replace 20+ `strcmp()` chains with a data-driven table (same pattern as parser).
 

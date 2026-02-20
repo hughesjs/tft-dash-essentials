@@ -1,0 +1,13 @@
+# Set default behavior to automatically normalize line endings to LF
+* text=auto eol=lf
+
+# Explicitly mark hex files as binary (do not modify)
+*.hex binary
+
+# Other binary files
+*.bmp binary
+*.stl binary
+
+# EAGLE files (board and schematic)
+*.brd text eol=lf
+*.sch text eol=lf

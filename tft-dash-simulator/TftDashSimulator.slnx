@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/TftDashSimulator/TftDashSimulator.csproj" />
+  <Project Path="tests/TftDashSimulator.Tests/TftDashSimulator.Tests.csproj" />
+</Solution>

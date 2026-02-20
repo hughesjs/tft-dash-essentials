@@ -1,0 +1,83 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- VS Code Dark+ Colour Scheme -->
+    <Styles.Resources>
+        <SolidColorBrush x:Key="WindowBackground">#1E1E1E</SolidColorBrush>
+        <SolidColorBrush x:Key="ControlBackground">#252526</SolidColorBrush>
+        <SolidColorBrush x:Key="BorderBrush">#3E3E42</SolidColorBrush>
+        <SolidColorBrush x:Key="TextForeground">#CCCCCC</SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonPrimary">#0E639C</SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonPrimaryHover">#1177BB</SolidColorBrush>
+        <SolidColorBrush x:Key="WarningText">#F48771</SolidColorBrush>
+    </Styles.Resources>
+
+    <!-- Window Style -->
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{DynamicResource WindowBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextForeground}" />
+    </Style>
+
+    <!-- Border Style -->
+    <Style Selector="Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="Background" Value="{DynamicResource ControlBackground}" />
+    </Style>
+
+    <!-- TextBlock Style -->
+    <Style Selector="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource TextForeground}" />
+    </Style>
+
+    <!-- NumericUpDown Style -->
+    <Style Selector="NumericUpDown">
+        <Setter Property="Background" Value="{DynamicResource ControlBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextForeground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    </Style>
+
+    <!-- ComboBox Style -->
+    <Style Selector="ComboBox">
+        <Setter Property="Background" Value="{DynamicResource ControlBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextForeground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    </Style>
+
+    <!-- Button Style -->
+    <Style Selector="Button">
+        <Setter Property="Background" Value="{DynamicResource ButtonPrimary}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextForeground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    </Style>
+
+    <Style Selector="Button:pointerover">
+        <Setter Property="Background" Value="{DynamicResource ButtonPrimaryHover}" />
+    </Style>
+
+    <!-- CheckBox Style -->
+    <Style Selector="CheckBox">
+        <Setter Property="Foreground" Value="{DynamicResource TextForeground}" />
+    </Style>
+
+    <!-- Panel Backgrounds -->
+    <Style Selector="Border.ControlsPanel">
+        <Setter Property="Background" Value="{DynamicResource ControlBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,1,0" />
+        <Setter Property="Padding" Value="10" />
+    </Style>
+
+    <Style Selector="Border.PreviewPanel">
+        <Setter Property="Background" Value="{DynamicResource WindowBackground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="10" />
+    </Style>
+
+    <!-- Monospace Preview Text -->
+    <Style Selector="TextBlock.MonospacePreview">
+        <Setter Property="FontFamily" Value="Consolas,Courier New,monospace" />
+        <Setter Property="Background" Value="{DynamicResource WindowBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextForeground}" />
+    </Style>
+</Styles>

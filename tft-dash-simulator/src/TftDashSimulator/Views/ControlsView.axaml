@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="360" d:DesignHeight="700"
+             x:Class="TftDashSimulator.Views.ControlsView">
+
+    <Border Classes="ControlsPanel">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="10">
+
+                <TextBlock Text="Dashboard Controls"
+                          FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                <!-- Speed -->
+                <StackPanel>
+                    <TextBlock Text="Speed (MPH/KMH)"/>
+                    <NumericUpDown x:Name="SpeedControl" Minimum="0" Maximum="200"
+                                  Increment="5" FormatString="0"
+                                  ValueChanged="OnNumericChanged"/>
+                </StackPanel>
+
+                <!-- RPM -->
+                <StackPanel>
+                    <TextBlock Text="RPM"/>
+                    <NumericUpDown x:Name="RpmControl" Minimum="0" Maximum="15000"
+                                  Increment="100" FormatString="0"
+                                  ValueChanged="OnNumericChanged"/>
+                </StackPanel>
+
+                <!-- Coolant -->
+                <StackPanel>
+                    <TextBlock Text="Coolant Temperature"/>
+                    <NumericUpDown x:Name="CoolantControl" Minimum="-20" Maximum="150"
+                                  Increment="5" FormatString="0"
+                                  ValueChanged="OnNumericChanged"/>
+                </StackPanel>
+
+                <!-- Battery -->
+                <StackPanel>
+                    <TextBlock Text="Battery Voltage (V)"/>
+                    <NumericUpDown x:Name="BatteryControl" Minimum="0" Maximum="20"
+                                  Increment="0.1" FormatString="0.0"
+                                  ValueChanged="OnNumericChanged"/>
+                </StackPanel>
+
+                <!-- Fuel -->
+                <StackPanel>
+                    <TextBlock Text="Fuel Level"/>
+                    <NumericUpDown x:Name="FuelControl" Minimum="0" Maximum="1024"
+                                  Increment="10" FormatString="0"
+                                  ValueChanged="OnNumericChanged"/>
+                </StackPanel>
+
+                <!-- Ambient -->
+                <StackPanel>
+                    <TextBlock Text="Ambient Temperature"/>
+                    <NumericUpDown x:Name="AmbientControl" Minimum="-40" Maximum="60"
+                                  Increment="1" FormatString="0"
+                                  ValueChanged="OnNumericChanged"/>
+                </StackPanel>
+
+                <!-- Time -->
+                <TextBlock Text="Time" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <Grid ColumnDefinitions="*,10,*">
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Hour (00-23)"/>
+                        <NumericUpDown x:Name="HourControl" Minimum="0" Maximum="23"
+                                      Increment="1" FormatString="00"
+                                      ValueChanged="OnNumericChanged"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Minute (00-59)"/>
+                        <NumericUpDown x:Name="MinuteControl" Minimum="0" Maximum="59"
+                                      Increment="1" FormatString="00"
+                                      ValueChanged="OnNumericChanged"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Indicators -->
+                <TextBlock Text="Indicators and Warnings" FontWeight="SemiBold" Margin="0,10,0,0"/>
+
+                <CheckBox x:Name="NeutralCheck" Content="Neutral Gear"
+                         IsCheckedChanged="OnCheckChanged"/>
+                <CheckBox x:Name="OilCheck" Content="Oil Pressure Warning"
+                         IsCheckedChanged="OnCheckChanged"/>
+                <CheckBox x:Name="HighBeamCheck" Content="High Beam"
+                         IsCheckedChanged="OnCheckChanged"/>
+                <CheckBox x:Name="LeftCheck" Content="Left Indicator"
+                         IsCheckedChanged="OnCheckChanged"/>
+                <CheckBox x:Name="RightCheck" Content="Right Indicator"
+                         IsCheckedChanged="OnCheckChanged"/>
+
+                <!-- Settings -->
+                <TextBlock Text="Settings" FontWeight="SemiBold" Margin="0,10,0,0"/>
+
+                <StackPanel>
+                    <TextBlock Text="Theme (0=White, 1=Green, 2=Red, 3=Blue, 4=Orange, 5=Yellow, 6=Night, 7=High Contrast)"/>
+                    <NumericUpDown x:Name="ThemeControl" Minimum="0" Maximum="7"
+                                  Increment="1" FormatString="0"
+                                  ValueChanged="OnNumericChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Units (0=MPH/F/PSI, 1=KMH/C/Bar)"/>
+                    <NumericUpDown x:Name="UnitsControl" Minimum="0" Maximum="1"
+                                  Increment="1" FormatString="0"
+                                  ValueChanged="OnNumericChanged"/>
+                </StackPanel>
+
+                <!-- Preset Buttons -->
+                <TextBlock Text="Preset Scenarios (F1-F4)" FontWeight="SemiBold" Margin="0,15,0,0"/>
+
+                <Button Content="F1: Idle" Click="OnIdleClick"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="F2: Cruising" Click="OnCruiseClick"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="F3: High Speed Warning" Click="OnWarningClick"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="F4: Low Fuel" Click="OnLowFuelClick"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+
+                <Button Content="Exit (Esc)" Click="OnExitClick"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                       Margin="0,10,0,0"/>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

@@ -1,0 +1,18 @@
+# Build results
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

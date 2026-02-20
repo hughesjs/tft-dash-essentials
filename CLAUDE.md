@@ -1,5 +1,30 @@
 # CLAUDE.md - TFT Dash Display
 
+## Current Branch State
+
+Branch `refactor/parser-extraction` has 12 commits ahead of `master`, not yet pushed. To push:
+
+```bash
+git push -u origin refactor/parser-extraction
+```
+
+Commits (oldest first):
+1. Extract message parsing to testable C modules
+2. Add support for tft-dash-simulator pipe
+3. Add simulator usage documentation
+4. Update build.sh to detect platform and build correctly
+5. Reorganise BMPs into assets/themes structure
+6. Move source files into src directory
+7. Integrate new parser module into main app
+8. Add Zig build system replacing manual g++ invocations
+9. Complete asset reorganisation with thumbnails in theme directories
+10. Tidied up a bit and added dummy CMakeLists
+11. Refactor to snake_case naming convention throughout codebase
+12. Add standalone asset manager module with themed texture lookup
+13. Integrate asset store into testsdl.cpp, replacing 143 texture globals
+
+All builds and tests pass (`zig build` and `zig build test`). See `REFACTORING.md` for remaining opportunities.
+
 ## Overview
 
 This is the display application for the TFT Dash motorcycle dashboard. It runs on a Raspberry Pi, receives sensor data from the firmware over USB serial, and renders the dashboard GUI using SDL2 at 1024x600 resolution.

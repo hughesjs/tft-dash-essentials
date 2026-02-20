@@ -1,0 +1,30 @@
+# Compiled binaries
+testsdl
+test_parser
+TPMSTest
+
+# Don't ignore assets directory
+!assets/
+
+# Object files
+*.o
+*.obj
+
+# Build artefacts
+*.a
+*.so
+*.dylib
+
+# Zig build
+.zig-cache/
+zig-out/
+
+# macOS
+.DS_Store
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

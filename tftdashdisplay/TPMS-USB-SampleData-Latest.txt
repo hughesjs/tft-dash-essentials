@@ -1,0 +1,149 @@
+TPMS interface connected!Num bytes: 112
+-86 -95 65 14 99 1 -83 -117 -110 0 0 67 40 51 
+-86 -95 65 14 99 2 -83 -116 92 0 0 72 40 4 
+-86 -95 65 14 99 3 -83 -112 92 0 0 71 40 8 
+-86 -95 65 14 99 4 -83 -116 -74 0 0 77 40 101 
+-86 -95 65 14 99 1 -83 -117 -110 0 0 67 40 51 
+-86 -95 65 14 99 2 -83 -116 92 0 0 72 40 4 
+-86 -95 65 14 99 3 -83 -112 92 0 0 71 40 8 
+-86 -95 65 14 99 4 -83 -116 -74 0 0 77 40 101 
+
+Num bytes: 0
+-86 -95 65 14 99 4 -83 -116 -74 0 0 77 104 -91 
+
+
+Analysis:
+
+-86 	- byte 0: Seems to be a header byte
+-95 	- byte 1: Another header byte
+65 		- byte 2: Another header byte
+14 		- byte 3: Length of the packet in bytes (consistent with current packet length)
+99 		- byte 4: Some sort of check byte (maybe mode?)
+1 		- byte 5: Seems to be sensor number ANDED with 255 -  int i5 = (bArr[5] & 255) - 1;
+-83 	- byte 6: 
+-117	- byte 7: 
+-110 	- byte 8:
+0 		- byte 9: Tyre pressure byte 1
+0 		- byte 10: Tyre pressure byte 2 - to get pressure you do: 0.025d * ((double) (((bArr[9] & 3) * 256) + (bArr[10] & 255))); - Result is in BAR, to 		   get PSI you multiply by 14.5d
+67 		- byte 11: Temperature - to get temp you do: (bArr[11] & 255) - 50 - result is in Celcius.
+40 		- byte 12: Warning state - different values for different warning states. 
+
+				if ((bArr[12] & 3) == 1) {
+                    i3 = 1;
+                    // fastleakage
+                } else if ((bArr[12] & 16) == 16) {
+                    i3 = 2;
+                    // highpres
+                } else if ((bArr[12] & 8) == 8) {
+                    i3 = 4;
+                    // lowpres
+                } else if ((bArr[12] & 4) == 4) {
+                    i3 = 3;
+                    // hightemp
+                } else if ((bArr[12] & -128) == 128) {
+                    i3 = 5;
+                    // lowbattery
+                } else {
+                    // Normal 
+                }
+
+51		- byte 13: 
+
+
+
+1111111110101010
+0000000010101010
+
+
+
+Data from Latest Kit:
+
+-86 -95 65 14 99 3 107 111 60 0 1 77 40 -116 
+PSI: S1: 0.000000, S2: 0.000000, S3: 0.362500, S4: 0.000000
+TMP: S1: 0, S2: 0, S3: 27, S4: 0
+STATE: S1: NORM, S2: NORM, S3: LOWPRESS, S4: NORM
+
+-86 -95 65 14 99 2 109 94 -71 0 0 77 40 -8 
+PSI: S1: 0.000000, S2: 0.000000, S3: 0.362500, S4: 0.000000
+TMP: S1: 0, S2: 27, S3: 27, S4: 0
+STATE: S1: NORM, S2: LOWPRESS, S3: LOWPRESS, S4: NORM
+
+-86 -95 65 8 99 0 4 -5 
+-86 -95 65 15 99 0 1 108 87 110 0 107 69 35 3 
+PSI: S1: 0.000000, S2: 0.000000, S3: 0.362500, S4: 0.000000
+TMP: S1: 0, S2: 27, S3: 27, S4: 0
+STATE: S1: NORM, S2: LOWPRESS, S3: LOWPRESS, S4: NORM
+
+-86 -95 65 15 99 0 2 109 94 -71 0 0 77 40 -7 
+PSI: S1: 0.000000, S2: 0.000000, S3: 0.362500, S4: 0.000000
+TMP: S1: 0, S2: 27, S3: 27, S4: 0
+STATE: S1: NORM, S2: LOWPRESS, S3: LOWPRESS, S4: NORM
+-86 -95 65 15 99 0 3 107 111 60 0 1 77 40 -115 
+-86 -95 65 15 99 0 4 108 -94 44 0 0 75 41 -80 
+PSI: S1: 0.000000, S2: 0.000000, S3: 0.362500, S4: 0.000000
+TMP: S1: 0, S2: 27, S3: 27, S4: 0
+STATE: S1: NORM, S2: LOWPRESS, S3: LOWPRESS, S4: NORM
+
+-86 -95 65 14 99 1 108 87 110 0 0 76 40 -93 
+PSI: S1: 0.000000, S2: 0.000000, S3: 0.362500, S4: 0.000000
+TMP: S1: 26, S2: 27, S3: 27, S4: 0
+STATE: S1: LOWPRESS, S2: LOWPRESS, S3: LOWPRESS, S4: NORM
+
+-86 -95 65 14 99 3 107 111 60 0 1 77 40 -116 
+PSI: S1: 0.000000, S2: 0.000000, S3: 0.362500, S4: 0.000000
+TMP: S1: 26, S2: 27, S3: 27, S4: 0
+STATE: S1: LOWPRESS, S2: LOWPRESS, S3: LOWPRESS, S4: NORM
+
+-86 -95 65 14 99 3 107 111 60 0 1 77 40 -116 
+PSI: S1: 0.000000, S2: 0.000000, S3: 0.362500, S4: 0.000000
+TMP: S1: 26, S2: 27, S3: 27, S4: 0
+STATE: S1: LOWPRESS, S2: LOWPRESS, S3: LOWPRESS, S4: NORM
+
+-86 -95 65 14 99 2 109 94 -71 0 0 80 40 -5 
+PSI: S1: 0.000000, S2: 0.000000, S3: 0.362500, S4: 0.000000
+TMP: S1: 26, S2: 30, S3: 27, S4: 0
+STATE: S1: LOWPRESS, S2: LOWPRESS, S3: LOWPRESS, S4: NORM
+
+-86 -95 65 14 99 2 109 94 -71 0 0 80 40 -5 
+PSI: S1: 0.000000, S2: 0.000000, S3: 0.362500, S4: 0.000000
+TMP: S1: 26, S2: 30, S3: 27, S4: 0
+STATE: S1: LOWPRESS, S2: LOWPRESS, S3: LOWPRESS, S4: NORM
+
+-86 -95 65 14 99 1 108 87 110 0 0 77 40 -92 
+PSI: S1: 0.000000, S2: 0.000000, S3: 0.362500, S4: 0.000000
+TMP: S1: 27, S2: 30, S3: 27, S4: 0
+STATE: S1: LOWPRESS, S2: LOWPRESS, S3: LOWPRESS, S4: NORM
+
+-86 -95 65 14 99 1 108 87 110 0 0 77 40 -92 
+PSI: S1: 0.000000, S2: 0.000000, S3: 0.362500, S4: 0.000000
+TMP: S1: 27, S2: 30, S3: 27, S4: 0
+STATE: S1: LOWPRESS, S2: LOWPRESS, S3: LOWPRESS, S4: NORM
+^C
+
+
+
+
+Alternative TPMS (Bought by Graeme) - Cheaper option:
+
+Connection is at 19200 instead of 9600
+
+Sample Data:
+85 -86 8 0 0 77 0 -70 Num bytes: 8
+85 -86 8 1 0 77 8 -77 Num bytes: 8
+85 -86 8 16 0 77 0 -86 Num bytes: 8
+85 -86 8 17 0 78 0 -88 Num bytes: 8
+85 -86 8 5 70 70 0 -14 Num bytes: 0
+
+Analysis
+85    - Signature Byte
+-86   - Signature Byte
+8     - Length of data
+0     - Sensor Number. 0 = Left Front, 1 = Right Front, 16 = Back Left, 17 = Back Right
+0     - Tyre Pressure. double d = (double) (frame[4] & 255); tiresState.AirPressure = (int) (d * 3.44d);
+77    - Tyre Temperature - (frame[5] & 255) - 50;
+0     - State.  if ((frame[6] & 32) != 0) - No Signal.   |     if ((frame[6] & 8) != 0) - Air Leak         |    
+-70   - Unknown
+
+
+
+

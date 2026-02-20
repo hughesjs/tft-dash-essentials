@@ -1,0 +1,200 @@
+
+#include "parser.h"
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+#include <math.h>
+
+/* Test helpers */
+#define TEST(name) \
+    printf("Running test: %s...", #name); \
+    test_##name(); \
+    printf(" PASSED\n");
+
+#define ASSERT_EQ(actual, expected) \
+    assert((actual) == (expected))
+
+#define ASSERT_FLOAT_EQ(actual, expected) \
+    assert(fabs((actual) - (expected)) < 0.01)
+
+#define ASSERT_STR_EQ(actual, expected) \
+    assert(strcmp((actual), (expected)) == 0)
+
+#define ASSERT_TRUE(condition) \
+    assert(condition)
+
+#define ASSERT_FALSE(condition) \
+    assert(!(condition))
+
+/* Test: Parse basic live message */
+void test_parse_live_basic() {
+    dashboard_state state = {0};
+    const char* msg = ",068,1234,80,12.5,14,23,477,1,0,1,0,0,200,0,1.2,3.4,23456.7,0,0.5,2,21,3,45,120,85,1,30,0,100,200,0,0,1,2,28,30,";
+
+    ASSERT_TRUE(parse_live_message(msg, &state));
+
+    ASSERT_EQ(state.current_speed, 68);
+    ASSERT_EQ(state.rpm, 1234);
+    ASSERT_EQ(state.coolant_temp, 80);
+    ASSERT_FLOAT_EQ(state.batt, 12.5);
+    ASSERT_EQ(state.current_hour, 14);
+    ASSERT_EQ(state.current_minute, 23);
+    ASSERT_EQ(state.fuel_float, 477);
+}
+
+/* Test: Parse boolean fields correctly */
+void test_parse_live_booleans() {
+    dashboard_state state = {0};
+    const char* msg = ",0,0,0,0.0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,";
+
+    ASSERT_TRUE(parse_live_message(msg, &state));
+
+    ASSERT_TRUE(state.neutral);
+    ASSERT_TRUE(state.oil_warning);
+    ASSERT_TRUE(state.high_beam);
+    ASSERT_TRUE(state.indicate_left);
+    ASSERT_TRUE(state.indicate_right);
+    ASSERT_TRUE(state.oil_pressure_available);
+}
+
+/* Test: Parse float fields correctly */
+void test_parse_live_floats() {
+    dashboard_state state = {0};
+    const char* msg = ",0,0,0,13.8,0,0,0,0,0,0,0,0,0,0,123.45,678.90,12345.6,0,-2.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,";
+
+    ASSERT_TRUE(parse_live_message(msg, &state));
+
+    ASSERT_FLOAT_EQ(state.batt, 13.8);
+    ASSERT_FLOAT_EQ(state.trip1, 123.45);
+    ASSERT_FLOAT_EQ(state.trip2, 678.90);
+    ASSERT_FLOAT_EQ(state.odo, 12345.6);
+    ASSERT_FLOAT_EQ(state.spd_correct, -2.5);
+}
+
+/* Test: Parse navigation string field */
+void test_parse_live_nav_string() {
+    dashboard_state state = {0};
+    const char* msg = ",0,0,0,0.0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,%TNL%A9%Glasgow%J16%0.5%MILE%,";
+
+    ASSERT_TRUE(parse_live_message(msg, &state));
+    ASSERT_STR_EQ(state.nav_string, "%TNL%A9%Glasgow%J16%0.5%MILE%");
+}
+
+/* Test: Parse menu message */
+void test_parse_menu_basic() {
+    menu_state state = {0};
+    const char* msg = ",300,1,2,3,4,5,6,7,8,9,0,1,2,0,1,2,3,4,1,5,6,7,15,42,85,0,0,0,1,2,28,30,0,2,6,100,50,0,200,";
+
+    ASSERT_TRUE(parse_menu_message(msg, &state));
+
+    ASSERT_EQ(state.choice_state, 300);
+    ASSERT_EQ(state.odo_digit1, 1);
+    ASSERT_EQ(state.odo_digit2, 2);
+    ASSERT_EQ(state.odo_digit3, 3);
+    ASSERT_EQ(state.odo_digit4, 4);
+    ASSERT_EQ(state.odo_digit5, 5);
+    ASSERT_EQ(state.odo_digit6, 6);
+    ASSERT_EQ(state.front_sprocket, 15);
+    ASSERT_EQ(state.rear_sprocket, 42);
+    ASSERT_EQ(state.coolant_fan_temp, 85);
+}
+
+/* Test: Parse navigation message */
+void test_parse_nav_basic() {
+    nav_state state = {0};
+    const char* msg = "%TNL%A9%Glasgow%J16%0.5%MILE%";
+
+    ASSERT_TRUE(parse_nav_message(msg, &state));
+
+    ASSERT_STR_EQ(state.nav_symbol, "TNL");
+    ASSERT_STR_EQ(state.nav_road, "A9");
+    ASSERT_STR_EQ(state.nav_towards, "Glasgow");
+    ASSERT_STR_EQ(state.nav_exit, "J16");
+    ASSERT_STR_EQ(state.nav_distance, "0.5");
+    ASSERT_STR_EQ(state.nav_distance_units, "MILE");
+    ASSERT_FLOAT_EQ(state.nav_miles, 0.5);
+    ASSERT_TRUE(state.nav_active);
+}
+
+/* Test: Parse navigation with different units */
+void test_parse_nav_units() {
+    nav_state state = {0};
+
+    /* Test yards */
+    const char* msg_yards = "%TNR%M6%Manchester%14%500%YARD%";
+    ASSERT_TRUE(parse_nav_message(msg_yards, &state));
+    ASSERT_EQ(state.nav_yards, 500);
+
+    /* Test kilometres */
+    memset(&state, 0, sizeof(state));
+    const char* msg_km = "%SLL%N7%Dublin%2%15%KM%";
+    ASSERT_TRUE(parse_nav_message(msg_km, &state));
+    ASSERT_EQ(state.nav_km, 15);
+
+    /* Test metres */
+    memset(&state, 0, sizeof(state));
+    const char* msg_metres = "%RB2L%A1%Edinburgh%1%250%METRE%";
+    ASSERT_TRUE(parse_nav_message(msg_metres, &state));
+    ASSERT_EQ(state.nav_metres, 250);
+}
+
+/* Test: Empty navigation should not be active */
+void test_parse_nav_empty() {
+    nav_state state = {0};
+    const char* msg = "%%%%%%";
+
+    ASSERT_TRUE(parse_nav_message(msg, &state));
+    ASSERT_FALSE(state.nav_active);
+}
+
+/* Test: Null pointer safety */
+void test_null_safety() {
+    dashboard_state ds = {0};
+    menu_state ms = {0};
+    nav_state ns = {0};
+
+    ASSERT_FALSE(parse_live_message(NULL, &ds));
+    ASSERT_FALSE(parse_live_message(",0,", NULL));
+    ASSERT_FALSE(parse_menu_message(NULL, &ms));
+    ASSERT_FALSE(parse_menu_message(",0,", NULL));
+    ASSERT_FALSE(parse_nav_message(NULL, &ns));
+    ASSERT_FALSE(parse_nav_message("%0%", NULL));
+}
+
+/* Test: Real-world message from comments */
+void test_real_world_message() {
+    dashboard_state state = {0};
+    /* From testsdl.cpp comment: "S,079,12500,100,12.5,14:23,477,0,0,0,0,0,200,E" */
+    const char* msg = ",079,12500,100,12.5,14,23,477,0,0,0,0,0,200,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,";
+
+    ASSERT_TRUE(parse_live_message(msg, &state));
+
+    ASSERT_EQ(state.current_speed, 79);
+    ASSERT_EQ(state.rpm, 12500);
+    ASSERT_EQ(state.coolant_temp, 100);
+    ASSERT_FLOAT_EQ(state.batt, 12.5);
+    ASSERT_EQ(state.current_hour, 14);
+    ASSERT_EQ(state.current_minute, 23);
+    ASSERT_EQ(state.fuel_float, 477);
+    ASSERT_FALSE(state.neutral);
+    ASSERT_FALSE(state.oil_warning);
+    ASSERT_FALSE(state.high_beam);
+}
+
+int main(void) {
+    printf("=== TFT Dash Parser Test Suite ===\n\n");
+
+    TEST(parse_live_basic);
+    TEST(parse_live_booleans);
+    TEST(parse_live_floats);
+    TEST(parse_live_nav_string);
+    TEST(parse_menu_basic);
+    TEST(parse_nav_basic);
+    TEST(parse_nav_units);
+    TEST(parse_nav_empty);
+    TEST(null_safety);
+    TEST(real_world_message);
+
+    printf("\n=== All tests passed! ===\n");
+    return 0;
+}

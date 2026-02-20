@@ -2603,7 +2603,7 @@ void* pollTPMSInterface2 (void *arg) // Poll the interface of the cheaper eBay T
 
 
 
-		if (appendbuf[0] == 85 && appendpointer > 5 && appendbuf[1] == -86) {
+		if (appendbuf[0] == 85 && appendpointer > 5 && (unsigned char)appendbuf[1] == 0xAA) {
 			
 
 			int sensor_num = -1;
@@ -2707,9 +2707,9 @@ void* pollTPMSInterface(void *arg)
 
 		for (int r=0;r<num_bytes;r++) {
 			
-			if (read_buf[r] == -86 || read_buf[r] == (char)170) {
+			if ((unsigned char)read_buf[r] == 0xAA) {
 				if (r < (num_bytes-1)) {
-					if (read_buf[r+1] == -95 || read_buf[r+1] == (char)161) {
+					if ((unsigned char)read_buf[r+1] == 0xA1) {
 						//fprintf(stderr, "\n");
 						
 						appendpointer = 0;
@@ -2731,7 +2731,7 @@ void* pollTPMSInterface(void *arg)
 
 
 
-		if ((appendbuf[0] == -86 || appendbuf[0] == (char)170) && appendpointer > 13 && (appendbuf[1] == -95 || appendbuf[1] == (char)161)) {
+		if ((unsigned char)appendbuf[0] == 0xAA && appendpointer > 13 && (unsigned char)appendbuf[1] == 0xA1) {
 			
 			int sensor_num = appendbuf[5];
 			int tp_byte1 = appendbuf[9];

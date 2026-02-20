@@ -69,10 +69,7 @@ NAV TO DO
 - Sort out left indicator icon overlapping Nav display - done
 */
 
-//#include <SDL.h> // Windows
-//#include <string.h> // Windows only - for strlen to work
-//#include "/Library/Frameworks/SDL2.framework/Headers/SDL.h" // OSX only
-#include <SDL2/SDL.h> // Rpi Only
+#include "SDL.h"
 #include <stdio.h>
 #include <pthread.h>
 #include <fstream>
@@ -2581,7 +2578,7 @@ void* pollTPMSInterface2 (void *arg) // Poll the interface of the cheaper eBay T
 			
 			if (read_buf[r] == 85) {
 				if (r < (num_bytes-1)) {
-					if (read_buf[r+1] == -86) {
+					if ((unsigned char)read_buf[r+1] == 0xAA) {
 						//fprintf(stderr, "\n");
 						
 						appendpointer = 0;

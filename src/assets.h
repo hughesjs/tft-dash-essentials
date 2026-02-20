@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-#include <SDL2/SDL.h>
+#include "SDL.h"
 
 typedef struct asset_store asset_store;
 

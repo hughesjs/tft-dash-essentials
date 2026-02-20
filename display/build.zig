@@ -125,12 +125,12 @@ pub fn build(b: *std.Build) void {
 
     // 'zig build image' step - cross-compile for Pi then build SD card image
     //
-    // This runs the buildroot/build.sh script which:
+    // This runs the buildroot-tftdash/build.sh script which:
     //   1. Cross-compiles testsdl for ARM (via zig)
     //   2. Runs Buildroot to produce sdcard.img
     const image_cmd = b.addSystemCommand(&.{
         "/bin/bash",
-        b.path("../buildroot/build.sh").getPath(b),
+        b.path("../buildroot-tftdash/build.sh").getPath(b),
     });
     const image_step = b.step("image", "Cross-compile for Pi and build SD card image via Buildroot");
     image_step.dependOn(&image_cmd.step);

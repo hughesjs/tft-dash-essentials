@@ -6,17 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TFT Dash is a motorcycle dashboard replacement project. It consists of two main software components plus hardware designs:
 
-- **Firmware** (`tftdashfirmwareGEN4/`): Arduino code running on an ATMega32u4 (Gen4) or ATMega2560 (Mega/Gen3) that reads bike sensor signals (speed, RPM, coolant temp, fuel level, indicators, etc.) and streams comma-delimited data over USB serial at 115200 bps.
-- **Display** (`tftdashdisplay/`): C++ application running on a Raspberry Pi that receives the serial data and renders the dashboard GUI using SDL2 at 1024x600 resolution.
-- **Hardware** (`HardwareGen3/`, `HardwareGen4/`): EAGLE schematic/board files for the interface PCBs.
+- **Firmware** (`firmware/`): Arduino code running on an ATMega32u4 (Gen4) or ATMega2560 (Mega/Gen3) that reads bike sensor signals (speed, RPM, coolant temp, fuel level, indicators, etc.) and streams comma-delimited data over USB serial at 115200 bps.
+- **Display** (`display/`): C++ application running on a Raspberry Pi that receives the serial data and renders the dashboard GUI using SDL2 at 1024x600 resolution.
+- **Hardware** (`hardware/`): EAGLE schematic/board files for the Gen4 interface PCB, plus 3D-printable enclosure STLs.
 - **Pi Image** (`pi-image/`): Configuration files from the Raspberry Pi 3 SD card — boot config, update script, fstab. The Pi runs a read-only RetroPie-based image with WiFi/BT disabled, DPI display at 1024x600. App lives at `/home/pi/tftdash/TFTDash/` in flat BMP layout.
-- **3DModels/**: STL files for the enclosure.
 
 ## Build Commands
 
 ### Display Software
 ```bash
-cd tftdashdisplay
+cd display
 
 # Build (requires zig 0.15+ and SDL2 dev libraries)
 zig build
@@ -28,10 +27,10 @@ zig build test
 zig build -Dtarget=arm-linux-gnueabihf -Doptimize=ReleaseSafe
 ```
 
-Uses Zig as the build system. See `tftdashdisplay/build.zig` for configuration.
+Uses Zig as the build system. See `display/build.zig` for configuration.
 
 ### Firmware
-Open `tftdashfirmwareGEN4/tftdashfirmwareGEN4.ino` in the Arduino IDE. Configuration is controlled by compiler defines at the top of the file:
+Open `firmware/tftdashfirmwareGEN4.ino` in the Arduino IDE. Configuration is controlled by compiler defines at the top of the file:
 
 **Board selection** (uncomment one):
 - `#define GEN4BOARD` - ATMega32u4 (Leonardo-compatible) Gen4 board
@@ -47,7 +46,7 @@ Pre-compiled hex files are also provided in the same directory.
 
 ### SD Card Image (Buildroot)
 ```bash
-cd buildroot
+cd buildroot-tftdash
 
 # First build (20-30 mins, downloads toolchain + kernel)
 ./build.sh
@@ -56,7 +55,7 @@ cd buildroot
 ./build.sh rebuild
 ```
 
-Requires Buildroot cloned alongside the repo (`git clone https://github.com/buildroot/buildroot.git ../buildroot`) and the display binary pre-built for ARM (see above). Output is `../buildroot/output/images/sdcard.img`. See `buildroot/README.md` for full details.
+Requires Buildroot cloned alongside the repo (`git clone https://github.com/buildroot/buildroot.git ../buildroot-src`) and the display binary pre-built for ARM (see above). Output is `../buildroot-src/output/images/sdcard.img`. See `buildroot-tftdash/README.md` for full details.
 
 ## Architecture
 

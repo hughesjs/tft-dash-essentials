@@ -8,11 +8,14 @@ The firmware reads signals from the bike (speed, RPM, coolant temperature, fuel 
 
 | Directory | Description |
 |---|---|
-| `tftdashdisplay/` | Display software (C++/SDL2) for Raspberry Pi |
-| `tftdashfirmwareGEN4/` | Arduino firmware for the sensor interface board |
-| `HardwareGen3/` | EAGLE schematic and board files for the Gen 3 (through-hole) PCB |
-| `HardwareGen4/` | EAGLE schematic and board files for the Gen 4 (SMD, ATMega32u4) PCB |
-| `3DModels/` | STL files for 3D printing the enclosure |
+| `display/` | Display software (C++/SDL2) for Raspberry Pi |
+| `firmware/` | Arduino firmware for the sensor interface board |
+| `hardware/` | EAGLE schematic and board files for the Gen 4 (SMD, ATMega32u4) PCB |
+| `hardware/3DModels/` | STL files for 3D printing the enclosure |
+| `buildroot-tftdash/` | Buildroot external tree for building the Pi SD card image |
+| `simulator/` | Simulator for development without hardware |
+| `docs/` | Documentation (serial protocol, signal reverse engineering, etc.) |
+| `pi-image/` | Pi SD card configuration files |
 
 ## Prerequisites
 
@@ -37,28 +40,28 @@ The firmware reads signals from the bike (speed, RPM, coolant temperature, fuel 
 On Raspberry Pi / Linux:
 
 ```bash
-cd tftdashdisplay
-g++ -o testsdl testsdl.cpp -lSDL2 -lpthread
+cd display
+zig build
 ```
 
 On macOS:
 
 ```bash
-cd tftdashdisplay
-g++ -o testsdl testsdl.cpp -I/Library/Frameworks/SDL2.framework/Headers -F/Library/Frameworks -framework SDL2
+cd display
+zig build
 ```
 
-The compiled binary must be run from the `tftdashdisplay/` directory, as all BMP sprite/graphic assets need to be in the same directory as the executable.
+The compiled binary must be run from the `display/` directory, as BMP assets need to be accessible from the working directory.
 
 ### Firmware
 
-1. Open `tftdashfirmwareGEN4/tftdashfirmwareGEN4.ino` in the Arduino IDE.
+1. Open `firmware/tftdashfirmwareGEN4.ino` in the Arduino IDE.
 2. Select the target board at the top of the file by uncommenting the appropriate define:
    - `#define GEN4BOARD` for Gen 4 (ATMega32u4 / Leonardo)
    - `#define MEGABOARD` for Gen 3 (ATMega2560 / Mega)
 3. Upload to the board via the Arduino IDE.
 
-Pre-compiled hex files are also available in the `tftdashfirmwareGEN4/` directory for direct flashing.
+Pre-compiled hex files are also available in the `firmware/` directory for direct flashing.
 
 ## How It Works
 

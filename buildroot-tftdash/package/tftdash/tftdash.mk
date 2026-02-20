@@ -4,13 +4,13 @@
 #
 # This package installs a pre-built ARM binary and BMP assets.
 # The binary should be cross-compiled beforehand with:
-#   cd tftdashdisplay && zig build -Dtarget=arm-linux-gnueabihf -Doptimize=ReleaseSafe
+#   cd display && zig build -Dtarget=arm-linux-gnueabihf -Doptimize=ReleaseSafe
 #
 ################################################################################
 
 TFTDASH_VERSION = 1.0
 TFTDASH_SITE_METHOD = local
-TFTDASH_SITE = $(realpath $(BR2_EXTERNAL_TFTDASH_PATH)/../tftdashdisplay)
+TFTDASH_SITE = $(realpath $(BR2_EXTERNAL_TFTDASH_PATH)/../display)
 TFTDASH_DEPENDENCIES = sdl2
 
 TFTDASH_INSTALL_DIR = $(TARGET_DIR)/home/pi/tftdash

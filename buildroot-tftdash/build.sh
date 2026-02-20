@@ -19,7 +19,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
-DISPLAY_DIR="$REPO_DIR/tftdashdisplay"
+DISPLAY_DIR="$REPO_DIR/display"
 BUILDROOT_DIR="${BUILDROOT_DIR:-$REPO_DIR/buildroot-src}"
 
 # --- Find the Buildroot sysroot (varies by toolchain type) ---

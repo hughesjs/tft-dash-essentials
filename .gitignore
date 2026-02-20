@@ -2,3 +2,4 @@ buildroot-src/
 dash-backup.img
 .claude/
 .DS_Store
+*.hex

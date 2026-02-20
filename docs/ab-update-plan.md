@@ -52,7 +52,7 @@ A udev rule detects USB stick insertion and triggers the update script.
 ACTION=="add", KERNEL=="sd[a-z]1", SUBSYSTEM=="block", RUN+="/usr/bin/tft-update.sh %k"
 ```
 
-Place this in the Buildroot rootfs overlay at `buildroot/overlay/etc/udev/rules.d/`.
+Place this in the Buildroot rootfs overlay at `buildroot-tftdash/overlay/etc/udev/rules.d/`.
 
 ### Update Script (`tft-update.sh`)
 
@@ -128,7 +128,7 @@ Add a script to produce the USB update package:
 # make-update-package.sh
 # Run after build.sh — packages the rootfs image for USB delivery
 
-BUILDROOT_OUTPUT="../buildroot/output/images"
+BUILDROOT_OUTPUT="../buildroot-src/output/images"
 ROOTFS_IMG="$BUILDROOT_OUTPUT/rootfs.ext4"
 OUTPUT_DIR="tftupdate"
 

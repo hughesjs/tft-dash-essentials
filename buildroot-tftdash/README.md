@@ -22,7 +22,7 @@ No systemd, no desktop, no network services — just the kernel and the dash app
 
 2. **Display binary** pre-built for ARM:
    ```bash
-   cd ../tftdashdisplay
+   cd ../display
    zig build -Dtarget=arm-linux-gnueabihf -Doptimize=ReleaseSafe
    ```
 
@@ -41,7 +41,7 @@ No systemd, no desktop, no network services — just the kernel and the dash app
 ./build.sh clean
 ```
 
-The output is `buildroot-src/output/images/sdcard.img`.
+The output is `../buildroot-src/output/images/sdcard.img`.
 
 ## Flashing
 
@@ -54,7 +54,7 @@ Replace `/dev/sdX` with your SD card device.
 ## Structure
 
 ```
-buildroot/
+buildroot-tftdash/
 ├── build.sh                  Build wrapper script
 ├── configs/
 │   └── tftdash_defconfig     Buildroot configuration
@@ -96,4 +96,4 @@ Target: kernel to app in ~3-5 seconds.
 - **Boot config**: Edit `overlay/boot/config.txt`
 - **Add packages**: Edit `configs/tftdash_defconfig`, add `BR2_PACKAGE_FOO=y`
 - **Change init**: Edit `overlay/etc/init.d/S99tftdash`
-- **Full reconfigure**: `cd ../buildroot-src && make BR2_EXTERNAL=../buildroot menuconfig`
+- **Full reconfigure**: `cd ../buildroot-src && make BR2_EXTERNAL=../buildroot-tftdash menuconfig`

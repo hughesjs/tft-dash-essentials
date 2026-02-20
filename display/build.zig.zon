@@ -1,5 +1,5 @@
 .{
-    .name = .tftdashdisplay,
+    .name = .tftdash_display,
     .version = "0.1.0",
     .fingerprint = 0x2e9799a637abb26f,
     .paths = .{

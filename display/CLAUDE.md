@@ -62,7 +62,7 @@ Binaries are output to `zig-out/bin/`.
 ## Source Files
 
 ```
-tftdashdisplay/
+display/
 ├── src/                    Source code
 │   ├── testsdl.cpp        Main display application (~4800 lines)
 │   ├── parser.h/c         Extracted parsing with lookup tables

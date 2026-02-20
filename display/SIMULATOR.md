@@ -25,8 +25,8 @@ The simulator will:
 ### Terminal 2: Start the Display
 
 ```bash
-cd tftdashdisplay
-./testsdl
+cd display
+zig build run
 ```
 
 The display will:

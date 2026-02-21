@@ -2489,9 +2489,10 @@ int connect_tpms_interface ()
 					fprintf(stderr, "TPMS interface connected!"); 
 					tpms_connected= true;
 				} else {
-					fprintf(stderr, "TPMS interface NOT connected!"); 
+					if (!tpms_connected) // Only log on first failure
+						fprintf(stderr, "TPMS interface NOT connected\n");
 					tpms_connected= false;
-					return 0;					
+					return 0;
 				}
 			}
 		}		
@@ -2568,14 +2569,15 @@ void* pollTPMSInterface2 (void *arg) // Poll the interface of the cheaper eBay T
 		if (num_bytes < 0) {
 		    //printf("Error reading: %s\n", strerror(errno));
 		    close (tpms_serial_port);
+		    sleep(2);
 		    connect_tpms_interface();
 		} else {
-			//fprintf(stderr, "Num bytes: %i\n", num_bytes); 
+			//fprintf(stderr, "Num bytes: %i\n", num_bytes);
 		}
 
 
 		for (int r=0;r<num_bytes;r++) {
-			
+
 			if (read_buf[r] == 85) {
 				if (r < (num_bytes-1)) {
 					if ((unsigned char)read_buf[r+1] == 0xAA) {
@@ -2696,9 +2698,10 @@ void* pollTPMSInterface(void *arg)
 		if (num_bytes < 0) {
 		    printf("Error reading: %s\n", strerror(errno));
 		    close (tpms_serial_port);
+		    sleep(2);
 		    connect_tpms_interface();
 		} else {
-			//fprintf(stderr, "Num bytes: %i\n", num_bytes); 
+			//fprintf(stderr, "Num bytes: %i\n", num_bytes);
 		}
 
 

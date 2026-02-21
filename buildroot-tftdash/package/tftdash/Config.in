@@ -1,6 +1,5 @@
 config BR2_PACKAGE_TFTDASH
 	bool "tftdash"
-	depends on BR2_PACKAGE_SDL2
 	help
 	  TFT Dash motorcycle dashboard display application.
-	  Installs a pre-built binary and BMP assets.
+	  Installs a pre-built aarch64-linux-gnu binary and BMP assets.

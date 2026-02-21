@@ -22,58 +22,30 @@ REPO_DIR="$(dirname "$SCRIPT_DIR")"
 DISPLAY_DIR="$REPO_DIR/display"
 BUILDROOT_DIR="${BUILDROOT_DIR:-$REPO_DIR/buildroot-src}"
 
-# --- Find the Buildroot sysroot (varies by toolchain type) ---
-find_sysroot() {
-    # External toolchain: sysroot is inside host/<tuple>/sysroot
-    local sysroot
-    sysroot=$(find "$BUILDROOT_DIR/output/host" -maxdepth 2 -name sysroot -type d 2>/dev/null | head -1)
-    if [ -z "$sysroot" ] && [ -d "$BUILDROOT_DIR/output/staging" ]; then
-        sysroot="$BUILDROOT_DIR/output/staging"
-    fi
-    echo "$sysroot"
-}
-
-# --- Ensure Buildroot has ARM SDL2 in staging ---
-ensure_staging_sdl2() {
-    local sysroot
-    sysroot=$(find_sysroot)
-
-    if [ -n "$sysroot" ] && [ -f "$sysroot/usr/lib/libSDL2.so" ]; then
-        return 0
-    fi
-
-    echo "Building ARM SDL2 via Buildroot (first time only, may take a while)..."
-    cd "$BUILDROOT_DIR"
-    make BR2_EXTERNAL="$SCRIPT_DIR" tftdash_defconfig
-    make BR2_EXTERNAL="$SCRIPT_DIR" sdl2
-    cd "$SCRIPT_DIR"
-
-    sysroot=$(find_sysroot)
-    if [ -z "$sysroot" ] || [ ! -f "$sysroot/usr/lib/libSDL2.so" ]; then
-        echo "ERROR: Buildroot did not produce staging SDL2"
-        exit 1
-    fi
-}
-
 # --- Cross-compile the display binary ---
 cross_compile() {
     check_buildroot
-    ensure_staging_sdl2
-
-    local sysroot
-    sysroot=$(find_sysroot)
 
     echo "Cross-compiling display binary for Raspberry Pi (aarch64)..."
 
     cd "$DISPLAY_DIR"
     # Match the glibc version from Buildroot's toolchain to avoid linker errors
     local glibc_ver
-    glibc_ver=$(strings "$sysroot/lib/libc.so.6" 2>/dev/null \
-        | grep -oP 'GLIBC_\K2\.\d+' | sort -t. -k2 -n | tail -1 || echo "2.38")
+    local sysroot
+    sysroot=$(find "$BUILDROOT_DIR/output/host" -maxdepth 2 -name sysroot -type d 2>/dev/null | head -1)
+    if [ -z "$sysroot" ] && [ -d "$BUILDROOT_DIR/output/staging" ]; then
+        sysroot="$BUILDROOT_DIR/output/staging"
+    fi
 
-    zig build "-Dtarget=aarch64-linux-gnu.${glibc_ver}" -Doptimize=ReleaseSafe \
-        -Dsdl2-include-path="$sysroot/usr/include/SDL2" \
-        -Dsdl2-lib-path="$sysroot/usr/lib"
+    if [ -n "$sysroot" ] && [ -f "$sysroot/lib/libc.so.6" ]; then
+        glibc_ver=$(strings "$sysroot/lib/libc.so.6" 2>/dev/null \
+            | grep -oP 'GLIBC_\K2\.\d+' | sort -t. -k2 -n | tail -1 || echo "2.38")
+    else
+        glibc_ver="2.38"
+        echo "  Warning: no Buildroot sysroot found, defaulting to glibc $glibc_ver"
+    fi
+
+    zig build "-Dtarget=aarch64-linux-gnu.${glibc_ver}" -Doptimize=ReleaseSafe
     cd "$SCRIPT_DIR"
 
     local bin="$DISPLAY_DIR/zig-out/bin/testsdl"

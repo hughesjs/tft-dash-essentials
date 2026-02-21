@@ -7,9 +7,13 @@ pub fn build(b: *std.Build) void {
     // Detect cross-compilation (skip test executables when targeting a different arch)
     const is_cross = target.result.cpu.arch != @import("builtin").cpu.arch;
 
-    // Cross-compilation support: explicit SDL3 paths (avoids pkg-config sysroot conflicts)
-    const sdl3_include_path = b.option([]const u8, "sdl3-include-path", "Path to SDL3 headers (for cross-compilation)");
-    const sdl3_lib_path = b.option([]const u8, "sdl3-lib-path", "Path to SDL3 libraries (for cross-compilation)");
+    // SDL3 — built from source via Zig dependency (statically linked)
+    const sdl = b.dependency("sdl", .{
+        .target = target,
+        .optimize = optimize,
+        .preferred_linkage = .static,
+    });
+    const sdl_lib = sdl.artifact("SDL3");
 
     // --- Main dashboard executable ---
     const testsdl = b.addExecutable(.{
@@ -33,15 +37,7 @@ pub fn build(b: *std.Build) void {
     });
 
     testsdl.root_module.addIncludePath(b.path("src"));
-
-    // SDL3: use explicit paths when provided (cross-compilation), else pkg-config
-    if (sdl3_include_path) |p| {
-        testsdl.root_module.addSystemIncludePath(.{ .cwd_relative = p });
-    }
-    if (sdl3_lib_path) |p| {
-        testsdl.root_module.addLibraryPath(.{ .cwd_relative = p });
-    }
-    testsdl.root_module.linkSystemLibrary("sdl3", .{});
+    testsdl.linkLibrary(sdl_lib);
     testsdl.root_module.linkSystemLibrary("pthread", .{});
 
     b.installArtifact(testsdl);
@@ -101,7 +97,7 @@ pub fn build(b: *std.Build) void {
         });
 
         test_assets.root_module.addIncludePath(b.path("src"));
-        test_assets.root_module.linkSystemLibrary("sdl3", .{});
+        test_assets.linkLibrary(sdl_lib);
 
         b.installArtifact(test_assets);
 

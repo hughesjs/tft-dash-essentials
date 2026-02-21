@@ -27,7 +27,7 @@ All builds and tests pass (`zig build` and `zig build test`). See `REFACTORING.m
 
 ## Overview
 
-This is the display application for the TFT Dash motorcycle dashboard. It runs on a Raspberry Pi, receives sensor data from the firmware over USB serial, and renders the dashboard GUI using SDL2 at 1024x600 resolution.
+This is the display application for the TFT Dash motorcycle dashboard. It runs on a Raspberry Pi, receives sensor data from the firmware over USB serial, and renders the dashboard GUI using SDL3 at 1024x600 resolution.
 
 ## Build
 
@@ -56,7 +56,7 @@ Binaries are output to `zig-out/bin/`.
 ### Dependencies
 
 - Zig 0.15+ (`pacman -S zig` on Arch, or download from ziglang.org)
-- SDL2 development libraries (`libsdl2-dev` on Raspberry Pi, `sdl2` on Arch)
+- SDL3 development libraries (`libsdl3-dev` on Raspberry Pi, `sdl3` on Arch)
 - pthreads (linked via build.zig)
 
 ## Source Files
@@ -161,7 +161,7 @@ Navigation icon defines (`MUT`, `EXITL`, `EXITR`, `TNR`, `TNL`, `SLL`, `SLR`, et
 ## Guidelines
 
 - This is a single-file C++ application. Keep it that way unless there is a strong reason to split.
-- All rendering uses SDL2 textures created from BMP surfaces - no TTF fonts.
+- All rendering uses SDL3 textures created from BMP surfaces - no TTF fonts.
 - When adding new visual elements, follow the existing sprite-sheet pattern with themed variants.
 - Test serial data parsing changes carefully - the message format must match the firmware exactly.
 - Global variables are shared across threads without mutexes. Be aware of potential race conditions when modifying shared state.

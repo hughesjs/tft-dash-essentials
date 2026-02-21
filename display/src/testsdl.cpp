@@ -69,7 +69,8 @@ NAV TO DO
 - Sort out left indicator icon overlapping Nav display - done
 */
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <fstream>
@@ -154,26 +155,25 @@ static inline SDL_Texture* tex_from(const char* theme, const char* name) {
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
-SDL_Surface* screen_surface = nullptr;
 
 // Surface Rects
 // Rev counter
-SDL_Rect rect_g1213;
-SDL_Rect rect_g11;
-SDL_Rect rect_g10;
-SDL_Rect rect_g9;
-SDL_Rect rect_g8;
-SDL_Rect rect_g7;
-SDL_Rect rect_g6;
-SDL_Rect rect_g5;
-SDL_Rect rect_g4;
-SDL_Rect rectg3;
-SDL_Rect rectg2;
-SDL_Rect rectg1;
-SDL_Rect rectg0;
-SDL_Rect grevline;
-SDL_Rect grrevwhite;
-SDL_Point gwhitepoint;
+SDL_FRect rect_g1213;
+SDL_FRect rect_g11;
+SDL_FRect rect_g10;
+SDL_FRect rect_g9;
+SDL_FRect rect_g8;
+SDL_FRect rect_g7;
+SDL_FRect rect_g6;
+SDL_FRect rect_g5;
+SDL_FRect rect_g4;
+SDL_FRect rectg3;
+SDL_FRect rectg2;
+SDL_FRect rectg1;
+SDL_FRect rectg0;
+SDL_FRect grevline;
+SDL_FRect grrevwhite;
+SDL_FPoint gwhitepoint;
 
 /*
 MUT
@@ -343,9 +343,9 @@ char g_large_num_ref[10] = { '1','2','3','4','5','6','7','8','9','0'};
 
 
 // Destination rect for speedo numbers
-SDL_Rect spd_digit_one;
-SDL_Rect spd_digit_two;
-SDL_Rect spd_digit_three;
+SDL_FRect spd_digit_one;
+SDL_FRect spd_digit_two;
+SDL_FRect spd_digit_three;
 
 
 char g_sz_comms_msg[1024];
@@ -1328,13 +1328,13 @@ void draw_small_grey_string (char* digits, int xpos, int ypos)
 
 		for (int d = 0; d <= 10; d++) {
 			if (digit == g_small_num_ref[d]) {
-				SDL_Rect g_src_rect;
+				SDL_FRect g_src_rect;
 				g_src_rect.x = g_small_grey_src_tex_loc[0][d];
 				g_src_rect.y = g_small_grey_src_tex_loc[1][d];
 				g_src_rect.w = g_small_grey_src_tex_loc[2][d];
 				g_src_rect.h = g_small_grey_src_tex_loc[3][d];
 
-				SDL_Rect g_dst_rect;
+				SDL_FRect g_dst_rect;
 				g_dst_rect.x = xpos + x_offset;
 				g_dst_rect.y = ypos;
 
@@ -1345,7 +1345,7 @@ void draw_small_grey_string (char* digits, int xpos, int ypos)
 				g_dst_rect.w = g_src_rect.w;
 				g_dst_rect.h = g_src_rect.h;
 
-				SDL_RenderCopy(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
+				SDL_RenderTexture(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
 
 				x_offset+=g_src_rect.w;
 			}
@@ -1365,13 +1365,13 @@ void draw_small_blue_string (char* digits, int xpos, int ypos)
 
 		for (int d = 0; d <= 10; d++) {
 			if (digit == g_small_num_ref[d]) {
-				SDL_Rect g_src_rect;
+				SDL_FRect g_src_rect;
 				g_src_rect.x = g_small_blue_src_tex_loc[0][d];
 				g_src_rect.y = g_small_blue_src_tex_loc[1][d];
 				g_src_rect.w = g_small_blue_src_tex_loc[2][d];
 				g_src_rect.h = g_small_blue_src_tex_loc[3][d];
 
-				SDL_Rect g_dst_rect;
+				SDL_FRect g_dst_rect;
 				g_dst_rect.x = xpos + x_offset;
 				g_dst_rect.y = ypos;
 
@@ -1382,7 +1382,7 @@ void draw_small_blue_string (char* digits, int xpos, int ypos)
 				g_dst_rect.w = g_src_rect.w;
 				g_dst_rect.h = g_src_rect.h;
 
-				SDL_RenderCopy(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
+				SDL_RenderTexture(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
 
 				x_offset+=g_src_rect.w;
 			}
@@ -1397,19 +1397,19 @@ void draw_medium_char (char digit, int xpos, int ypos)
 	
 	for (int d = 0; d <= 15; d++) {
 		if (digit == g_num_ref[d]) {
-			SDL_Rect g_src_rect;
+			SDL_FRect g_src_rect;
 			g_src_rect.x = g_med_numbers_src_tex_loc[0][d];
 			g_src_rect.y = g_med_numbers_src_tex_loc[1][d];
 			g_src_rect.w = g_med_numbers_src_tex_loc[2][d];
 			g_src_rect.h = g_med_numbers_src_tex_loc[3][d];
 
-			SDL_Rect g_dst_rect;
+			SDL_FRect g_dst_rect;
 			g_dst_rect.x = xpos + x_offset;
 			g_dst_rect.y = ypos;
 			g_dst_rect.w = g_src_rect.w;
 			g_dst_rect.h = g_src_rect.h;
 
-			SDL_RenderCopy(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
+			SDL_RenderTexture(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
 
 			x_offset+=g_src_rect.w;
 		}
@@ -1427,19 +1427,19 @@ void draw_large_string (char *digits, int xpos, int ypos)
 
 		for (int d = 0; d < 10; d++) {
 			if (digit == g_large_num_ref[d]) {
-				SDL_Rect g_src_rect;
+				SDL_FRect g_src_rect;
 				g_src_rect.x = g_large_numbers_src_tex_loc[0][d];
 				g_src_rect.y = g_large_numbers_src_tex_loc[1][d];
 				g_src_rect.w = g_large_numbers_src_tex_loc[2][d];
 				g_src_rect.h = g_large_numbers_src_tex_loc[3][d];
 
-				SDL_Rect g_dst_rect;
+				SDL_FRect g_dst_rect;
 				g_dst_rect.x = xpos + x_offset;
 				g_dst_rect.y = ypos;
 				g_dst_rect.w = g_src_rect.w;
 				g_dst_rect.h = g_src_rect.h;
 
-				SDL_RenderCopy(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
+				SDL_RenderTexture(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
 
 				x_offset+=g_src_rect.w;
 			}
@@ -1456,19 +1456,19 @@ void draw_medium_string (char* digits, int xpos, int ypos)
 
 		for (int d = 0; d <= 15; d++) {
 			if (digit == g_num_ref[d]) {
-				SDL_Rect g_src_rect;
+				SDL_FRect g_src_rect;
 				g_src_rect.x = g_med_numbers_src_tex_loc[0][d];
 				g_src_rect.y = g_med_numbers_src_tex_loc[1][d];
 				g_src_rect.w = g_med_numbers_src_tex_loc[2][d];
 				g_src_rect.h = g_med_numbers_src_tex_loc[3][d];
 
-				SDL_Rect g_dst_rect;
+				SDL_FRect g_dst_rect;
 				g_dst_rect.x = xpos + x_offset;
 				g_dst_rect.y = ypos;
 				g_dst_rect.w = g_src_rect.w;
 				g_dst_rect.h = g_src_rect.h;
 
-				SDL_RenderCopy(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
+				SDL_RenderTexture(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
 
 				x_offset+=g_src_rect.w;
 			}
@@ -1493,19 +1493,19 @@ void draw_nav_large_string (char *digits, int xpos, int ypos) {
 			if (xpos + x_offset < 412) {
 				if (digit == g_nav_large_lower_letter_ref[d] || digit == g_nav_large_upper_letter_ref[d]) {
 
-					SDL_Rect g_src_rect;
+					SDL_FRect g_src_rect;
 					g_src_rect.x = g_nav_letters_large_src_tex_loc[0][d];
 					g_src_rect.y = g_nav_letters_large_src_tex_loc[1][d];
 					g_src_rect.w = g_nav_letters_large_src_tex_loc[2][d];
 					g_src_rect.h = g_nav_letters_large_src_tex_loc[3][d];
 
-					SDL_Rect g_dst_rect;
+					SDL_FRect g_dst_rect;
 					g_dst_rect.x = xpos + x_offset;
 					g_dst_rect.y = ypos;
 					g_dst_rect.w = g_src_rect.w;
 					g_dst_rect.h = g_src_rect.h;
 
-					SDL_RenderCopy(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
+					SDL_RenderTexture(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
 
 					x_offset+=g_src_rect.w + 2;				
 				}
@@ -1530,19 +1530,19 @@ void draw_nav_small_string (char *digits, int xpos, int ypos) {
 			if (xpos + x_offset < 412) {
 				if (digit == g_nav_large_lower_letter_ref[d] || digit == g_nav_large_upper_letter_ref[d]) {
 
-					SDL_Rect g_src_rect;
+					SDL_FRect g_src_rect;
 					g_src_rect.x = g_nav_letters_small_src_tex_loc[0][d];
 					g_src_rect.y = g_nav_letters_small_src_tex_loc[1][d];
 					g_src_rect.w = g_nav_letters_small_src_tex_loc[2][d];
 					g_src_rect.h = g_nav_letters_small_src_tex_loc[3][d];
 
-					SDL_Rect g_dst_rect;
+					SDL_FRect g_dst_rect;
 					g_dst_rect.x = xpos + x_offset;
 					g_dst_rect.y = ypos;
 					g_dst_rect.w = g_src_rect.w;
 					g_dst_rect.h = g_src_rect.h;
 
-					SDL_RenderCopy(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
+					SDL_RenderTexture(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
 
 					x_offset+=g_src_rect.w + 2;				
 				}
@@ -1566,13 +1566,13 @@ void draw_nav_digits (char *digits, int xpos, int ypos) {
 
 			if (digit == g_nav_numbers_ref[d]) {
 
-				SDL_Rect g_src_rect;
+				SDL_FRect g_src_rect;
 				g_src_rect.x = g_nav_numbers_src_tex_loc[0][d];
 				g_src_rect.y = g_nav_numbers_src_tex_loc[1][d];
 				g_src_rect.w = g_nav_numbers_src_tex_loc[2][d];
 				g_src_rect.h = g_nav_numbers_src_tex_loc[3][d];
 
-				SDL_Rect g_dst_rect;
+				SDL_FRect g_dst_rect;
 				g_dst_rect.x = xpos + x_offset;
 				g_dst_rect.y = ypos;
 				g_dst_rect.w = g_src_rect.w;
@@ -1582,7 +1582,7 @@ void draw_nav_digits (char *digits, int xpos, int ypos) {
 					g_dst_rect.y = ypos + 71;
 				}
 
-				SDL_RenderCopy(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
+				SDL_RenderTexture(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
 
 				x_offset+=g_src_rect.w + 2;				
 			}
@@ -1601,19 +1601,19 @@ void draw_nav_numbers (int num, int xpos, int ypos) {
 
 void draw_nav_symbol (int sym, int xpos, int ypos)
 {
-	SDL_Rect g_src_rect;
+	SDL_FRect g_src_rect;
 	g_src_rect.x = g_nav_icons_src_tex_loc[0][sym];
 	g_src_rect.y = g_nav_icons_src_tex_loc[1][sym];
 	g_src_rect.w = g_nav_icons_src_tex_loc[2][sym];
 	g_src_rect.h = g_nav_icons_src_tex_loc[3][sym];
 
-	SDL_Rect g_dst_rect;
+	SDL_FRect g_dst_rect;
 	g_dst_rect.x = xpos;
 	g_dst_rect.y = ypos;
 	g_dst_rect.w = g_src_rect.w;
 	g_dst_rect.h = g_src_rect.h;
 
-	SDL_RenderCopy(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
+	SDL_RenderTexture(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
 }
 
 void draw_medium_num (int singledigit, int xpos, int ypos) {
@@ -1637,7 +1637,7 @@ void draw_speed_digit (char digit, int position)
 
 	for (int d = 0; d <= 9; d++) {
 		if (digit == g_num_ref[d]) {
-			SDL_Rect g_src_rect;
+			SDL_FRect g_src_rect;
 			g_src_rect.x = g_speed_src_tex_loc[0][d];
 			g_src_rect.y = g_speed_src_tex_loc[1][d];
 			g_src_rect.w = g_speed_src_tex_loc[2][d];
@@ -1646,19 +1646,19 @@ void draw_speed_digit (char digit, int position)
 			if (position == 3) {
 				spd_digit_three.w = g_speed_src_tex_loc[2][d];
 				spd_digit_three.h = g_speed_src_tex_loc[3][d];
-				SDL_RenderCopy(renderer, tex("Speednumbers.bmp"), &g_src_rect, &spd_digit_three);
+				SDL_RenderTexture(renderer, tex("Speednumbers.bmp"), &g_src_rect, &spd_digit_three);
 			}
 
 			if (position == 2) {
 				spd_digit_two.w = g_speed_src_tex_loc[2][d];
 				spd_digit_two.h = g_speed_src_tex_loc[3][d];
-				SDL_RenderCopy(renderer, tex("Speednumbers.bmp"), &g_src_rect, &spd_digit_two);
+				SDL_RenderTexture(renderer, tex("Speednumbers.bmp"), &g_src_rect, &spd_digit_two);
 			}
 
 			if (position == 1) {
 				spd_digit_one.w = g_speed_src_tex_loc[2][d];
 				spd_digit_one.h = g_speed_src_tex_loc[3][d];
-				SDL_RenderCopy(renderer, tex("Speednumbers.bmp"), &g_src_rect, &spd_digit_one);
+				SDL_RenderTexture(renderer, tex("Speednumbers.bmp"), &g_src_rect, &spd_digit_one);
 			}
 		}
 	}	
@@ -2810,44 +2810,44 @@ void* pollTPMSInterface(void *arg)
 	return 0;
 }
 
-int render_texture (SDL_Texture* tex, int x, int y, int w, int h) 
+bool render_texture (SDL_Texture* tex, int x, int y, int w, int h)
 {
-	SDL_Rect dst_rect;
+	SDL_FRect dst_rect;
 	dst_rect.x = x;
 	dst_rect.y = y;
 	dst_rect.w = w;
 	dst_rect.h = h;
 
-	return SDL_RenderCopy(renderer, tex, nullptr, &dst_rect);
+	return SDL_RenderTexture(renderer, tex, nullptr, &dst_rect);
 }
 
-int render_top_icon_grey_texture (int x, int y, int w, int h) 
+bool render_top_icon_grey_texture (int x, int y, int w, int h)
 {
-	SDL_Rect dst_rect;
+	SDL_FRect dst_rect;
 	dst_rect.x = x;
 	dst_rect.y = y;
 	dst_rect.w = w;
 	dst_rect.h = h;
 
 	if (oil_pressure_available) {
-		return SDL_RenderCopy(renderer, tex("TopiconsgreyOP.bmp"), nullptr, &dst_rect);
+		return SDL_RenderTexture(renderer, tex("TopiconsgreyOP.bmp"), nullptr, &dst_rect);
 	} else {
-		return SDL_RenderCopy(renderer, tex("Topiconsgrey.bmp"), nullptr, &dst_rect);
+		return SDL_RenderTexture(renderer, tex("Topiconsgrey.bmp"), nullptr, &dst_rect);
 	}
 }
 
-int render_oil_light_texture (int x, int y, int w, int h)
+bool render_oil_light_texture (int x, int y, int w, int h)
 {
-	SDL_Rect dst_rect;
+	SDL_FRect dst_rect;
 	dst_rect.x = x;
 	dst_rect.y = y;
 	dst_rect.w = w;
 	dst_rect.h = h;
 
 	if (oil_pressure_available) {
-		return SDL_RenderCopy(renderer, tex("OillightOP.bmp"), nullptr, &dst_rect);
+		return SDL_RenderTexture(renderer, tex("OillightOP.bmp"), nullptr, &dst_rect);
 	} else {
-		return SDL_RenderCopy(renderer, tex("Oillight.bmp"), nullptr, &dst_rect);
+		return SDL_RenderTexture(renderer, tex("Oillight.bmp"), nullptr, &dst_rect);
 	}
 }
 
@@ -3632,55 +3632,55 @@ void dashboard_startup () {
 		int revamountinc = 10;
 		int revinc = 100;
 		if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R0.bmp"), nullptr, &rectg0);
+			SDL_RenderTexture(renderer, tex("R0.bmp"), nullptr, &rectg0);
 		}
 		revamountinc+=revinc;
 		if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R1.bmp"), nullptr, &rectg1);
+			SDL_RenderTexture(renderer, tex("R1.bmp"), nullptr, &rectg1);
 		}
 		revamountinc+=revinc;
 		if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R2.bmp"), nullptr, &rectg2);
+			SDL_RenderTexture(renderer, tex("R2.bmp"), nullptr, &rectg2);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R3.bmp"), nullptr, &rectg3);
+			SDL_RenderTexture(renderer, tex("R3.bmp"), nullptr, &rectg3);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R4.bmp"), nullptr, &rect_g4);
+			SDL_RenderTexture(renderer, tex("R4.bmp"), nullptr, &rect_g4);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R5.bmp"), nullptr, &rect_g5);
+			SDL_RenderTexture(renderer, tex("R5.bmp"), nullptr, &rect_g5);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R6.bmp"), nullptr, &rect_g6);
+			SDL_RenderTexture(renderer, tex("R6.bmp"), nullptr, &rect_g6);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R7.bmp"), nullptr, &rect_g7);
+			SDL_RenderTexture(renderer, tex("R7.bmp"), nullptr, &rect_g7);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R8.bmp"), nullptr, &rect_g8);
+			SDL_RenderTexture(renderer, tex("R8.bmp"), nullptr, &rect_g8);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R9.bmp"), nullptr, &rect_g9);
+			SDL_RenderTexture(renderer, tex("R9.bmp"), nullptr, &rect_g9);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R10.bmp"), nullptr, &rect_g10);
+			SDL_RenderTexture(renderer, tex("R10.bmp"), nullptr, &rect_g10);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R11.bmp"), nullptr, &rect_g11);
+			SDL_RenderTexture(renderer, tex("R11.bmp"), nullptr, &rect_g11);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderCopy(renderer, tex("R12-13.bmp"), nullptr, &rect_g1213);
+			SDL_RenderTexture(renderer, tex("R12-13.bmp"), nullptr, &rect_g1213);
 		}
 	}
 
@@ -3914,7 +3914,7 @@ void draw_dashboard () {
 
 
 	// Rev counter rev line texture
-	SDL_RenderCopy(renderer, tex("Revline.bmp"), nullptr, &grevline);
+	SDL_RenderTexture(renderer, tex("Revline.bmp"), nullptr, &grevline);
 
 	target_rpm_rotation = get_rpm_rotation (rpm);
 	if (target_rpm_rotation > current_rpm_rotation) {
@@ -3930,7 +3930,7 @@ void draw_dashboard () {
 	}
 
 	// White rev counter cover to reveal the rev line
-	SDL_RenderCopyEx(renderer, tex("Whitesq.bmp"), nullptr, &grrevwhite, current_rpm_rotation , &gwhitepoint, SDL_FLIP_NONE);
+	SDL_RenderTextureRotated(renderer, tex("Whitesq.bmp"), nullptr, &grrevwhite, current_rpm_rotation , &gwhitepoint, SDL_FLIP_NONE);
 
 	// Top grey icons
 	render_top_icon_grey_texture (0, 0, 627, 138);
@@ -4142,19 +4142,19 @@ void draw_dashboard () {
 	
 
 	// Rev counter numbers
-	SDL_RenderCopy(renderer, tex("R12-13.bmp"), nullptr, &rect_g1213);
-	SDL_RenderCopy(renderer, tex("R11.bmp"), nullptr, &rect_g11);
-	SDL_RenderCopy(renderer, tex("R10.bmp"), nullptr, &rect_g10);
-	SDL_RenderCopy(renderer, tex("R9.bmp"), nullptr, &rect_g9);
-	SDL_RenderCopy(renderer, tex("R8.bmp"), nullptr, &rect_g8);
-	SDL_RenderCopy(renderer, tex("R7.bmp"), nullptr, &rect_g7);
-	SDL_RenderCopy(renderer, tex("R6.bmp"), nullptr, &rect_g6);
-	SDL_RenderCopy(renderer, tex("R5.bmp"), nullptr, &rect_g5);
-	SDL_RenderCopy(renderer, tex("R4.bmp"), nullptr, &rect_g4);
-	SDL_RenderCopy(renderer, tex("R3.bmp"), nullptr, &rectg3);
-	SDL_RenderCopy(renderer, tex("R2.bmp"), nullptr, &rectg2);
-	SDL_RenderCopy(renderer, tex("R1.bmp"), nullptr, &rectg1);
-	SDL_RenderCopy(renderer, tex("R0.bmp"), nullptr, &rectg0);
+	SDL_RenderTexture(renderer, tex("R12-13.bmp"), nullptr, &rect_g1213);
+	SDL_RenderTexture(renderer, tex("R11.bmp"), nullptr, &rect_g11);
+	SDL_RenderTexture(renderer, tex("R10.bmp"), nullptr, &rect_g10);
+	SDL_RenderTexture(renderer, tex("R9.bmp"), nullptr, &rect_g9);
+	SDL_RenderTexture(renderer, tex("R8.bmp"), nullptr, &rect_g8);
+	SDL_RenderTexture(renderer, tex("R7.bmp"), nullptr, &rect_g7);
+	SDL_RenderTexture(renderer, tex("R6.bmp"), nullptr, &rect_g6);
+	SDL_RenderTexture(renderer, tex("R5.bmp"), nullptr, &rect_g5);
+	SDL_RenderTexture(renderer, tex("R4.bmp"), nullptr, &rect_g4);
+	SDL_RenderTexture(renderer, tex("R3.bmp"), nullptr, &rectg3);
+	SDL_RenderTexture(renderer, tex("R2.bmp"), nullptr, &rectg2);
+	SDL_RenderTexture(renderer, tex("R1.bmp"), nullptr, &rectg1);
+	SDL_RenderTexture(renderer, tex("R0.bmp"), nullptr, &rectg0);
 
 	sprintf( str_current_speed, "%d", current_speed);
 	sprintf( str_trip1, "%.1f", trip1);
@@ -4536,7 +4536,7 @@ int main(int argc, char* args[]) {
 	tempohms[5] = 40;
 
 	//std::thread t1(thread_worker, "hello");
-	SDL_ShowCursor(SDL_DISABLE);
+	SDL_HideCursor();
 	
 	int err;
 	err = pthread_create(&(tid[0]), nullptr, &pollInterface, nullptr);
@@ -4559,13 +4559,12 @@ int main(int argc, char* args[]) {
         printf("\n TPMS Thread created successfully\n");
 
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		fprintf(stderr, "could not initialize sdl2: %s\n", SDL_GetError());
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+		fprintf(stderr, "could not initialize sdl3: %s\n", SDL_GetError());
 		return 1;
 	}
-	
 
-	if (SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer) != 0) {
+	if (!SDL_CreateWindowAndRenderer("TFT Dash", SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer)) {
 		fprintf(stderr, "could not create window & renderer: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -4574,8 +4573,6 @@ int main(int argc, char* args[]) {
 		fprintf(stderr, "could not create window: %s\n", SDL_GetError());
 		return 1;
 	}
-
-	screen_surface = SDL_GetWindowSurface(window);
 
 	g_assets = asset_store_create(renderer);
 	if (!g_assets) {
@@ -4591,7 +4588,7 @@ int main(int argc, char* args[]) {
 
 	init_rects();
 
-	SDL_ShowCursor(SDL_DISABLE);
+	SDL_HideCursor();
 
 	////////////////////////////////////////  LOOP ///////////////////////////////////////////
 	SDL_Event e;
@@ -4599,48 +4596,48 @@ int main(int argc, char* args[]) {
 	while (!quit) {
 
 		while (SDL_PollEvent(&e)) {
-			if (e.type == SDL_QUIT) {
+			if (e.type == SDL_EVENT_QUIT) {
 				quit = true;
 			}
-			if (e.type == SDL_KEYDOWN) {
+			if (e.type == SDL_EVENT_KEY_DOWN) {
 				//quit = true;
 			}
 
-			if (e.type == SDL_KEYUP) {
+			if (e.type == SDL_EVENT_KEY_UP) {
 				//fprintf (stderr, "choice");
 				//spin_angle--;
-				//fprintf (stderr, "Key: %d", e.key.keysym.scancode);
+				//fprintf (stderr, "Key: %d", e.key.scancode);
 
-				if (e.key.keysym.scancode == 229) {
+				if (e.key.scancode == 229) {
 					choice();
 				}
 
-				if (e.key.keysym.scancode == 40) {
+				if (e.key.scancode == 40) {
 					select();
 				}
 
-				if (e.key.keysym.scancode == 41) {
+				if (e.key.scancode == 41) {
 					quit = true;
 				}
 
 				/*
-				if(e.key.keysym.scancode != SDL_GetScancodeFromKey(e.key.keysym.sym)) {
+				if(e.key.scancode != SDL_GetScancodeFromKey(e.key.key, NULL)) {
 					printf("Physical %s key acting as %s key",
-      				SDL_GetScancodeName(e.key.keysym.scancode),
-      				SDL_GetKeyName(e.key.keysym.sym));
+      				SDL_GetScancodeName(e.key.scancode),
+      				SDL_GetKeyName(e.key.key));
 				}
 				*/
-    				
-				
+
+
 			}
 
-			if (e.type == SDL_MOUSEBUTTONUP) {
+			if (e.type == SDL_EVENT_MOUSE_BUTTON_UP) {
 				fprintf(stderr, "select");
 				//spin_angle++;
-				
+
 			}
 
-			if (e.type == SDL_MOUSEBUTTONDOWN) {
+			if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 				//quit = true;
 			}
 		}
@@ -4705,9 +4702,6 @@ int main(int argc, char* args[]) {
 		}
 
 
-		//SDL_FillRect(screen_surface, &rect, SDL_MapRGB(screen_surface->format, 0x0, 0x0, 0x0));
-		
-		//SDL_UpdateWindowSurface(window);
 		SDL_Delay(5);
 
 		//fprintf(stderr, "Main thread: %s\n", g_sz_comms_msg);

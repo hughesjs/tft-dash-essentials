@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 TFT Dash is a motorcycle dashboard replacement project. It consists of two main software components plus hardware designs:
 
 - **Firmware** (`firmware/`): Arduino code running on an ATMega32u4 (Gen4) or ATMega2560 (Mega/Gen3) that reads bike sensor signals (speed, RPM, coolant temp, fuel level, indicators, etc.) and streams comma-delimited data over USB serial at 115200 bps.
-- **Display** (`display/`): C++ application running on a Raspberry Pi that receives the serial data and renders the dashboard GUI using SDL2 at 1024x600 resolution.
+- **Display** (`display/`): C++ application running on a Raspberry Pi that receives the serial data and renders the dashboard GUI using SDL3 at 1024x600 resolution.
 - **Hardware** (`hardware/`): EAGLE schematic/board files for the Gen4 interface PCB, plus 3D-printable enclosure STLs.
 - **Pi Image** (`pi-image/`): Configuration files from the Raspberry Pi 3 SD card — boot config, update script, fstab. The Pi runs a read-only RetroPie-based image with WiFi/BT disabled, DPI display at 1024x600. App lives at `/home/pi/tftdash/TFTDash/` in flat BMP layout.
 
@@ -17,7 +17,7 @@ TFT Dash is a motorcycle dashboard replacement project. It consists of two main 
 ```bash
 cd display
 
-# Build (requires zig 0.15+ and SDL2 dev libraries)
+# Build (requires zig 0.15+ and SDL3 dev libraries)
 zig build
 
 # Build and run parser tests

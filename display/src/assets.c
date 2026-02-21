@@ -9,6 +9,7 @@
 
 #include <dirent.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -81,7 +82,7 @@ static bool insert_entry(asset_store* store, char* theme, char* name,
         if (entry_matches(&store->entries[idx], theme, name)) {
             /* Replace existing entry */
             SDL_DestroyTexture(store->entries[idx].texture);
-            SDL_FreeSurface(store->entries[idx].surface);
+            SDL_DestroySurface(store->entries[idx].surface);
             store->entries[idx].surface = surface;
             store->entries[idx].texture = texture;
             return true;
@@ -152,7 +153,7 @@ void asset_store_destroy(asset_store* store) {
     for (size_t i = 0; i < store->capacity; i++) {
         if (!entry_is_empty(&store->entries[i])) {
             SDL_DestroyTexture(store->entries[i].texture);
-            SDL_FreeSurface(store->entries[i].surface);
+            SDL_DestroySurface(store->entries[i].surface);
             free(store->entries[i].theme);
             free(store->entries[i].name);
         }
@@ -186,7 +187,7 @@ int asset_store_load_theme(asset_store* store, const char* theme, const char* di
 
         SDL_Texture* texture = SDL_CreateTextureFromSurface(store->renderer, surface);
         if (!texture) {
-            SDL_FreeSurface(surface);
+            SDL_DestroySurface(surface);
             continue;
         }
 
@@ -196,7 +197,7 @@ int asset_store_load_theme(asset_store* store, const char* theme, const char* di
             free(theme_dup);
             free(name_dup);
             SDL_DestroyTexture(texture);
-            SDL_FreeSurface(surface);
+            SDL_DestroySurface(surface);
             continue;
         }
 
@@ -206,7 +207,7 @@ int asset_store_load_theme(asset_store* store, const char* theme, const char* di
             free(theme_dup);
             free(name_dup);
             SDL_DestroyTexture(texture);
-            SDL_FreeSurface(surface);
+            SDL_DestroySurface(surface);
         }
     }
 

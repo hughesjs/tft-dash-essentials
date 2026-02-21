@@ -1,7 +1,7 @@
 /*
  * test_assets.c - Test suite for asset management
  *
- * Requires SDL2 initialised with a hidden window + renderer.
+ * Requires SDL3 initialised with a hidden window + renderer.
  * Run from the project root so that assets/themes/ paths resolve.
  */
 
@@ -33,19 +33,19 @@ int main(void) {
     printf("\n=== Asset Manager Tests ===\n\n");
 
     /* Initialise SDL with a hidden window for texture creation */
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
         return 1;
     }
 
-    SDL_Window* window = SDL_CreateWindow("test", 0, 0, 1, 1, SDL_WINDOW_HIDDEN);
+    SDL_Window* window = SDL_CreateWindow("test", 1, 1, SDL_WINDOW_HIDDEN);
     if (!window) {
         fprintf(stderr, "SDL_CreateWindow failed: %s\n", SDL_GetError());
         SDL_Quit();
         return 1;
     }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, "software");
     if (!renderer) {
         fprintf(stderr, "SDL_CreateRenderer failed: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);

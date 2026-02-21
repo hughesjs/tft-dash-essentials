@@ -1,6 +1,6 @@
 # TFT Dash — Buildroot defconfig for Raspberry Pi 3
 #
-# Based on raspberrypi3_defconfig with minimal additions for SDL2 display app.
+# Based on raspberrypi3_defconfig with minimal additions for the display app.
 
 # Architecture
 BR2_aarch64=y
@@ -14,7 +14,8 @@ BR2_TOOLCHAIN_EXTERNAL_BOOTLIN_AARCH64_GLIBC_STABLE=y
 # Patches
 BR2_GLOBAL_PATCH_DIR="board/raspberrypi/patches"
 
-# System
+# System — devtmpfs handles /dev (no eudev needed; the dash has no hotplug)
+BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_DEVTMPFS=y
 BR2_TARGET_GENERIC_HOSTNAME="tftdash"
 BR2_TARGET_GENERIC_ISSUE="TFT Dash"
 BR2_TARGET_GENERIC_ROOT_PASSWD=""
@@ -46,6 +47,13 @@ BR2_TARGET_ROOTFS_EXT2_SIZE="512M"
 BR2_PACKAGE_HOST_GENIMAGE=y
 BR2_PACKAGE_HOST_DOSFSTOOLS=y
 BR2_PACKAGE_HOST_MTOOLS=y
+
+# Packages — display (SDL3 KMSDRM backend needs libdrm + libgbm + EGL + GLES)
+BR2_PACKAGE_LIBDRM=y
+BR2_PACKAGE_MESA3D=y
+BR2_PACKAGE_MESA3D_GBM=y
+BR2_PACKAGE_MESA3D_OPENGL_ES=y
+BR2_PACKAGE_MESA3D_GALLIUM_DRIVER_VC4=y
 
 # Packages — firmware flashing (for USB updates)
 BR2_PACKAGE_AVRDUDE=y

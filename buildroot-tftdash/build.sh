@@ -32,7 +32,7 @@ cross_compile() {
     # Match the glibc version from Buildroot's toolchain to avoid linker errors
     local glibc_ver
     local sysroot
-    sysroot=$(find "$BUILDROOT_DIR/output/host" -maxdepth 2 -name sysroot -type d 2>/dev/null | head -1)
+    sysroot=$(find "$BUILDROOT_DIR/output/host" -maxdepth 2 -name sysroot -type d 2>/dev/null | head -1 || true)
     if [ -z "$sysroot" ] && [ -d "$BUILDROOT_DIR/output/staging" ]; then
         sysroot="$BUILDROOT_DIR/output/staging"
     fi

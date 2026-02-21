@@ -4564,7 +4564,15 @@ int main(int argc, char* args[]) {
 		return 1;
 	}
 
-	if (!SDL_CreateWindowAndRenderer("TFT Dash", SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer)) {
+	// Use fullscreen on KMSDRM so the app takes over the DRM scanout
+	Uint64 window_flags = 0;
+	const char *video_driver = SDL_GetCurrentVideoDriver();
+	fprintf(stderr, "Video driver: %s\n", video_driver ? video_driver : "(null)");
+	if (video_driver && strcmp(video_driver, "KMSDRM") == 0) {
+		window_flags = SDL_WINDOW_FULLSCREEN;
+	}
+
+	if (!SDL_CreateWindowAndRenderer("TFT Dash", SCREEN_WIDTH, SCREEN_HEIGHT, window_flags, &window, &renderer)) {
 		fprintf(stderr, "could not create window & renderer: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -4574,16 +4582,26 @@ int main(int argc, char* args[]) {
 		return 1;
 	}
 
+	const char *renderer_name = SDL_GetRendererName(renderer);
+	fprintf(stderr, "Renderer: %s\n", renderer_name ? renderer_name : "(null)");
+
 	g_assets = asset_store_create(renderer);
 	if (!g_assets) {
 		fprintf(stderr, "Failed to create asset store\n");
 		return 1;
 	}
+	int total_assets = 0;
 	for (int i = 0; i < THEME_COUNT; i++) {
 		char dir[256];
 		snprintf(dir, sizeof(dir), "assets/themes/%s", THEME_NAMES[i]);
-		asset_store_load_theme(g_assets, THEME_NAMES[i], dir);
+		int n = asset_store_load_theme(g_assets, THEME_NAMES[i], dir);
+		if (n < 0) {
+			fprintf(stderr, "Failed to load theme: %s (dir: %s)\n", THEME_NAMES[i], dir);
+		} else {
+			total_assets += n;
+		}
 	}
+	fprintf(stderr, "Loaded %d assets across %d themes\n", total_assets, THEME_COUNT);
 	g_current_theme = theme_name_from_id(theme);
 
 	init_rects();

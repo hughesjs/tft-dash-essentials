@@ -9,7 +9,7 @@ case "$1" in
 	start)
 		printf "Starting TFT Dash: "
 		cd "$TFTDASH_DIR"
-		./testsdl &
+		./testsdl 2>&1 &
 		echo "OK"
 		;;
 	stop)

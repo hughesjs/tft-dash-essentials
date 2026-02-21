@@ -23,8 +23,8 @@ zig build
 # Build and run parser tests
 zig build test
 
-# Cross-compile for Raspberry Pi (armhf — the Pi runs 32-bit)
-zig build -Dtarget=arm-linux-gnueabihf -Doptimize=ReleaseSafe
+# Cross-compile for Raspberry Pi (aarch64)
+zig build -Dtarget=aarch64-linux-gnu -Doptimize=ReleaseSafe
 ```
 
 Uses Zig as the build system. See `display/build.zig` for configuration.

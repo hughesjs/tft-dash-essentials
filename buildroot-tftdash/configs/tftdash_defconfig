@@ -3,14 +3,13 @@
 # Based on raspberrypi3_defconfig with minimal additions for SDL2 display app.
 
 # Architecture
-BR2_arm=y
+BR2_aarch64=y
 BR2_cortex_a53=y
-BR2_ARM_FPU_NEON_VFPV4=y
 
 # Toolchain — pre-built Bootlin cross-toolchain (much faster than building GCC)
 BR2_TOOLCHAIN_EXTERNAL=y
 BR2_TOOLCHAIN_EXTERNAL_BOOTLIN=y
-BR2_TOOLCHAIN_EXTERNAL_BOOTLIN_ARMV7_EABIHF_GLIBC_STABLE=y
+BR2_TOOLCHAIN_EXTERNAL_BOOTLIN_AARCH64_GLIBC_STABLE=y
 
 # Patches
 BR2_GLOBAL_PATCH_DIR="board/raspberrypi/patches"
@@ -27,9 +26,9 @@ BR2_TARGET_GENERIC_GETTY_PORT="tty1"
 BR2_LINUX_KERNEL=y
 BR2_LINUX_KERNEL_CUSTOM_TARBALL=y
 BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION="$(call github,raspberrypi,linux,rpi-6.1.y)/linux-rpi-6.1.y.tar.gz"
-BR2_LINUX_KERNEL_DEFCONFIG="bcm2709"
+BR2_LINUX_KERNEL_DEFCONFIG="bcmrpi3"
 BR2_LINUX_KERNEL_DTS_SUPPORT=y
-BR2_LINUX_KERNEL_INTREE_DTS_NAME="broadcom/bcm2710-rpi-3-b broadcom/bcm2710-rpi-3-b-plus"
+BR2_LINUX_KERNEL_INTREE_DTS_NAME="broadcom/bcm2837-rpi-3-b broadcom/bcm2837-rpi-3-b-plus"
 BR2_LINUX_KERNEL_NEEDS_HOST_OPENSSL=y
 
 # Bootloader
@@ -40,7 +39,7 @@ BR2_PACKAGE_RPI_FIRMWARE_VARIANT_PI=y
 # Filesystem
 BR2_TARGET_ROOTFS_EXT2=y
 BR2_TARGET_ROOTFS_EXT2_4=y
-BR2_TARGET_ROOTFS_EXT2_SIZE="256M"
+BR2_TARGET_ROOTFS_EXT2_SIZE="512M"
 # BR2_TARGET_ROOTFS_TAR is not set
 
 # SD card image

@@ -63,7 +63,7 @@ cross_compile() {
     local sysroot
     sysroot=$(find_sysroot)
 
-    echo "Cross-compiling display binary for Raspberry Pi (armhf)..."
+    echo "Cross-compiling display binary for Raspberry Pi (aarch64)..."
 
     cd "$DISPLAY_DIR"
     # Match the glibc version from Buildroot's toolchain to avoid linker errors
@@ -71,7 +71,7 @@ cross_compile() {
     glibc_ver=$(strings "$sysroot/lib/libc.so.6" 2>/dev/null \
         | grep -oP 'GLIBC_\K2\.\d+' | sort -t. -k2 -n | tail -1 || echo "2.38")
 
-    zig build "-Dtarget=arm-linux-gnueabihf.${glibc_ver}" -Doptimize=ReleaseSafe \
+    zig build "-Dtarget=aarch64-linux-gnu.${glibc_ver}" -Doptimize=ReleaseSafe \
         -Dsdl2-include-path="$sysroot/usr/include/SDL2" \
         -Dsdl2-lib-path="$sysroot/usr/lib"
     cd "$SCRIPT_DIR"
@@ -82,8 +82,8 @@ cross_compile() {
         exit 1
     fi
 
-    if ! file "$bin" | grep -q "ARM"; then
-        echo "ERROR: $bin is not an ARM binary"
+    if ! file "$bin" | grep -q "aarch64"; then
+        echo "ERROR: $bin is not an aarch64 binary"
         exit 1
     fi
 

@@ -12,6 +12,9 @@ dtparam=audio=on
 # SD card overclock
 dtoverlay=sdtweak,overclock_50=100
 
+# 64-bit kernel
+arm_64bit=1
+
 # Fast boot
 boot_delay=0
 disable_splash=1

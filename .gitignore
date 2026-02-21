@@ -1,5 +1,6 @@
 buildroot-src/
 dash-backup.img
+update-package/
 .claude/
 .DS_Store
 *.hex

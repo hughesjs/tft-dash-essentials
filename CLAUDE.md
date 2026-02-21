@@ -53,9 +53,25 @@ cd buildroot-tftdash
 
 # Rebuild after app/asset changes
 ./build.sh rebuild
+
+# Build a USB update package for A/B updates
+./build.sh update-package
 ```
 
 Requires Buildroot cloned alongside the repo (`git clone https://github.com/buildroot/buildroot.git ../buildroot-src`) and the display binary pre-built for ARM (see above). Output is `../buildroot-src/output/images/sdcard.img`. See `buildroot-tftdash/README.md` for full details.
+
+### A/B Update Testing
+```bash
+# Boot QEMU from slot A (default)
+make qemu
+
+# Boot QEMU from slot B
+make qemu-b
+
+# Inside QEMU, test update script:
+dd if=/dev/zero of=/tmp/test.img bs=1M count=10
+tft-update.sh /tmp/test.img
+```
 
 ## Architecture
 
@@ -160,8 +176,34 @@ Phone App                    Arduino (BLE)              Pi
 - WiFi hardware (Pi 3+ has built-in)
 - Pre-configured hostapd.conf for the "TFTDash" AP
 
-### Existing Update Package (USB Stick)
-The current update mechanism uses a USB stick with a `tftupdate/` directory. A boot script on the Pi's SD card detects it and copies files. Structure:
+### A/B Rootfs Update System
+
+The SD card uses a 4-partition layout for atomic updates:
+
+```
+p1  boot      32MB   FAT32   kernel, DTBs, firmware, config.txt, cmdline.txt
+p2  rootfs_a  512MB  ext4    active Buildroot rootfs (read-only)
+p3  rootfs_b  512MB  ext4    standby — dd target for updates
+p4  data      16MB   ext4    persistent user data (rw)
+```
+
+**Update flow**: Insert USB stick with `tftupdate/rootfs.img` → `S10usbupdate` init script detects it at boot → `tft-update.sh` writes image to standby partition, flips `cmdline.txt` root=, reboots into new slot. If the new image is bad, the old slot remains intact.
+
+**Key files**:
+- `buildroot-tftdash/overlay/usr/bin/tft-update.sh` — core update script
+- `buildroot-tftdash/overlay/etc/init.d/S10usbupdate` — boot-time USB scan
+- `buildroot-tftdash/board/genimage.cfg` — 4-partition SD card layout
+
+**USB update package format** (built via `make update-package`):
+```
+tftupdate/
+├── rootfs.img            Full ext4 rootfs image (dd'd to standby partition)
+├── rootfs.img.sha256     SHA-256 checksum for verification
+└── firmware.hex          Optional Arduino firmware (flashed via avrdude)
+```
+
+### Legacy Update Package (USB Stick — pre-A/B)
+The old update mechanism used a USB stick with a different `tftupdate/` layout. Structure:
 ```
 tftupdate/
 ├── bootimage.png              Fazer splash screen
@@ -174,10 +216,9 @@ tftupdate/
     ├── testsdl.cpp            Source (for reference)
     └── *.bmp (×855)           All theme BMPs, flat layout with prefixes
 ```
-The exact boot script is on the Pi's SD card image (not in this repo yet — pull the SD card to retrieve it).
 
 ### TODO
 - [ ] Pull Pi SD card and retrieve the existing update/boot script
-- [ ] Write `make-update-package.sh` to match the exact format the Pi expects
+- [x] Write update package build script (`make update-package` / `build.sh update-package`)
 - [ ] Calibrate RPM_CONSTANT for FZS600 (warm idle should read 1150-1250 RPM)
 - [ ] Recalibrate fuel level lookup table for FZS600 tank (19.4L vs 21L, different shape)

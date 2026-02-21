@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# S10usbupdate — Scan for USB update stick at boot
+#
+# Runs early (S10) before the dashboard (S99). If a USB stick
+# containing tftupdate/rootfs.img is found, hands off to
+# tft-update.sh which writes the standby partition and reboots.
+#
+
+case "$1" in
+    start)
+        # Give USB devices a moment to enumerate
+        sleep 1
+
+        for dev in /dev/sd[a-z][0-9]*; do
+            [ -b "$dev" ] || continue
+
+            MOUNT_DIR="/tmp/usb-scan-$$"
+            mkdir -p "$MOUNT_DIR"
+
+            if mount -o ro "$dev" "$MOUNT_DIR" 2>/dev/null; then
+                if [ -f "$MOUNT_DIR/tftupdate/rootfs.img" ]; then
+                    echo "USB update found on $dev — starting update..."
+                    umount "$MOUNT_DIR"
+                    rmdir "$MOUNT_DIR"
+                    exec /usr/bin/tft-update.sh "$dev"
+                fi
+                umount "$MOUNT_DIR"
+            fi
+
+            rmdir "$MOUNT_DIR" 2>/dev/null || true
+        done
+        ;;
+    stop)
+        ;;
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+        ;;
+esac
+
+exit 0

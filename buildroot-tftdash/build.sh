@@ -113,6 +113,40 @@ case "${1:-build}" in
         echo "SD card image: $BUILDROOT_DIR/output/images/sdcard.img"
         ;;
 
+    update-package)
+        check_buildroot
+
+        ROOTFS_IMG="$BUILDROOT_DIR/output/images/rootfs.ext4"
+        if [ ! -f "$ROOTFS_IMG" ]; then
+            echo "ERROR: $ROOTFS_IMG not found — run a build first"
+            exit 1
+        fi
+
+        PKG_DIR="$REPO_DIR/update-package/tftupdate"
+        mkdir -p "$PKG_DIR"
+
+        echo "Copying rootfs image..."
+        cp "$ROOTFS_IMG" "$PKG_DIR/rootfs.img"
+
+        echo "Generating SHA-256 checksum..."
+        (cd "$PKG_DIR" && sha256sum rootfs.img > rootfs.img.sha256)
+
+        # Include firmware hex if available
+        FIRMWARE_HEX="$REPO_DIR/firmware/build/tftdashfirmwareGEN4.hex"
+        if [ -f "$FIRMWARE_HEX" ]; then
+            cp "$FIRMWARE_HEX" "$PKG_DIR/firmware.hex"
+            echo "Included firmware: firmware.hex"
+        fi
+
+        echo ""
+        echo "=== Update package ready ==="
+        echo "  $PKG_DIR/"
+        ls -lh "$PKG_DIR/"
+        echo ""
+        echo "Copy the tftupdate/ directory to a USB stick:"
+        echo "  cp -r $REPO_DIR/update-package/tftupdate /media/usb/"
+        ;;
+
     clean)
         check_buildroot
         echo "Cleaning build output..."
@@ -122,7 +156,7 @@ case "${1:-build}" in
         ;;
 
     *)
-        echo "Usage: $0 [build|rebuild|clean]"
+        echo "Usage: $0 [build|rebuild|update-package|clean]"
         exit 1
         ;;
 esac

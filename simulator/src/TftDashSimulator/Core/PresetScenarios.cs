@@ -73,6 +73,7 @@ public static class PresetScenarios
         state.Left = 0;
         state.Right = 0;
         state.Gear = 4;
+        state.InfoMode = 3;
         state.Nav = "%TNR%A82%Edinburgh%3%350%0.2%1%12.5%";
     }
 

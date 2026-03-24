@@ -57,6 +57,9 @@ public partial class ControlsView : UserControl
         ThemeControl.Value = _state.Theme;
         UnitsControl.Value = _state.Km;
 
+        // Sync nav controls from model
+        SyncNavControlsFromModel();
+
         _updatingFromModel = false;
     }
 
@@ -91,6 +94,80 @@ public partial class ControlsView : UserControl
         else if (sender == RightCheck) _state.Right = val;
     }
 
+    // === Navigation ===
+
+    private void SyncNavControlsFromModel()
+    {
+        if (_state == null) return;
+        // Parse the nav string back into controls if it's set by a preset
+        if (string.IsNullOrEmpty(_state.Nav))
+        {
+            NavSymbolCombo.SelectedIndex = 0;
+            return;
+        }
+        var parts = _state.Nav.Split('%', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 1)
+        {
+            for (int i = 1; i < NavSymbolCombo.Items.Count; i++)
+            {
+                if (NavSymbolCombo.Items[i] is ComboBoxItem item && item.Tag?.ToString() == parts[0])
+                {
+                    NavSymbolCombo.SelectedIndex = i;
+                    break;
+                }
+            }
+        }
+        if (parts.Length >= 2) NavRoadText.Text = parts[1];
+        if (parts.Length >= 3) NavTowardsText.Text = parts[2];
+        if (parts.Length >= 4) NavExitText.Text = parts[3];
+        if (parts.Length >= 5 && decimal.TryParse(parts[4], out var yards)) NavYardsControl.Value = yards;
+        if (parts.Length >= 6 && decimal.TryParse(parts[5], out var miles)) NavMilesControl.Value = miles;
+        if (parts.Length >= 7) NavDrivingLeftCheck.IsChecked = parts[6] == "1";
+        if (parts.Length >= 8 && decimal.TryParse(parts[7], out var destMiles)) NavDestMilesControl.Value = destMiles;
+    }
+
+    private void BuildNavMessage()
+    {
+        if (_updatingFromModel || _state == null) return;
+        var selectedItem = NavSymbolCombo.SelectedItem as ComboBoxItem;
+        var symbol = selectedItem?.Tag?.ToString();
+        if (string.IsNullOrEmpty(symbol))
+        {
+            _state.Nav = "";
+            _state.InfoMode = 0;
+            return;
+        }
+        _state.InfoMode = 3; // Show nav overlay
+        var road = NavRoadText.Text ?? "";
+        var towards = NavTowardsText.Text ?? "";
+        var exit = NavExitText.Text ?? "";
+        var yards = NavYardsControl.Value?.ToString("0") ?? "0";
+        var miles = NavMilesControl.Value?.ToString("0.0") ?? "0.0";
+        var drivingLeft = NavDrivingLeftCheck.IsChecked == true ? "1" : "0";
+        var destMiles = NavDestMilesControl.Value?.ToString("0.0") ?? "5.0";
+        _state.Nav = $"%{symbol}%{road}%{towards}%{exit}%{yards}%{miles}%{drivingLeft}%{destMiles}%";
+    }
+
+    private void OnNavSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        BuildNavMessage();
+    }
+
+    private void OnNavTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        BuildNavMessage();
+    }
+
+    private void OnNavCheckChanged(object? sender, RoutedEventArgs e)
+    {
+        BuildNavMessage();
+    }
+
+    private void OnNavNumericChanged(object? sender, NumericUpDownValueChangedEventArgs e)
+    {
+        BuildNavMessage();
+    }
+
     // === Preset Buttons ===
 
     private void OnIdleClick(object? sender, RoutedEventArgs e)
@@ -123,6 +200,11 @@ public partial class ControlsView : UserControl
         _state.Left = s.Left;
         _state.Right = s.Right;
         _state.Gear = s.Gear;
+    }
+
+    private void OnNavigationClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplyNavigation(_state);
     }
 
     private void OnExitClick(object? sender, RoutedEventArgs e)

@@ -63,6 +63,8 @@ The ~100 globals aren't a categorisation problem — they're an ownership proble
 
 4. **Warning badge priority** — Extract implicit nested-if priority logic into an explicit priority function.
 
+5. **Nav distance protocol** — The phone app sends yards AND miles as separate fields, and the display picks which to show based on `nav_yards <= 300`. This split of responsibility is daft — the phone app knows the distance, it should send one value and let the display format it. Requires a phone app + protocol change.
+
 ## Firmware architectural change (future option)
 
 ### Current state

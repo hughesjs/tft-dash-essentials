@@ -108,6 +108,73 @@
                                   ValueChanged="OnNumericChanged"/>
                 </StackPanel>
 
+                <!-- Navigation -->
+                <TextBlock Text="Navigation" FontWeight="SemiBold" Margin="0,10,0,0"/>
+
+                <StackPanel>
+                    <TextBlock Text="Symbol"/>
+                    <ComboBox x:Name="NavSymbolCombo" SelectedIndex="0" SelectionChanged="OnNavSelectionChanged">
+                        <ComboBoxItem Content="(None)"/>
+                        <ComboBoxItem Content="MUT — U-turn" Tag="MUT"/>
+                        <ComboBoxItem Content="MEX — Motorway exit" Tag="MEX"/>
+                        <ComboBoxItem Content="TNR — Turn right" Tag="TNR"/>
+                        <ComboBoxItem Content="TNL — Turn left" Tag="TNL"/>
+                        <ComboBoxItem Content="SLL — Slight left" Tag="SLL"/>
+                        <ComboBoxItem Content="SLR — Slight right" Tag="SLR"/>
+                        <ComboBoxItem Content="RB1 — Roundabout 1st exit" Tag="RB1"/>
+                        <ComboBoxItem Content="RB2 — Roundabout 2nd exit" Tag="RB2"/>
+                        <ComboBoxItem Content="RB3 — Roundabout 3rd exit" Tag="RB3"/>
+                        <ComboBoxItem Content="RB4 — Roundabout 4th exit" Tag="RB4"/>
+                        <ComboBoxItem Content="RB5 — Roundabout 5th exit" Tag="RB5"/>
+                        <ComboBoxItem Content="LNR — Keep right" Tag="LNR"/>
+                        <ComboBoxItem Content="LNL — Keep left" Tag="LNL"/>
+                        <ComboBoxItem Content="CON — Continue" Tag="CON"/>
+                        <ComboBoxItem Content="ARV — Arrive" Tag="ARV"/>
+                        <ComboBoxItem Content="PRK — Find parking" Tag="PRK"/>
+                        <ComboBoxItem Content="FRY — Take ferry" Tag="FRY"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Road name"/>
+                    <TextBox x:Name="NavRoadText" Text="High Street" TextChanged="OnNavTextChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Towards"/>
+                    <TextBox x:Name="NavTowardsText" Text="City Centre" TextChanged="OnNavTextChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Exit number (MEX only)"/>
+                    <TextBox x:Name="NavExitText" Text="" TextChanged="OnNavTextChanged"/>
+                </StackPanel>
+
+                <Grid ColumnDefinitions="*,10,*">
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Distance (yards)"/>
+                        <NumericUpDown x:Name="NavYardsControl" Minimum="0" Maximum="5000"
+                                      Increment="50" FormatString="0" Value="500"
+                                      ValueChanged="OnNavNumericChanged"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Distance (miles)"/>
+                        <NumericUpDown x:Name="NavMilesControl" Minimum="0" Maximum="500"
+                                      Increment="0.1" FormatString="0.0" Value="0.3"
+                                      ValueChanged="OnNavNumericChanged"/>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel>
+                    <TextBlock Text="To destination (miles)"/>
+                    <NumericUpDown x:Name="NavDestMilesControl" Minimum="0" Maximum="500"
+                                  Increment="0.5" FormatString="0.0" Value="5.0"
+                                  ValueChanged="OnNavNumericChanged"/>
+                </StackPanel>
+
+                <CheckBox x:Name="NavDrivingLeftCheck" Content="Left-hand drive (UK)"
+                         IsChecked="True" IsCheckedChanged="OnNavCheckChanged"/>
+
                 <!-- Preset Buttons -->
                 <TextBlock Text="Preset Scenarios (F1-F4)" FontWeight="SemiBold" Margin="0,15,0,0"/>
 
@@ -118,6 +185,8 @@
                 <Button Content="F3: High Speed Warning" Click="OnWarningClick"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
                 <Button Content="F4: Low Fuel" Click="OnLowFuelClick"
+                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="F5: Navigation" Click="OnNavigationClick"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
 
                 <Button Content="Exit (Esc)" Click="OnExitClick"

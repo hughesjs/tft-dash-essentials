@@ -101,13 +101,42 @@ pub fn build(b: *std.Build) void {
 
         b.installArtifact(test_assets);
 
+        // --- Sensor feed tests ---
+        const test_sensor_feed = b.addExecutable(.{
+            .name = "test_sensor_feed",
+            .root_module = b.createModule(.{
+                .target = target,
+                .optimize = optimize,
+                .link_libc = true,
+            }),
+        });
+
+        test_sensor_feed.root_module.addCSourceFiles(.{
+            .files = &.{
+                "src/test_sensor_feed.c",
+                "src/sensor_feed.c",
+                "src/parser.c",
+            },
+            .flags = &.{
+                "-std=c23",
+            },
+        });
+
+        test_sensor_feed.root_module.addIncludePath(b.path("src"));
+        test_sensor_feed.root_module.linkSystemLibrary("pthread", .{});
+        test_sensor_feed.root_module.linkSystemLibrary("m", .{});
+
+        b.installArtifact(test_sensor_feed);
+
         // 'zig build test' step - builds and runs all tests
         const run_parser_tests = b.addRunArtifact(test_parser);
         const run_asset_tests = b.addRunArtifact(test_assets);
         run_asset_tests.setCwd(b.path("."));
+        const run_sensor_feed_tests = b.addRunArtifact(test_sensor_feed);
         const test_step = b.step("test", "Run all tests");
         test_step.dependOn(&run_parser_tests.step);
         test_step.dependOn(&run_asset_tests.step);
+        test_step.dependOn(&run_sensor_feed_tests.step);
 
         // 'zig build run' step - builds and runs the dashboard
         const run_dash = b.addRunArtifact(testsdl);

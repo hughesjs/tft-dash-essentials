@@ -1319,276 +1319,90 @@ int	get_rpm_rotation(int rpm) {
 
 
 
-void draw_small_grey_string (char* digits, int xpos, int ypos)
-{
+// --- Glyph font descriptor — parameterises all the draw_*_string() variants ---
+
+struct glyph_font {
+	const char *texture_name;
+	const int *src_x, *src_y, *src_w, *src_h;
+	const char *glyph_chars;       // characters this font can render, in glyph-table order
+	const char *upper_chars;       // uppercase equivalents for case-insensitive match (NULL = case-sensitive)
+	int glyph_count;
+	int spacing;                   // extra pixels between glyphs beyond glyph width
+	int space_advance;             // pixels to advance for whitespace (0 = no special handling)
+	bool dash_is_space;            // treat '-' as whitespace too
+	int clip_x;                    // stop rendering past this x (0 = no clipping)
+	char shifted_char;             // glyph that gets a y-offset (0 = none)
+	int shifted_y;                 // y-offset for shifted_char
+};
+
+static const glyph_font FONT_SMALL_GREY = {
+	"Smallnumbers.bmp", g_small_grey_src_tex_loc[0], g_small_grey_src_tex_loc[1], g_small_grey_src_tex_loc[2], g_small_grey_src_tex_loc[3],
+	"0123456789.", NULL, 11, 0, 0, false, 0, '.', 18
+};
+static const glyph_font FONT_SMALL_BLUE = {
+	"Smallnumbers.bmp", g_small_blue_src_tex_loc[0], g_small_blue_src_tex_loc[1], g_small_blue_src_tex_loc[2], g_small_blue_src_tex_loc[3],
+	"0123456789.", NULL, 11, 0, 0, false, 0, '.', 18
+};
+static const glyph_font FONT_MEDIUM = {
+	"Smallnumbers.bmp", g_med_numbers_src_tex_loc[0], g_med_numbers_src_tex_loc[1], g_med_numbers_src_tex_loc[2], g_med_numbers_src_tex_loc[3],
+	"0123456789:+-.cf", NULL, 16, 0, 0, false, 0, 0, 0
+};
+static const glyph_font FONT_LARGE = {
+	"Smallnumbers.bmp", g_large_numbers_src_tex_loc[0], g_large_numbers_src_tex_loc[1], g_large_numbers_src_tex_loc[2], g_large_numbers_src_tex_loc[3],
+	"1234567890", NULL, 10, 0, 0, false, 0, 0, 0
+};
+static const glyph_font FONT_NAV_LARGE = {
+	"Navgfx.bmp", g_nav_letters_large_src_tex_loc[0], g_nav_letters_large_src_tex_loc[1], g_nav_letters_large_src_tex_loc[2], g_nav_letters_large_src_tex_loc[3],
+	"abcdefghijklmnopqrstuvwxyz0123456789,.()", "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.()", 40, 2, 7, true, 412, 0, 0
+};
+static const glyph_font FONT_NAV_SMALL = {
+	"Navgfx.bmp", g_nav_letters_small_src_tex_loc[0], g_nav_letters_small_src_tex_loc[1], g_nav_letters_small_src_tex_loc[2], g_nav_letters_small_src_tex_loc[3],
+	"abcdefghijklmnopqrstuvwxyz0123456789,.()", "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.()", 40, 2, 7, true, 412, 0, 0
+};
+static const glyph_font FONT_NAV_DIGITS = {
+	"Navgfx.bmp", g_nav_numbers_src_tex_loc[0], g_nav_numbers_src_tex_loc[1], g_nav_numbers_src_tex_loc[2], g_nav_numbers_src_tex_loc[3],
+	"0123456789.", NULL, 11, 2, 7, false, 0, '.', 71
+};
+
+void draw_glyph_string(const glyph_font *font, const char *text, int xpos, int ypos) {
 	int x_offset = 0;
-	for (int s=0;s<strlen(digits);s++) {
+	SDL_Texture *texture = tex(font->texture_name);
 
-		char digit = digits[s];
+	for (int s = 0; text[s]; s++) {
+		char ch = text[s];
 
-		for (int d = 0; d <= 10; d++) {
-			if (digit == g_small_num_ref[d]) {
-				SDL_FRect g_src_rect;
-				g_src_rect.x = g_small_grey_src_tex_loc[0][d];
-				g_src_rect.y = g_small_grey_src_tex_loc[1][d];
-				g_src_rect.w = g_small_grey_src_tex_loc[2][d];
-				g_src_rect.h = g_small_grey_src_tex_loc[3][d];
+		if (font->space_advance > 0 && (ch == ' ' || (font->dash_is_space && ch == '-'))) {
+			x_offset += font->space_advance;
+			continue;
+		}
 
-				SDL_FRect g_dst_rect;
-				g_dst_rect.x = xpos + x_offset;
-				g_dst_rect.y = ypos;
+		for (int d = 0; d < font->glyph_count; d++) {
+			if (ch == font->glyph_chars[d] || (font->upper_chars && ch == font->upper_chars[d])) {
+				if (font->clip_x > 0 && xpos + x_offset >= font->clip_x) break;
 
-				if (d == 10) {
-					g_dst_rect.y = ypos + 18;
-				}
+				SDL_FRect src = { (float)font->src_x[d], (float)font->src_y[d], (float)font->src_w[d], (float)font->src_h[d] };
+				SDL_FRect dst = { (float)(xpos + x_offset), (float)ypos, src.w, src.h };
+				if (font->shifted_char && ch == font->shifted_char) dst.y += font->shifted_y;
 
-				g_dst_rect.w = g_src_rect.w;
-				g_dst_rect.h = g_src_rect.h;
-
-				SDL_RenderTexture(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
-
-				x_offset+=g_src_rect.w;
+				SDL_RenderTexture(renderer, texture, &src, &dst);
+				x_offset += (int)src.w + font->spacing;
+				break;
 			}
 		}
-
-	}		
-}
-
-
-
-void draw_small_blue_string (char* digits, int xpos, int ypos)
-{
-	int x_offset = 0;
-	for (int s=0;s<strlen(digits);s++) {
-
-		char digit = digits[s];
-
-		for (int d = 0; d <= 10; d++) {
-			if (digit == g_small_num_ref[d]) {
-				SDL_FRect g_src_rect;
-				g_src_rect.x = g_small_blue_src_tex_loc[0][d];
-				g_src_rect.y = g_small_blue_src_tex_loc[1][d];
-				g_src_rect.w = g_small_blue_src_tex_loc[2][d];
-				g_src_rect.h = g_small_blue_src_tex_loc[3][d];
-
-				SDL_FRect g_dst_rect;
-				g_dst_rect.x = xpos + x_offset;
-				g_dst_rect.y = ypos;
-
-				if (d == 10) {
-					g_dst_rect.y = ypos + 18;
-				}
-
-				g_dst_rect.w = g_src_rect.w;
-				g_dst_rect.h = g_src_rect.h;
-
-				SDL_RenderTexture(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
-
-				x_offset+=g_src_rect.w;
-			}
-		}
-
-	}		
-}
-
-void draw_medium_char (char digit, int xpos, int ypos)
-{
-	int x_offset = 0;
-	
-	for (int d = 0; d <= 15; d++) {
-		if (digit == g_num_ref[d]) {
-			SDL_FRect g_src_rect;
-			g_src_rect.x = g_med_numbers_src_tex_loc[0][d];
-			g_src_rect.y = g_med_numbers_src_tex_loc[1][d];
-			g_src_rect.w = g_med_numbers_src_tex_loc[2][d];
-			g_src_rect.h = g_med_numbers_src_tex_loc[3][d];
-
-			SDL_FRect g_dst_rect;
-			g_dst_rect.x = xpos + x_offset;
-			g_dst_rect.y = ypos;
-			g_dst_rect.w = g_src_rect.w;
-			g_dst_rect.h = g_src_rect.h;
-
-			SDL_RenderTexture(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
-
-			x_offset+=g_src_rect.w;
-		}
-	}
-
-}
-
-void draw_large_string (char *digits, int xpos, int ypos) 
-{
-	//g_large_numbers_src_tex_loc
-	int x_offset = 0;
-	for (int s=0;s<strlen(digits);s++) {
-
-		char digit = digits[s];
-
-		for (int d = 0; d < 10; d++) {
-			if (digit == g_large_num_ref[d]) {
-				SDL_FRect g_src_rect;
-				g_src_rect.x = g_large_numbers_src_tex_loc[0][d];
-				g_src_rect.y = g_large_numbers_src_tex_loc[1][d];
-				g_src_rect.w = g_large_numbers_src_tex_loc[2][d];
-				g_src_rect.h = g_large_numbers_src_tex_loc[3][d];
-
-				SDL_FRect g_dst_rect;
-				g_dst_rect.x = xpos + x_offset;
-				g_dst_rect.y = ypos;
-				g_dst_rect.w = g_src_rect.w;
-				g_dst_rect.h = g_src_rect.h;
-
-				SDL_RenderTexture(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
-
-				x_offset+=g_src_rect.w;
-			}
-		}
-	}	
-}
-
-void draw_medium_string (char* digits, int xpos, int ypos)
-{
-	int x_offset = 0;
-	for (int s=0;s<strlen(digits);s++) {
-
-		char digit = digits[s];
-
-		for (int d = 0; d <= 15; d++) {
-			if (digit == g_num_ref[d]) {
-				SDL_FRect g_src_rect;
-				g_src_rect.x = g_med_numbers_src_tex_loc[0][d];
-				g_src_rect.y = g_med_numbers_src_tex_loc[1][d];
-				g_src_rect.w = g_med_numbers_src_tex_loc[2][d];
-				g_src_rect.h = g_med_numbers_src_tex_loc[3][d];
-
-				SDL_FRect g_dst_rect;
-				g_dst_rect.x = xpos + x_offset;
-				g_dst_rect.y = ypos;
-				g_dst_rect.w = g_src_rect.w;
-				g_dst_rect.h = g_src_rect.h;
-
-				SDL_RenderTexture(renderer, tex("Smallnumbers.bmp"), &g_src_rect, &g_dst_rect);
-
-				x_offset+=g_src_rect.w;
-			}
-		}
-
-	}		
-}
-
-void draw_nav_large_string (char *digits, int xpos, int ypos) {
-	int x_offset = 0;
-
-	for (int s=0;s<strlen (digits);s++) {
-
-		char digit = digits[s];
-		
-		if (digit == 32 || digit == '-') {
-			x_offset+=7;
-		}
-
-		for (int d=0;d<40;d++) {
-
-			if (xpos + x_offset < 412) {
-				if (digit == g_nav_large_lower_letter_ref[d] || digit == g_nav_large_upper_letter_ref[d]) {
-
-					SDL_FRect g_src_rect;
-					g_src_rect.x = g_nav_letters_large_src_tex_loc[0][d];
-					g_src_rect.y = g_nav_letters_large_src_tex_loc[1][d];
-					g_src_rect.w = g_nav_letters_large_src_tex_loc[2][d];
-					g_src_rect.h = g_nav_letters_large_src_tex_loc[3][d];
-
-					SDL_FRect g_dst_rect;
-					g_dst_rect.x = xpos + x_offset;
-					g_dst_rect.y = ypos;
-					g_dst_rect.w = g_src_rect.w;
-					g_dst_rect.h = g_src_rect.h;
-
-					SDL_RenderTexture(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
-
-					x_offset+=g_src_rect.w + 2;				
-				}
-			}
-		}		
 	}
 }
 
-void draw_nav_small_string (char *digits, int xpos, int ypos) {
-	int x_offset = 0;
+void draw_small_grey_string(char *digits, int xpos, int ypos) { draw_glyph_string(&FONT_SMALL_GREY, digits, xpos, ypos); }
+void draw_small_blue_string(char *digits, int xpos, int ypos) { draw_glyph_string(&FONT_SMALL_BLUE, digits, xpos, ypos); }
+void draw_medium_string(char *digits, int xpos, int ypos)     { draw_glyph_string(&FONT_MEDIUM, digits, xpos, ypos); }
+void draw_large_string(char *digits, int xpos, int ypos)      { draw_glyph_string(&FONT_LARGE, digits, xpos, ypos); }
+void draw_nav_large_string(char *digits, int xpos, int ypos)  { draw_glyph_string(&FONT_NAV_LARGE, digits, xpos, ypos); }
+void draw_nav_small_string(char *digits, int xpos, int ypos)  { draw_glyph_string(&FONT_NAV_SMALL, digits, xpos, ypos); }
+void draw_nav_digits(char *digits, int xpos, int ypos)        { draw_glyph_string(&FONT_NAV_DIGITS, digits, xpos, ypos); }
 
-	for (int s=0;s<strlen (digits);s++) {
-
-		char digit = digits[s];
-		
-		if (digit == 32 || digit == '-') {
-			x_offset+=7;
-		}
-
-		for (int d=0;d<40;d++) {
-
-			if (xpos + x_offset < 412) {
-				if (digit == g_nav_large_lower_letter_ref[d] || digit == g_nav_large_upper_letter_ref[d]) {
-
-					SDL_FRect g_src_rect;
-					g_src_rect.x = g_nav_letters_small_src_tex_loc[0][d];
-					g_src_rect.y = g_nav_letters_small_src_tex_loc[1][d];
-					g_src_rect.w = g_nav_letters_small_src_tex_loc[2][d];
-					g_src_rect.h = g_nav_letters_small_src_tex_loc[3][d];
-
-					SDL_FRect g_dst_rect;
-					g_dst_rect.x = xpos + x_offset;
-					g_dst_rect.y = ypos;
-					g_dst_rect.w = g_src_rect.w;
-					g_dst_rect.h = g_src_rect.h;
-
-					SDL_RenderTexture(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
-
-					x_offset+=g_src_rect.w + 2;				
-				}
-			}
-		}		
-	}
-}
-
-void draw_nav_digits (char *digits, int xpos, int ypos) {
-	int x_offset = 0;
-
-	for (int s=0;s<strlen (digits);s++) {
-
-		char digit = digits[s];
-		
-		if (digit == 32) {
-			x_offset+=7;
-		}
-
-		for (int d=0;d<11;d++) {
-
-			if (digit == g_nav_numbers_ref[d]) {
-
-				SDL_FRect g_src_rect;
-				g_src_rect.x = g_nav_numbers_src_tex_loc[0][d];
-				g_src_rect.y = g_nav_numbers_src_tex_loc[1][d];
-				g_src_rect.w = g_nav_numbers_src_tex_loc[2][d];
-				g_src_rect.h = g_nav_numbers_src_tex_loc[3][d];
-
-				SDL_FRect g_dst_rect;
-				g_dst_rect.x = xpos + x_offset;
-				g_dst_rect.y = ypos;
-				g_dst_rect.w = g_src_rect.w;
-				g_dst_rect.h = g_src_rect.h;
-
-				if (digit == '.') {
-					g_dst_rect.y = ypos + 71;
-				}
-
-				SDL_RenderTexture(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
-
-				x_offset+=g_src_rect.w + 2;				
-			}
-
-		}		
-	}
+void draw_medium_char(char digit, int xpos, int ypos) {
+	char s[2] = { digit, 0 };
+	draw_glyph_string(&FONT_MEDIUM, s, xpos, ypos);
 }
 
 void draw_nav_numbers (int num, int xpos, int ypos) {

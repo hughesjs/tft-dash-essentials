@@ -39,7 +39,7 @@ Binaries are output to `zig-out/bin/`.
 ```
 display/
 ├── src/                    Source code
-│   ├── testsdl.cpp        Main display application (~4800 lines)
+│   ├── testsdl.cpp        Main display application (~4550 lines)
 │   ├── parser.h/c         Extracted parsing with lookup tables
 │   ├── assets.h/c         Asset management with themed texture lookup
 │   ├── test_parser.c      Parser test suite

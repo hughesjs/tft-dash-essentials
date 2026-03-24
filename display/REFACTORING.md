@@ -27,6 +27,13 @@
 - Per-theme thumbnails use `tex_from("green", "greenthumb.bmp")` etc.
 - ~1250 lines deleted, ~40 lines added
 
+### Drawing function deduplication
+- Replaced 7 near-identical `draw_*_string()` functions (~270 lines) with one `draw_glyph_string()` renderer (~20 lines)
+- Data-driven `glyph_font` struct captures all differences: texture name, sprite atlas coords, glyph character set, case-insensitive matching, inter-glyph spacing, whitespace handling, clipping, and per-glyph y-offsets
+- 8 font descriptors defined as static const: `FONT_SMALL_GREY`, `FONT_SMALL_BLUE`, `FONT_MEDIUM`, `FONT_LARGE`, `FONT_NAV_LARGE`, `FONT_NAV_SMALL`, `FONT_NAV_DIGITS`
+- All existing function names kept as one-line wrappers (86 call sites untouched)
+- `draw_speed_digit` left as-is (renders to pre-positioned destination rects, not a flowing string)
+
 ### snake_case naming convention
 - All functions, globals, locals, struct types and members converted to snake_case
 - Constants remain UPPER_CASE (already correct)
@@ -38,21 +45,23 @@
 
 ## Display-side refactoring opportunities
 
-Roughly in order of impact:
+### Next: eliminate global state via extraction
+The ~100 globals aren't a categorisation problem — they're an ownership problem. Rather than grouping globals into structs (organised mess is still mess), extract subsystems as modules that take explicit parameters. The struct shapes emerge from what each module actually needs:
+
+1. **Extract the serial thread** — `poll_interface` gets its own module, owns a read buffer, writes into a struct passed by the caller. That struct *is* the bike state, defined by use not taxonomy.
+2. **Extract the menu system** — `draw_menu()` (576 lines of nested ifs) takes explicit input/output. Defines its own state contract.
+3. **Extract TPMS** — small, self-contained, same pattern.
+4. **What remains in testsdl.cpp** is `main()`, the render loop, and drawing helpers that take explicit state — a thin orchestrator.
+
+### Smaller wins (do whenever convenient)
 
 1. ~~**Texture loading boilerplate**~~ — **Done.** Replaced by asset store integration.
 
-2. **Drawing function duplication** (~200 lines) — 7 near-identical `draw_*_string()` functions. Parameterise into one generic glyph renderer.
+2. ~~**Theme descriptor table**~~ — **Done.** `THEME_NAMES[]` array + `theme_name_from_id()` replaces all `if (theme == X)` ladders.
 
-3. **Global state grouping** (~100 globals) — Group into structs: `bike_state`, `tpms_state`, `animation_state`, `display_strings`, etc.
+3. **Nav symbol lookup table** — Replace 20+ `strcmp()` chains with a data-driven table (same pattern as parser).
 
-4. ~~**Theme descriptor table**~~ — **Done.** `THEME_NAMES[]` array + `theme_name_from_id()` replaces all `if (theme == X)` ladders.
-
-5. **Nav symbol lookup table** — Replace 20+ `strcmp()` chains with a data-driven table (same pattern as parser).
-
-6. **Menu system extraction** — `draw_menu()` is 576 lines of nested ifs. Extract per-menu rendering functions.
-
-7. **Warning badge priority** — Extract implicit nested-if priority logic into an explicit priority function.
+4. **Warning badge priority** — Extract implicit nested-if priority logic into an explicit priority function.
 
 ## Firmware architectural change (future option)
 

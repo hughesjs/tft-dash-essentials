@@ -122,36 +122,38 @@ static inline SDL_Texture* tex_from(const char* theme, const char* name) {
 #define HIGHTEMP 		4
 #define LOWBATTERY 		5
 
-//MUT  EXITL   EXITR  TNR   TNL  SLL  SLR  RB2L  RB3L  RB4L  RB5L RB1R RB3R RB4R RB5R KPL KPR CON ARV RB1L RB2R MUTR MILE YARD KM METRE ONTO TWRDS
-
-#define MUT			0
-#define EXITL		1
-#define EXITR		2
-#define TNR			3
-#define TNL			4
-#define SLL			5
-#define SLR			6
-#define RB2L		7
-#define RB3L		8
-#define RB4L		9
-#define RB5L		10
-#define RB1R		11
-#define RB3R		12
-#define RB4R		13
-#define RB5R		14
-#define KPL			15
-#define KPR			16
-#define CON			17
-#define ARV			18
-#define RB1L		19
-#define RB2R		20
-#define MUTR		21
-#define MILE		22
-#define YARD		23
-#define KM			24
-#define METRE		25
-#define ONTO		26
-#define TWRDS		27
+typedef enum {
+	NAV_ICON_MUT = 0,    // U-turn (left-hand drive)
+	NAV_ICON_EXITL,      // Motorway exit left
+	NAV_ICON_EXITR,      // Motorway exit right
+	NAV_ICON_TNR,        // Turn right
+	NAV_ICON_TNL,        // Turn left
+	NAV_ICON_SLL,        // Slight left
+	NAV_ICON_SLR,        // Slight right
+	NAV_ICON_RB2L,       // Roundabout 2nd exit (left-hand drive)
+	NAV_ICON_RB3L,       // Roundabout 3rd exit (left-hand drive)
+	NAV_ICON_RB4L,       // Roundabout 4th exit (left-hand drive)
+	NAV_ICON_RB5L,       // Roundabout 5th exit (left-hand drive)
+	NAV_ICON_RB1R,       // Roundabout 1st exit (right-hand drive)
+	NAV_ICON_RB3R,       // Roundabout 3rd exit (right-hand drive)
+	NAV_ICON_RB4R,       // Roundabout 4th exit (right-hand drive)
+	NAV_ICON_RB5R,       // Roundabout 5th exit (right-hand drive)
+	NAV_ICON_KPL,        // Keep left
+	NAV_ICON_KPR,        // Keep right
+	NAV_ICON_CON,        // Continue straight
+	NAV_ICON_ARV,        // Arrive at destination
+	NAV_ICON_RB1L,       // Roundabout 1st exit (left-hand drive)
+	NAV_ICON_RB2R,       // Roundabout 2nd exit (right-hand drive)
+	NAV_ICON_MUTR,       // U-turn (right-hand drive)
+	NAV_ICON_MILE,       // Distance unit: miles
+	NAV_ICON_YARD,       // Distance unit: yards
+	NAV_ICON_KM,         // Distance unit: kilometres
+	NAV_ICON_METRE,      // Distance unit: metres
+	NAV_ICON_ONTO,       // "onto" label
+	NAV_ICON_TWRDS,      // "towards" label
+	NAV_ICON_COUNT,
+	NAV_ICON_NONE = -1   // Sentinel for text-only entries (PRK, FRY)
+} nav_icon;
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
@@ -175,32 +177,48 @@ SDL_FRect grevline;
 SDL_FRect grrevwhite;
 SDL_FPoint gwhitepoint;
 
-/*
-MUT
-MEX
-TNR
-TNL
-SLL
-SLR
-RB1
-RB2
-RB3
-RB4
-RB5
-LNR
-LNL
-CON
-ARV
-*/
-
-// Navigation symbols texture mapping
-int g_nav_icons_src_tex_loc[4][28] = {
-	//MUT  EXITL   EXITR  TNR   TNL  SLL  SLR  RB2L  RB3L  RB4L  RB5L RB1R RB3R RB4R RB5R KPL KPR CON ARV RB1L RB2R MUTR MILE YARD KM METRE ONTO TWRDS
+// Navigation icon sprite atlas — indexed by nav_icon enum
+int g_nav_icons_src_tex_loc[4][NAV_ICON_COUNT] = {
 	{21,   169,    317,   449,  628, 809, 1002,17,   163,  312,  460, 598, 771, 937, 1092,6,  174,333,491,642, 823, 983, 11,  106,215,280,  404, 456  }, // X pos
 	{12,   11,     12,    20,   19,  22,  22,  184,  216,  217,  217, 214, 217, 216, 216, 383,385,384,394,387, 364, 385, 549, 550,550,549,  556, 557  }, // Y pos
 	{112,  112,    112,   157,  147, 158, 176, 115,  134,  114,  110, 131, 131, 131, 131, 141,150,131,112,138, 116, 108, 81,  87,  42,105,  45,  76   }, // Width
 	{150,  150,    150,   146,  150, 144, 146, 167,  134,  135,  135, 137, 134, 134, 134, 140,138,138,129,135, 167, 145, 24,  21,  22,22,   16,  14   }  // Height
 };
+
+// Navigation symbol lookup table — maps BLE symbol codes to icon(s) and render position
+struct nav_symbol_entry {
+	const char *code;
+	nav_icon icon_lhd;     // Left-hand drive icon (or sole icon). NAV_ICON_NONE = text-only
+	nav_icon icon_rhd;     // Right-hand drive icon. NAV_ICON_NONE = same as lhd
+	int x, y;
+};
+
+static const nav_symbol_entry NAV_SYMBOLS[] = {
+	{ "MUT", NAV_ICON_MUT,   NAV_ICON_MUTR,  249, 180 },
+	{ "MEX", NAV_ICON_EXITL, NAV_ICON_EXITR,  249, 180 },
+	{ "TNR", NAV_ICON_TNR,   NAV_ICON_NONE,   249, 180 },
+	{ "TNL", NAV_ICON_TNL,   NAV_ICON_NONE,   249, 180 },
+	{ "SLL", NAV_ICON_SLL,   NAV_ICON_NONE,   249, 180 },
+	{ "SLR", NAV_ICON_SLR,   NAV_ICON_NONE,   249, 180 },
+	{ "RB1", NAV_ICON_RB1L,  NAV_ICON_RB1R,   249, 180 },
+	{ "RB2", NAV_ICON_RB2L,  NAV_ICON_RB2R,   255, 170 },
+	{ "RB3", NAV_ICON_RB3L,  NAV_ICON_RB3R,   249, 180 },
+	{ "RB4", NAV_ICON_RB4L,  NAV_ICON_RB4R,   249, 180 },
+	{ "RB5", NAV_ICON_RB5L,  NAV_ICON_RB5R,   249, 180 },
+	{ "LNR", NAV_ICON_KPR,   NAV_ICON_NONE,   249, 180 },
+	{ "LNL", NAV_ICON_KPL,   NAV_ICON_NONE,   249, 180 },
+	{ "CON", NAV_ICON_CON,   NAV_ICON_NONE,   249, 180 },
+	{ "ARV", NAV_ICON_ARV,   NAV_ICON_NONE,   249, 180 },
+	{ "PRK", NAV_ICON_NONE,  NAV_ICON_NONE,   0,   0   },
+	{ "FRY", NAV_ICON_NONE,  NAV_ICON_NONE,   0,   0   },
+};
+
+static const nav_symbol_entry *lookup_nav_symbol(const char *code) {
+	for (int i = 0; i < (int)(sizeof(NAV_SYMBOLS) / sizeof(NAV_SYMBOLS[0])); i++) {
+		if (strcmp(code, NAV_SYMBOLS[i].code) == 0) return &NAV_SYMBOLS[i];
+	}
+	return nullptr;
+}
 
 char g_nav_large_upper_letter_ref[40] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9',',','.','(',')'};
 char g_nav_large_lower_letter_ref[40] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9',',','.','(',')'};
@@ -1413,7 +1431,7 @@ void draw_nav_numbers (int num, int xpos, int ypos) {
 	draw_nav_digits (sz_digit, xpos, ypos);
 }
 
-void draw_nav_symbol (int sym, int xpos, int ypos)
+void draw_nav_symbol (nav_icon sym, int xpos, int ypos)
 {
 	SDL_FRect g_src_rect;
 	g_src_rect.x = g_nav_icons_src_tex_loc[0][sym];
@@ -4111,7 +4129,7 @@ void draw_dashboard () {
 
 		if (nav_active == true) {
 			if (strlen (str_nav_road) > 0) {
-				draw_nav_symbol (ONTO, 13, 350);
+				draw_nav_symbol (NAV_ICON_ONTO, 13, 350);
 			}
 
 			if (strlen (str_nav_road) > 0 && strlen (str_nav_road) <= 14) {
@@ -4121,7 +4139,7 @@ void draw_dashboard () {
 			}
 			
 			if (strlen (str_nav_towards) > 0) {
-				draw_nav_symbol (TWRDS, 13, 391);
+				draw_nav_symbol (NAV_ICON_TWRDS, 13, 391);
 			}
 
 			if (strlen (str_nav_towards) > 0 && strlen (str_nav_towards) <= 16) {			
@@ -4145,132 +4163,30 @@ void draw_dashboard () {
 				//draw_nav_numbers (87, 16, 191);				
 				if (using_km) {
 					draw_nav_digits (str_nav_metres, 16, 211);
-					draw_nav_symbol (METRE, 22, 308);
+					draw_nav_symbol (NAV_ICON_METRE, 22, 308);
 				} else {
 					draw_nav_digits (str_nav_yards, 16, 211);
-					draw_nav_symbol (YARD, 22, 308);
+					draw_nav_symbol (NAV_ICON_YARD, 22, 308);
 				}				
 			} else {
 				if (using_km) {
 					draw_nav_digits (str_nav_km, 16, 211);
-					draw_nav_symbol (KM, 22, 308);
+					draw_nav_symbol (NAV_ICON_KM, 22, 308);
 				} else {
 					draw_nav_digits (str_nav_miles, 16, 211);
-					draw_nav_symbol (MILE, 22, 308);
+					draw_nav_symbol (NAV_ICON_MILE, 22, 308);
 				}				
 			}
 			
-			if (strcmp (str_nav_symbol, "MUT") == 0) {
-				if (driving_left == 1) {
-					draw_nav_symbol (MUT, 249, 180);
+			const nav_symbol_entry *nav = lookup_nav_symbol(str_nav_symbol);
+			if (nav) {
+				if (nav->icon_lhd != NAV_ICON_NONE) {
+					nav_icon icon = (nav->icon_rhd != NAV_ICON_NONE && !driving_left) ? nav->icon_rhd : nav->icon_lhd;
+					draw_nav_symbol(icon, nav->x, nav->y);
 				}
-
-				if (driving_left == 0) {
-					draw_nav_symbol (MUTR, 249, 180);
-				}
-			}
-
-			if (strcmp (str_nav_symbol, "MEX") == 0) {
-				if (driving_left == 1) {
-					draw_nav_symbol (EXITL, 249, 180);
-				}
-
-				if (driving_left == 0) {
-					draw_nav_symbol (EXITR, 249, 180);
-				}
-
-				// Draw Exit number
-				draw_nav_large_string (str_nav_exit, 344, 275);
-			}
-
-			if (strcmp (str_nav_symbol, "TNR") == 0) {
-				draw_nav_symbol (TNR, 249, 180);			
-			}
-
-			if (strcmp (str_nav_symbol, "TNL") == 0) {
-				draw_nav_symbol (TNL, 249, 180);			
-			}
-
-			if (strcmp (str_nav_symbol, "SLL") == 0) {
-				draw_nav_symbol (SLL, 249, 180);			
-			}
-
-			if (strcmp (str_nav_symbol, "SLR") == 0) {
-				draw_nav_symbol (SLR, 249, 180);			
-			}
-
-			if (strcmp (str_nav_symbol, "RB1") == 0) {
-				if (driving_left == 1) {
-					draw_nav_symbol (RB1L, 249, 180);
-				}
-
-				if (driving_left == 0) {
-					draw_nav_symbol (RB1R, 249, 180);
-				}
-			}
-
-			if (strcmp (str_nav_symbol, "RB2") == 0) {
-				if (driving_left == 1) {
-					draw_nav_symbol (RB2L, 255, 170);
-				}
-
-				if (driving_left == 0) {
-					draw_nav_symbol (RB2R, 255, 170);
-				}
-			}		
-
-			if (strcmp (str_nav_symbol, "PRK") == 0) {
-				draw_nav_large_string (sz_find_parking, 99, 386);
-			}
-
-			if (strcmp (str_nav_symbol, "FRY") == 0) {
-				draw_nav_large_string (sz_take_ferry, 99, 386);
-			}
-
-			if (strcmp (str_nav_symbol, "RB3") == 0) {
-				if (driving_left == 1) {
-					draw_nav_symbol (RB3L, 249, 180);
-				}
-
-				if (driving_left == 0) {
-					draw_nav_symbol (RB3R, 249, 180);
-				}
-			}		
-
-			if (strcmp (str_nav_symbol, "RB4") == 0) {
-				if (driving_left == 1) {
-					draw_nav_symbol (RB4L, 249, 180);
-				}
-
-				if (driving_left == 0) {
-					draw_nav_symbol (RB4R, 249, 180);
-				}
-			}
-
-			if (strcmp (str_nav_symbol, "RB5") == 0) {
-				if (driving_left == 1) {
-					draw_nav_symbol (RB5L, 249, 180);
-				}
-
-				if (driving_left == 0) {
-					draw_nav_symbol (RB5R, 249, 180);
-				}
-			}
-
-			if (strcmp (str_nav_symbol, "LNR") == 0) {
-				draw_nav_symbol (KPR, 249, 180);			
-			}
-
-			if (strcmp (str_nav_symbol, "LNL") == 0) {
-				draw_nav_symbol (KPL, 249, 180);			
-			}
-
-			if (strcmp (str_nav_symbol, "CON") == 0) {
-				draw_nav_symbol (CON, 249, 180);			
-			}
-
-			if (strcmp (str_nav_symbol, "ARV") == 0) {
-				draw_nav_symbol (ARV, 249, 180);			
+				if (strcmp(nav->code, "MEX") == 0) draw_nav_large_string(str_nav_exit, 344, 275);
+				if (strcmp(nav->code, "PRK") == 0) draw_nav_large_string(sz_find_parking, 99, 386);
+				if (strcmp(nav->code, "FRY") == 0) draw_nav_large_string(sz_take_ferry, 99, 386);
 			}
 		} else {
 			draw_nav_large_string (sz_no_nav_data, 40, 265);

@@ -59,7 +59,7 @@ The ~100 globals aren't a categorisation problem — they're an ownership proble
 
 2. ~~**Theme descriptor table**~~ — **Done.** `THEME_NAMES[]` array + `theme_name_from_id()` replaces all `if (theme == X)` ladders.
 
-3. **Nav symbol lookup table** — Replace 20+ `strcmp()` chains with a data-driven table (same pattern as parser).
+3. ~~**Nav symbol lookup table**~~ — **Done.** Replaced 17 strcmp chains with `nav_symbol_entry` lookup table + `nav_icon` enum.
 
 4. **Warning badge priority** — Extract implicit nested-if priority logic into an explicit priority function.
 

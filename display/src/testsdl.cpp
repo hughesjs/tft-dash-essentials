@@ -3902,64 +3902,30 @@ void draw_dashboard () {
 			
 	}
 
-	// Warning badges
-	if (!warningbadgecancelled) {
+	// Warning badges — checked in priority order (highest first)
+	struct warning_badge { bool active; const char *badge_bmp; const char *flash_bmp; int fx, fy, fw, fh; };
+
+	auto resolve_warning = [&]() -> warning_badge {
 		if (front_tyre_warning_triggered || rear_tyre_warning_triggered) {
-			
-			warningbadgeactive = true;
-			render_texture (tex("Lowtyrebadge.bmp"), 0, 163, 444, 249);
+			const char *detail = front_tyre_warning_triggered && rear_tyre_warning_triggered ? "Frontrearlow.bmp"
+			                   : front_tyre_warning_triggered ? "Fronttyrelow.bmp" : "Reartyrelow.bmp";
+			return { true, "Lowtyrebadge.bmp", detail, 168, 244, 257, 76 };
+		}
+		if (oil_warning && enginerunning)
+			return { true, "Lowoilbadge.bmp", "Lowoil.bmp", 222, 236, 134, 105 };
+		if (overheatwarning && enginerunning)
+			return { true, "Overheatbadge.bmp", "Engineoverheat.bmp", 189, 237, 212, 95 };
+		if (fuelwarning && enginerunning && info_mode != 3)
+			return { true, "Fuelwarningbadge.bmp", "Lowfuel.bmp", 222, 236, 134, 105 };
+		return { false, nullptr, nullptr, 0, 0, 0, 0 };
+	};
 
-			if (flash) {
-				if (front_tyre_warning_triggered && !rear_tyre_warning_triggered) {
-					// Front only
-					render_texture (tex("Fronttyrelow.bmp"), 168, 244, 257, 76);
-				}
-
-				if (rear_tyre_warning_triggered && !front_tyre_warning_triggered) {
-					// Rear only
-					render_texture (tex("Reartyrelow.bmp"), 168, 244, 257, 76);
-				}
-
-				if (rear_tyre_warning_triggered && front_tyre_warning_triggered) {
-					// Front and Rear
-					render_texture (tex("Frontrearlow.bmp"), 168, 244, 257, 76);
-				}
-
-			}
-
-		} else {
-			
-			if (oil_warning == true && enginerunning == true) { // Oil warning takes priority
-				
-				warningbadgeactive = true;
-				render_texture (tex("Lowoilbadge.bmp"), 0, 163, 444, 249);
-				
-				if (flash) {
-					render_texture (tex("Lowoil.bmp"), 222, 236, 134, 105);
-				}
-
-			} else {
-				
-				if (overheatwarning == true && enginerunning == true) { // Second priority is engine overheat warning
-					warningbadgeactive = true;
-					render_texture(tex("Overheatbadge.bmp"), 0, 163, 444, 249);
-					if (flash) {
-						render_texture(tex("Engineoverheat.bmp"), 189, 237, 212, 95);
-					}
-				} else {
-					
-					if (fuelwarning == true && enginerunning == true && info_mode != 3) { // Third priority is fuel warning
-						warningbadgeactive = true;
-						render_texture(tex("Fuelwarningbadge.bmp"), 0, 163, 444, 249);
-						if (flash) {
-							render_texture(tex("Lowfuel.bmp"), 222, 236, 134, 105);
-						}
-					} else {
-						warningbadgeactive = false;
-					}
-				}
-
-			}	
+	if (!warningbadgecancelled) {
+		auto w = resolve_warning();
+		warningbadgeactive = w.active;
+		if (w.active) {
+			render_texture(tex(w.badge_bmp), 0, 163, 444, 249);
+			if (flash) render_texture(tex(w.flash_bmp), w.fx, w.fy, w.fw, w.fh);
 		}
 	}
 

@@ -1,12 +1,12 @@
 # Buildroot Image
 
-Builds a minimal SD card image for the Raspberry Pi 3 that boots directly into the TFT Dash display application. Replaces the old hand-configured Raspbian/RetroPie image.
+Builds a minimal SD card image for the Raspberry Pi 3 that boots directly into the TFT Dash display application.
 
 ## What's in the image
 
 - Linux kernel (Pi 3 optimised)
 - Busybox (minimal userspace)
-- SDL2 (KMS/DRM backend)
+- SDL3 (KMS/DRM backend, statically linked)
 - avrdude (for firmware flashing via USB updates)
 - TFT Dash binary + BMP assets
 - Read-only root filesystem
@@ -37,7 +37,7 @@ Both rootfs slots contain the same image on initial flash. The active slot is de
 2. **Display binary** pre-built for ARM:
    ```bash
    cd ../display
-   zig build -Dtarget=arm-linux-gnueabihf -Doptimize=ReleaseSafe
+   zig build -Dtarget=aarch64-linux-gnu -Doptimize=ReleaseSafe
    ```
 
 3. Standard build tools (`gcc`, `make`, `patch`, `unzip`, `rsync`, etc.)

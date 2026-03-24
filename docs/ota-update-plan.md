@@ -82,47 +82,12 @@ Could be ~50 lines of bash wrapping a small HTTP receiver (e.g. Python one-liner
 - The update daemon installed as a systemd service or integrated into `updatetft.sh`
 - Root filesystem is read-only — daemon must remount rw before applying updates (existing script already does this)
 
-## Existing Update Package (USB Stick)
+## Current Update Mechanism (USB A/B)
 
-The current mechanism uses a USB stick with a `tftupdate/` directory. A boot script on the Pi's SD card detects it and copies files across.
-
-### Package Structure
-```
-tftupdate/
-├── bootimage.png              Fazer splash screen (1024x600)
-├── firmware/
-│   ├── firmware.hex           Mega board hex
-│   ├── firmware4.hex          Gen4 board hex
-│   └── avrdude.conf           avrdude config for flashing Arduino
-└── new/
-    ├── testsdl                ARM 32-bit (armhf) binary — the display app
-    ├── testsdl.cpp            Source code (for reference/backup)
-    └── *.bmp (×855)           All theme BMPs in flat layout with prefixes
-```
-
-### BMP Naming Convention (Old Flat Layout)
-- Default theme: `Coolant.bmp`, `Speednumbers.bmp`, etc. (no prefix)
-- Themed: `blue-Coolant.bmp`, `green-Speednumbers.bmp`, etc.
-- Theme prefixes: blue, bright, dark, green, night, orange, red, yellow
-
-### BMP Naming Convention (New Refactored Layout)
-The refactored display code expects theme directories:
-```
-assets/themes/<theme>/Name.bmp
-```
-e.g. `assets/themes/blue/Coolant.bmp`, `assets/themes/default/Coolant.bmp`
-
-The packaging script needs to produce whichever format the Pi's image expects. The current Pi image uses the old flat layout. If the Pi image is updated with the refactored display code, the new directory layout should be used instead.
-
-### Boot Script
-The exact boot/update script is on the Pi's SD card image — not yet in this repo. Needs to be retrieved by pulling the SD card.
+The A/B rootfs update system handles USB-based updates — see `docs/ab-update-plan.md`. OTA via WiFi AP would be an additional delivery path using the same rootfs image format.
 
 ## TODO
 
-- [ ] Pull Pi SD card and retrieve the existing update/boot script into this repo
-- [ ] Write `make-update-package.sh` to produce the correct package format
 - [ ] Implement Pi-side update daemon (hostapd AP + HTTP receiver)
 - [ ] Add `<UPD:START%>` BLE message handling (may be zero firmware work)
 - [ ] Phone app: BLE trigger + WiFi join + HTTP upload
-- [ ] Calibrate `RPM_CONSTANT` for FZS600 (warm idle should read 1150–1250 RPM)
-- [ ] Recalibrate fuel level lookup table for FZS600 tank (19.4L vs 21L, different shape)

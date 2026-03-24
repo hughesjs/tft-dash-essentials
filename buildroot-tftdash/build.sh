@@ -132,7 +132,7 @@ case "${1:-build}" in
         (cd "$PKG_DIR" && sha256sum rootfs.img > rootfs.img.sha256)
 
         # Include firmware hex if available
-        FIRMWARE_HEX="$REPO_DIR/firmware/build/tftdashfirmwareGEN4.hex"
+        FIRMWARE_HEX="$REPO_DIR/firmware/build/firmware.ino.hex"
         if [ -f "$FIRMWARE_HEX" ]; then
             cp "$FIRMWARE_HEX" "$PKG_DIR/firmware.hex"
             echo "Included firmware: firmware.hex"

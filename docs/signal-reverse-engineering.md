@@ -4,25 +4,23 @@ This document describes the electrical signals read by the TFT Dash firmware fro
 
 ## Signal Overview
 
-| Signal | Pin (Gen4 / Mega) | Type | Summary |
+| Signal | Pin | Type | Summary |
 |---|---|---|---|
-| Speed | 0 / 2 | Frequency (interrupt) | Pulse-width measurement from speed sensor |
-| RPM | 1 / 3 | Frequency (interrupt) | Pulse-width measurement from ignition |
+| Speed | 0 | Frequency (interrupt) | Pulse-width measurement from speed sensor |
+| RPM | 1 | Frequency (interrupt) | Pulse-width measurement from ignition |
 | Coolant Temp | A3 | Analogue (thermistor) | NTC via 2kΩ voltage divider |
 | Ambient Temp | A0 | Analogue (thermistor) | NTC via 2kΩ voltage divider |
 | Fuel Level | A2 | Analogue (float) | Resistive float, raw ADC |
 | Battery Voltage | A4 | Analogue (divider) | 10kΩ + 5.09kΩ voltage divider |
 | Light Sensor | A1 | Analogue (LDR) | Raw ADC, 0=dark 1023=bright |
-| Neutral | 5 / 33 | Digital | LOW = neutral |
-| Oil Level | 4 / 39 | Digital | HIGH = warning |
-| High Beam | 9 / 50 | Digital | HIGH = on |
-| Left Indicator | 10 / 49 | Digital | HIGH = on |
-| Right Indicator | 11 / 48 | Digital | HIGH = on |
-| Option Button | 8 / 43 | Digital | HIGH = pressed, 150ms debounce |
-| Select Button | 7 / 44 | Digital | HIGH = pressed, 150ms debounce |
-| Fan Relay | 12 / 41 | Digital OUTPUT | HIGH = fan on |
-| Oil Pressure | A11 (Mega only) | Analogue (resistive) | 1004Ω voltage divider |
-| Oil Temperature | A12 (Mega only) | Analogue (resistive) | 1004Ω voltage divider |
+| Neutral | 5 | Digital | LOW = neutral |
+| Oil Level | 4 | Digital | HIGH = warning |
+| High Beam | 9 | Digital | HIGH = on |
+| Left Indicator | 10 | Digital | HIGH = on |
+| Right Indicator | 11 | Digital | HIGH = on |
+| Option Button | 8 | Digital | HIGH = pressed, 150ms debounce |
+| Select Button | 7 | Digital | HIGH = pressed, 150ms debounce |
+| Fan Relay | 12 | Digital OUTPUT | HIGH = fan on |
 
 ---
 

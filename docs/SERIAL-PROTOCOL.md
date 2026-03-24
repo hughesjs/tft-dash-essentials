@@ -305,7 +305,7 @@ The TPMS front and rear sensor IDs are configurable through the on-screen menu s
 
 ## 3. Navigation Messages (Phone via BLE through Arduino)
 
-Navigation data originates from a phone app and is received by a Bluetooth Low Energy module connected to the **Arduino board** (not the Pi). On Gen4, this is a SoftwareSerial connection at 9600 baud; on the Mega, it uses the hardware Serial2 at 9600 baud.
+Navigation data originates from a phone app and is received by a Bluetooth Low Energy module connected to the **Arduino board** (not the Pi) via SoftwareSerial at 9600 baud.
 
 The Arduino buffers incoming BLE bytes in its main loop. Once a complete navigation message is received (terminated by `%>`), the firmware stores it and includes it as field 37 of the next live data message sent over USB to the Raspberry Pi. The Pi never communicates with the BLE module directly.
 

@@ -1,6 +1,3 @@
-#define GEN4BOARD
-//#define MEGABOARD
-
 // Bike model selection - uncomment ONE
 //#define BIKE_FZS1000
 #define BIKE_FZS600
@@ -11,12 +8,9 @@
 #include <util/atomic.h>
 #include "RTClib.h"
 
-#ifdef GEN4BOARD
-  #include <SoftwareSerial.h>
-#endif
+#include <SoftwareSerial.h>
 
-#ifdef GEN4BOARD
-// Generation 4 TFT Dash Board Pin Mapping
+// Pin Mapping (Gen4 board — ATMega32u4)
 #define SPEEDSENSORPIN 0
 #define RPMSENSORPIN  1
 #define FUELPIN     A2
@@ -33,32 +27,6 @@
 // Option and Select buttons
 #define OPTIONPIN 8
 #define SELECTPIN 7
-#endif
-
-#ifdef MEGABOARD
-#define SPEEDSENSORPIN 2
-#define RPMSENSORPIN  3
-#define FUELPIN     A2
-#define COOLANTPIN  A3
-#define BATTERYPIN  A4
-#define OILLEVELPIN   39 // Goes LOW when oil level is ok 
-#define NEUTRALPIN  33 // Goes LOW when in Neutral
-#define HIGHBEAMPIN 50 // Goes high when Lit
-#define FANPIN   41  // Set high to turn on fan
-#define INDICATELEFTPIN  49 // Goes HIGH when lit
-#define INDICATERIGHTPIN  48 // Goes HIGH when lit
-#define AMBIENTTEMPPIN  A8
-#define LIGHTSENSORPIN  A9
-// Option and Select buttons
-#define OPTIONPIN 43
-#define SELECTPIN 44
-
-// Custom changes for Steve in Malta - Oil Pressure and Oil Temperature
-#define OILINFOPIN  31 // Means we don't have to maintain 2 different software updates - Goes low if TFT Dash has oil pressure hardware
-#define OILPRESSPIN A11 // Green labelled wire on Steves dash
-#define OILTEMPPIN  A12 // Yellow wire on Steves dash
-
-#endif
 
 #define EEPROM_ADDRESS 0x57
 
@@ -397,18 +365,6 @@ int odoerror = 0;
 
 unsigned long lastfloatchecktime = 0;
 
-#ifdef MEGABOARD
-  int oilpressohms = 0;
-  int oilpressAvgpointer = 0;
-  int calcoilpressAvg;
-  unsigned long oilpresssum = 0;
-  
-  int oiltempohms = 0;
-  int oiltempAvgpointer = 0;
-  int calcoiltempAvg = 0;
-  unsigned long oiltempsum = 0;
-#endif
-
 //micros when the pin goes HIGH
 volatile unsigned long timer_start;
 unsigned long timeingear = 0;
@@ -417,9 +373,7 @@ double speedcorrectamount = 0;
 
 // Global Instances
 static Eeprom24C32_64 eeprom(EEPROM_ADDRESS);
-#ifdef GEN4BOARD 
-  SoftwareSerial mySerial(16, 15); // RX, TX
-#endif
+SoftwareSerial mySerial(16, 15); // RX, TX
 
 RTC_DS3231 rtc;
 
@@ -443,55 +397,6 @@ int mlimits[13] = {
   9,
   12
 };
-
-#ifdef MEGABOARD
-bool IsOilPressAvail () {
-  if (digitalRead (OILINFOPIN) == LOW) { // Goes low if oil pressure hardware is available
-    // This is because when building Steves dash I grounded pin 31 so it could be identified as having oil press data hardware available
-    return true;
-  } else {
-    return false;
-  }
-}
-
-double GetMeasuredOilPressResistance()
-{
-    double R1resistorvalue = 1004;
-    double vin = 5.1;
-    //return (measuredvoltage * R1resistorvalue) / (5 - measuredvoltage);
-
-    double buffervalue = (analogRead (OILPRESSPIN) * vin);
-    double vout = (buffervalue) / 1023.0;
-    buffervalue = (vin / vout) -1;
-
-    double R2 = R1resistorvalue * buffervalue;
-    
-    if (R2 > 0 && R2 < 9000) {
-      return R2;  
-    } else {
-      return 0;
-    }
-}
-
-double GetMeasuredOilTempResistance()
-{
-    double R1resistorvalue = 1004;
-    double vin = 5.1;
-    //return (measuredvoltage * R1resistorvalue) / (5 - measuredvoltage);
-
-    double buffervalue = (analogRead (OILTEMPPIN) * vin);
-    double vout = (buffervalue) / 1023.0;
-    buffervalue = (vin / vout) -1;
-
-    double R2 = R1resistorvalue * buffervalue;
-
-    if (R2 > 0 && R2 < 9000) {
-      return R2;  
-    } else {
-      return 0;
-    }
-}
-#endif
 
 bool LoadData ()
 {
@@ -2084,13 +1989,6 @@ void livemode() {
     battvoltage = getBatteryVoltage();
   }
 
-  #ifdef MEGABOARD
-    if (IsOilPressAvail()) {
-      oilpressohms = (int)GetMeasuredOilPressResistance();
-      oiltempohms = (int)GetMeasuredOilTempResistance();
-    }
-  #endif
-
   if (calcrpmAvg > 500 && calcspeedAvg >= 0) {
     //currentgear = CalculateGear (calcspeedAvg, calcrpmAvg);
     currentgear = CalculateGear (calcspeedAvg, rpm);
@@ -2329,39 +2227,6 @@ void livemode() {
     ambientsum = 0;
   }
 
-  #ifdef MEGABOARD
-    if (IsOilPressAvail()) {
-      /*
-      OIL PRESSURE - AVERAGING
-      */
-    
-      if (oilpressAvgpointer < 170) {
-        oilpresssum += oilpressohms;
-        oilpressAvgpointer++;
-      }
-    
-      if (oilpressAvgpointer >= 170) {
-        oilpressAvgpointer = 0;
-        calcoilpressAvg = oilpresssum / 170;
-        oilpresssum = 0;
-      }
-    
-      /*
-        OIL TEMP - AVERAGING
-      */
-      if (oiltempAvgpointer < 170) {
-        oiltempsum += oiltempohms;
-        oiltempAvgpointer++;
-      }
-    
-      if (oiltempAvgpointer >= 170) {
-        oiltempAvgpointer = 0;
-        calcoiltempAvg = oiltempsum / 170;
-        oiltempsum = 0;
-      }
-    }
-  #endif
-
   // Fan control
 
   if (fanneutraloption == 0) { // Always turn on engine fan when engine running and in neutral
@@ -2455,60 +2320,31 @@ void livemode() {
   }   
 
   /* CHECK IF ANY DATA HAS ARRIVED ON THE BLUETOOTH MODULE*/
-  #ifdef GEN4BOARD
-    // Any data arriving from a Navigation source gets sent directly to the Serial port for use by the TFT Dash Display software
-    if (mySerial.available() > 0) {
-  
-      incomingBLEbyte = mySerial.read();
-  
-      szBLEreadbuf[bleReadpointer] = incomingBLEbyte;
-      bleReadpointer++;
-  
-      if (szBLEreadbuf[strlen(szBLEreadbuf)-1] == '>' && szBLEreadbuf[strlen (szBLEreadbuf)-2] == '%') {
-        bleReadpointer = 0;
-        memset (szNav, 0, 255);
-        strcpy (szNav, szBLEreadbuf);
-        memset (szBLEreadbuf, 0, 255);
-        if (navactive == false) {
-          navactive = true;
-          infomode = 3;
-        }
-      }    
-  
-      // Just some buffer protection just incase the message we get is too long
-      if (bleReadpointer > 253) {
-        bleReadpointer = 0;
-        memset (szBLEreadbuf, 0, 255);
-      }
-    }
-  #endif
+  // Any data arriving from a Navigation source gets sent directly to the Serial port for use by the TFT Dash Display software
+  if (mySerial.available() > 0) {
 
-  #ifdef MEGABOARD
-    if (Serial2.available() > 0) {
-  
-      incomingBLEbyte = Serial2.read();
-  
-      szBLEreadbuf[bleReadpointer] = incomingBLEbyte;
-      bleReadpointer++;
-  
-      if (szBLEreadbuf[strlen(szBLEreadbuf)-1] == '>' && szBLEreadbuf[strlen (szBLEreadbuf)-2] == '%') {
-        bleReadpointer = 0;
-        memset (szNav, 0, 255);
-        strcpy (szNav, szBLEreadbuf);
-        memset (szBLEreadbuf, 0, 255);
-        if (navactive == false) {
-          navactive = true;
-          infomode = 3;
-        }
-      }    
-  
-      // Just some buffer protection just incase the message we get is too long
-      if (bleReadpointer > 253) {
-        bleReadpointer = 0;
-        memset (szBLEreadbuf, 0, 255);
+    incomingBLEbyte = mySerial.read();
+
+    szBLEreadbuf[bleReadpointer] = incomingBLEbyte;
+    bleReadpointer++;
+
+    if (szBLEreadbuf[strlen(szBLEreadbuf)-1] == '>' && szBLEreadbuf[strlen (szBLEreadbuf)-2] == '%') {
+      bleReadpointer = 0;
+      memset (szNav, 0, 255);
+      strcpy (szNav, szBLEreadbuf);
+      memset (szBLEreadbuf, 0, 255);
+      if (navactive == false) {
+        navactive = true;
+        infomode = 3;
       }
     }
-  #endif
+
+    // Just some buffer protection just incase the message we get is too long
+    if (bleReadpointer > 253) {
+      bleReadpointer = 0;
+      memset (szBLEreadbuf, 0, 255);
+    }
+  }
   
 }
 
@@ -2584,13 +2420,6 @@ void Outputmenudata () {
 
 void Outputlivedata () {
 
-  #ifdef MEGABOARD
-    int oilpressavail = 0;
-    if (IsOilPressAvail()) {
-      oilpressavail = 1;
-    }
-  #endif
-  
   DateTime now = rtc.now();
 
   Serial.print ("{,");
@@ -2651,18 +2480,7 @@ void Outputlivedata () {
   Serial.print (triptimehour);
   Serial.print (",");
   Serial.print (triptimemin);
-  #ifdef GEN4BOARD
-    Serial.print (",0,0,0,");
-  #endif
-  #ifdef MEGABOARD
-    Serial.print (",");
-    Serial.print (oilpressavail);
-    Serial.print (",");
-    Serial.print (calcoilpressAvg);
-    Serial.print (",");
-    Serial.print (calcoiltempAvg);
-    Serial.print (",");
-  #endif    
+  Serial.print (",0,0,0,");
   if (fh == true) {
     Serial.print (1);
   } else {
@@ -2693,13 +2511,7 @@ void setup() {
   memset (szNav, 0, 255);  
   Serial.begin(115200);
 
-  #ifdef MEGABOARD
-    Serial2.begin (9600);
-  #endif
-
-  #ifdef GEN4BOARD
-    mySerial.begin (9600);
-  #endif
+  mySerial.begin (9600);
 
   pinMode (SPEEDSENSORPIN, INPUT);
   pinMode (RPMSENSORPIN, INPUT);
@@ -2716,12 +2528,6 @@ void setup() {
   pinMode (OPTIONPIN, INPUT);
   pinMode (SELECTPIN, INPUT);
   pinMode (FANPIN, OUTPUT);
-
-  #ifdef MEGABOARD
-    pinMode (OILINFOPIN, INPUT_PULLUP);
-    pinMode (OILPRESSPIN, INPUT);
-    pinMode (OILTEMPPIN, INPUT);
-  #endif
 
   digitalWrite (FANPIN, LOW); // Production version with single relay board 
 

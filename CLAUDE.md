@@ -6,10 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TFT Dash is a motorcycle dashboard replacement project. It consists of two main software components plus hardware designs:
 
-- **Firmware** (`firmware/`): Arduino code running on an ATMega32u4 (Gen4) or ATMega2560 (Mega/Gen3) that reads bike sensor signals (speed, RPM, coolant temp, fuel level, indicators, etc.) and streams comma-delimited data over USB serial at 115200 bps.
+- **Firmware** (`firmware/`): Arduino code running on an ATMega32u4 (Gen4 board) that reads bike sensor signals (speed, RPM, coolant temp, fuel level, indicators, etc.) and streams comma-delimited data over USB serial at 115200 bps.
 - **Display** (`display/`): C++ application running on a Raspberry Pi that receives the serial data and renders the dashboard GUI using SDL3 at 1024x600 resolution.
 - **Hardware** (`hardware/`): EAGLE schematic/board files for the Gen4 interface PCB, plus 3D-printable enclosure STLs.
-- **Pi Image** (`pi-image/`): Configuration files from the Raspberry Pi 3 SD card — boot config, update script, fstab. The Pi runs a read-only RetroPie-based image with WiFi/BT disabled, DPI display at 1024x600. App lives at `/home/pi/tftdash/TFTDash/` in flat BMP layout.
 
 ## Build Commands
 
@@ -30,19 +29,13 @@ zig build -Dtarget=aarch64-linux-gnu -Doptimize=ReleaseSafe
 Uses Zig as the build system. See `display/build.zig` for configuration.
 
 ### Firmware
-Open `firmware/tftdashfirmwareGEN4.ino` in the Arduino IDE. Configuration is controlled by compiler defines at the top of the file:
+Open `firmware/firmware.ino` in the Arduino IDE, or compile via `firmware/build.sh build`.
 
-**Board selection** (uncomment one):
-- `#define GEN4BOARD` - ATMega32u4 (Leonardo-compatible) Gen4 board
-- `#define MEGABOARD` - ATMega2560 Gen3 board
-
-**Bike model selection** (uncomment one):
+**Bike model selection** (uncomment one at the top of the file):
 - `#define BIKE_FZS1000` - Yamaha FZS1000 Fazer (original)
 - `#define BIKE_FZS600` - Yamaha FZS600 Fazer
 
 This controls gear ratios, primary drive ratio, wheel diameter, and RPM calibration constant. See `docs/signal-reverse-engineering.md` for full details of all bike-specific constants and signal formats.
-
-Pre-compiled hex files are also provided in the same directory.
 
 ### SD Card Image (Buildroot)
 ```bash
@@ -202,23 +195,6 @@ tftupdate/
 └── firmware.hex          Optional Arduino firmware (flashed via avrdude)
 ```
 
-### Legacy Update Package (USB Stick — pre-A/B)
-The old update mechanism used a USB stick with a different `tftupdate/` layout. Structure:
-```
-tftupdate/
-├── bootimage.png              Fazer splash screen
-├── firmware/
-│   ├── firmware.hex           Mega board hex
-│   ├── firmware4.hex          Gen4 board hex
-│   └── avrdude.conf           avrdude config for flashing
-└── new/
-    ├── testsdl                ARM 32-bit binary (display app)
-    ├── testsdl.cpp            Source (for reference)
-    └── *.bmp (×855)           All theme BMPs, flat layout with prefixes
-```
-
 ### TODO
-- [ ] Pull Pi SD card and retrieve the existing update/boot script
-- [x] Write update package build script (`make update-package` / `build.sh update-package`)
 - [ ] Calibrate RPM_CONSTANT for FZS600 (warm idle should read 1150-1250 RPM)
 - [ ] Recalibrate fuel level lookup table for FZS600 tank (19.4L vs 21L, different shape)

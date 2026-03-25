@@ -16,6 +16,7 @@
 typedef enum {
     TYPE_INT,
     TYPE_FLOAT,
+    TYPE_DOUBLE,
     TYPE_BOOL,
     TYPE_STRING,
     TYPE_SKIP
@@ -34,6 +35,9 @@ typedef struct {
 
 #define FIELD_FLOAT(struct_type, field) \
     { TYPE_FLOAT, offsetof(struct_type, field), 0 }
+
+#define FIELD_DOUBLE(struct_type, field) \
+    { TYPE_DOUBLE, offsetof(struct_type, field), 0 }
 
 #define FIELD_BOOL(struct_type, field) \
     { TYPE_BOOL, offsetof(struct_type, field), 0 }
@@ -138,7 +142,7 @@ static const FieldDescriptor menu_fields[] = {
 
 /*
  * Nav message field layout
- * Format: %symbol%roadname%towards%exit%distance%units%
+ * Format: %symbol%road%towards%exit%yards%miles%driving_left%dest_distance%
  */
 static const FieldDescriptor nav_fields[] = {
     FIELD_SKIP(),                                  /* 0: message start marker */
@@ -146,8 +150,10 @@ static const FieldDescriptor nav_fields[] = {
     FIELD_STRING(nav_state, nav_road),             /* 2 */
     FIELD_STRING(nav_state, nav_towards),          /* 3 */
     FIELD_STRING(nav_state, nav_exit),             /* 4 */
-    FIELD_STRING(nav_state, nav_distance),         /* 5 */
-    FIELD_STRING(nav_state, nav_distance_units),   /* 6 */
+    FIELD_INT(nav_state, nav_yards),               /* 5 */
+    FIELD_DOUBLE(nav_state, nav_miles),            /* 6 */
+    FIELD_INT(nav_state, driving_left),            /* 7 */
+    FIELD_DOUBLE(nav_state, nav_dest_distance),    /* 8 */
 };
 
 /*
@@ -163,6 +169,10 @@ static void parse_field(const char* value, void* base_ptr, const FieldDescriptor
 
         case TYPE_FLOAT:
             *(float*)target = atof(value);
+            break;
+
+        case TYPE_DOUBLE:
+            *(double*)target = atof(value);
             break;
 
         case TYPE_BOOL:
@@ -246,17 +256,6 @@ bool parse_nav_message(const char* msg, nav_state* state) {
 
     if (!result) {
         return false;
-    }
-
-    /* Post-processing: convert distance based on units */
-    if (strcmp(state->nav_distance_units, "MILE") == 0) {
-        state->nav_miles = atof(state->nav_distance);
-    } else if (strcmp(state->nav_distance_units, "YARD") == 0) {
-        state->nav_yards = atoi(state->nav_distance);
-    } else if (strcmp(state->nav_distance_units, "KM") == 0) {
-        state->nav_km = atoi(state->nav_distance);
-    } else if (strcmp(state->nav_distance_units, "METRE") == 0) {
-        state->nav_metres = atoi(state->nav_distance);
     }
 
     /* Nav is active if we have a symbol */

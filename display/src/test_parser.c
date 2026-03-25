@@ -102,7 +102,7 @@ void test_parse_menu_basic() {
 /* Test: Parse navigation message */
 void test_parse_nav_basic() {
     nav_state state = {0};
-    const char* msg = "%TNL%A9%Glasgow%J16%0.5%MILE%";
+    const char* msg = "%TNL%A9%Glasgow%J16%350%0.2%1%12.5%";
 
     ASSERT_TRUE(parse_nav_message(msg, &state));
 
@@ -110,32 +110,24 @@ void test_parse_nav_basic() {
     ASSERT_STR_EQ(state.nav_road, "A9");
     ASSERT_STR_EQ(state.nav_towards, "Glasgow");
     ASSERT_STR_EQ(state.nav_exit, "J16");
-    ASSERT_STR_EQ(state.nav_distance, "0.5");
-    ASSERT_STR_EQ(state.nav_distance_units, "MILE");
-    ASSERT_FLOAT_EQ(state.nav_miles, 0.5);
+    ASSERT_EQ(state.nav_yards, 350);
+    ASSERT_FLOAT_EQ(state.nav_miles, 0.2);
+    ASSERT_EQ(state.driving_left, 1);
+    ASSERT_FLOAT_EQ(state.nav_dest_distance, 12.5);
     ASSERT_TRUE(state.nav_active);
 }
 
-/* Test: Parse navigation with different units */
+/* Test: Parse navigation with different values */
 void test_parse_nav_units() {
     nav_state state = {0};
 
-    /* Test yards */
-    const char* msg_yards = "%TNR%M6%Manchester%14%500%YARD%";
-    ASSERT_TRUE(parse_nav_message(msg_yards, &state));
+    /* Right-hand drive, large distance */
+    const char* msg = "%TNR%M6%Manchester%14%500%1.4%0%25.0%";
+    ASSERT_TRUE(parse_nav_message(msg, &state));
     ASSERT_EQ(state.nav_yards, 500);
-
-    /* Test kilometres */
-    memset(&state, 0, sizeof(state));
-    const char* msg_km = "%SLL%N7%Dublin%2%15%KM%";
-    ASSERT_TRUE(parse_nav_message(msg_km, &state));
-    ASSERT_EQ(state.nav_km, 15);
-
-    /* Test metres */
-    memset(&state, 0, sizeof(state));
-    const char* msg_metres = "%RB2L%A1%Edinburgh%1%250%METRE%";
-    ASSERT_TRUE(parse_nav_message(msg_metres, &state));
-    ASSERT_EQ(state.nav_metres, 250);
+    ASSERT_FLOAT_EQ(state.nav_miles, 1.4);
+    ASSERT_EQ(state.driving_left, 0);
+    ASSERT_FLOAT_EQ(state.nav_dest_distance, 25.0);
 }
 
 /* Test: Empty navigation should not be active */

@@ -88,14 +88,11 @@ typedef struct {
     char nav_road[255];
     char nav_towards[255];
     char nav_exit[16];
-    char nav_distance[16];
-    char nav_distance_units[16];
-    int nav_metres;
     int nav_yards;
     double nav_miles;
-    int nav_km;
-    bool nav_active;
+    int driving_left;
     double nav_dest_distance;
+    bool nav_active;
 } nav_state;
 
 /*

@@ -10,10 +10,6 @@
 #ifndef SENSOR_FEED_H
 #define SENSOR_FEED_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdbool.h>
 #include "parser.h"
 
@@ -43,9 +39,5 @@ const nav_state *sensor_feed_nav(const sensor_feed *feed);
 
 /* True if currently connected to a data source */
 bool sensor_feed_connected(const sensor_feed *feed);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* SENSOR_FEED_H */

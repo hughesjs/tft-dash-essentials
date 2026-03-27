@@ -1,16 +1,12 @@
 /*
  * menu.h - Menu system data tables for TFT Dash
  *
- * Pure data lookup tables extracted from draw_menu() in testsdl.cpp.
+ * Pure data lookup tables extracted from draw_menu() in testsdl.c.
  * No SDL dependency — suitable for unit testing.
  */
 
 #ifndef MENU_H
 #define MENU_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <stdbool.h>
 
@@ -49,9 +45,5 @@ bool menu_theme_arrows(int state, menu_cursor *left, menu_cursor *right);
 /* Theme thumbnail lookup by theme ID (0-8). Returns NULL for out-of-range. */
 typedef struct { const char *theme_name; const char *thumb_file; } theme_thumb;
 const theme_thumb *menu_theme_thumb(int theme_id);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* MENU_H */

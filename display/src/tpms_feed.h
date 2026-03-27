@@ -9,10 +9,6 @@
 #ifndef TPMS_FEED_H
 #define TPMS_FEED_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -81,9 +77,5 @@ bool tpms_decode_standard_frame(const uint8_t *buf, int len,
 bool tpms_decode_ebay_frame(const uint8_t *buf, int len,
                             int *sensor_id, double *psi, double *bar,
                             int *temp_celsius);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* TPMS_FEED_H */

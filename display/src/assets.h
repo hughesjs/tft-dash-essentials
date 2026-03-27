@@ -9,10 +9,6 @@
 #ifndef ASSETS_H
 #define ASSETS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <SDL3/SDL.h>
 
 typedef struct asset_store asset_store;
@@ -43,9 +39,5 @@ int asset_store_load_theme(asset_store* store, const char* theme, const char* di
  * Returns NULL if the (theme, name) pair is not found.
  */
 SDL_Texture* asset_store_get_texture(asset_store* store, const char* theme, const char* name);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* ASSETS_H */

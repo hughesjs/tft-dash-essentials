@@ -8,10 +8,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdbool.h>
 
 /* Live dashboard data from firmware */
@@ -118,9 +114,5 @@ bool parse_menu_message(const char* msg, menu_state* state);
  * Returns: true on success, false on parse error
  */
 bool parse_nav_message(const char* msg, nav_state* state);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* PARSER_H */

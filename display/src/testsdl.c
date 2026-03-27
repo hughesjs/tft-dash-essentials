@@ -71,6 +71,7 @@ NAV TO DO
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <string.h>
@@ -184,12 +185,12 @@ int g_nav_icons_src_tex_loc[4][NAV_ICON_COUNT] = {
 };
 
 // Navigation symbol lookup table — maps BLE symbol codes to icon(s) and render position
-struct nav_symbol_entry {
+typedef struct {
 	const char *code;
 	nav_icon icon_lhd;     // Left-hand drive icon (or sole icon). NAV_ICON_NONE = text-only
 	nav_icon icon_rhd;     // Right-hand drive icon. NAV_ICON_NONE = same as lhd
 	int x, y;
-};
+} nav_symbol_entry;
 
 static const nav_symbol_entry NAV_SYMBOLS[] = {
 	{ "MUT", NAV_ICON_MUT,   NAV_ICON_MUTR,  249, 180 },
@@ -839,7 +840,7 @@ int	get_rpm_rotation(int rpm) {
 
 // --- Glyph font descriptor — parameterises all the draw_*_string() variants ---
 
-struct glyph_font {
+typedef struct {
 	const char *texture_name;
 	const int *src_x, *src_y, *src_w, *src_h;
 	const char *glyph_chars;       // characters this font can render, in glyph-table order
@@ -851,7 +852,7 @@ struct glyph_font {
 	int clip_x;                    // stop rendering past this x (0 = no clipping)
 	char shifted_char;             // glyph that gets a y-offset (0 = none)
 	int shifted_y;                 // y-offset for shifted_char
-};
+} glyph_font;
 
 static const glyph_font FONT_SMALL_GREY = {
 	"Smallnumbers.bmp", g_small_grey_src_tex_loc[0], g_small_grey_src_tex_loc[1], g_small_grey_src_tex_loc[2], g_small_grey_src_tex_loc[3],
@@ -1526,6 +1527,25 @@ void animate_info_mode() {
 	}
 }
 
+typedef struct { bool active; const char *badge_bmp; const char *flash_bmp; int fx, fy, fw, fh; } warning_badge;
+
+static warning_badge resolve_warning(void) {
+	bool front_tyre_low = tpms->connected && tpms->front.received && tpms->front.psi <= dash->front_pressure_low;
+	bool rear_tyre_low  = tpms->connected && tpms->rear.received  && tpms->rear.psi  <= dash->rear_pressure_low;
+
+	if (front_tyre_low || rear_tyre_low) {
+		const char *detail = front_tyre_low && rear_tyre_low ? "Frontrearlow.bmp" : front_tyre_low ? "Fronttyrelow.bmp" : "Reartyrelow.bmp";
+		return (warning_badge){ true, "Lowtyrebadge.bmp", detail, 168, 244, 257, 76 };
+	}
+	if (dash->oil_warning && enginerunning)
+		return (warning_badge){ true, "Lowoilbadge.bmp", "Lowoil.bmp", 222, 236, 134, 105 };
+	if (overheatwarning && enginerunning)
+		return (warning_badge){ true, "Overheatbadge.bmp", "Engineoverheat.bmp", 189, 237, 212, 95 };
+	if (fuelwarning && enginerunning && dash->info_mode != 3)
+		return (warning_badge){ true, "Fuelwarningbadge.bmp", "Lowfuel.bmp", 222, 236, 134, 105 };
+	return (warning_badge){ false, nullptr, nullptr, 0, 0, 0, 0 };
+}
+
 void draw_dashboard () {
 	flash_count++;
 	if (flash_count > 50) {
@@ -1688,29 +1708,9 @@ void draw_dashboard () {
 	*/
 
 
-	bool front_tyre_low = tpms->connected && tpms->front.received && tpms->front.psi <= dash->front_pressure_low;
-	bool rear_tyre_low  = tpms->connected && tpms->rear.received  && tpms->rear.psi  <= dash->rear_pressure_low;
-
 	// Warning badges — checked in priority order (highest first)
-	struct warning_badge { bool active; const char *badge_bmp; const char *flash_bmp; int fx, fy, fw, fh; };
-
-	auto resolve_warning = [&]() -> warning_badge {
-		if (front_tyre_low || rear_tyre_low) {
-			const char *detail = front_tyre_low && rear_tyre_low ? "Frontrearlow.bmp"
-			                   : front_tyre_low ? "Fronttyrelow.bmp" : "Reartyrelow.bmp";
-			return { true, "Lowtyrebadge.bmp", detail, 168, 244, 257, 76 };
-		}
-		if (dash->oil_warning && enginerunning)
-			return { true, "Lowoilbadge.bmp", "Lowoil.bmp", 222, 236, 134, 105 };
-		if (overheatwarning && enginerunning)
-			return { true, "Overheatbadge.bmp", "Engineoverheat.bmp", 189, 237, 212, 95 };
-		if (fuelwarning && enginerunning && dash->info_mode != 3)
-			return { true, "Fuelwarningbadge.bmp", "Lowfuel.bmp", 222, 236, 134, 105 };
-		return { false, nullptr, nullptr, 0, 0, 0, 0 };
-	};
-
 	if (!warningbadgecancelled) {
-		auto w = resolve_warning();
+		warning_badge w = resolve_warning();
 		warningbadgeactive = w.active;
 		if (w.active) {
 			render_texture(tex(w.badge_bmp), 0, 163, 444, 249);

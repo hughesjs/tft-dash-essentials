@@ -22,17 +22,11 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = true,
-            .link_libcpp = true,
         }),
     });
 
     testsdl.root_module.addCSourceFiles(.{
-        .files = &.{"src/testsdl.cpp"},
-        .flags = &.{"-std=c++14"},
-    });
-
-    testsdl.root_module.addCSourceFiles(.{
-        .files = &.{ "src/parser.c", "src/assets.c", "src/sensor_feed.c", "src/menu.c", "src/tpms_feed.c" },
+        .files = &.{ "src/testsdl.c", "src/parser.c", "src/assets.c", "src/sensor_feed.c", "src/menu.c", "src/tpms_feed.c" },
         .flags = &.{"-std=c23"},
     });
 

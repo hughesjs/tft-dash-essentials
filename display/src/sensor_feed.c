@@ -4,6 +4,12 @@
  * Background thread reads serial/pipe data from the firmware, frames
  * messages by { and [ markers, parses them via the parser module, and
  * stores the result in structs accessible through const pointers.
+ *
+ * Threading note: the render thread reads state without a mutex. This is
+ * safe because (a) there is exactly one writer and one reader, (b) each
+ * field is a naturally-aligned 32-bit int/float — atomic on ARM, and
+ * (c) the worst case is a single render frame mixing fields from two
+ * consecutive serial updates, which is imperceptible at 60 fps.
  */
 
 #define _GNU_SOURCE
@@ -20,6 +26,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #define FRAME_BUF_SIZE 1024
 #define READ_BUF_SIZE  1024
@@ -50,6 +57,7 @@ struct sensor_feed {
     /* Thread control */
     bool running;
     pthread_t thread;
+    struct timespec last_live_update;
 
     /* Framing buffers (only touched by background thread) */
     char frame_buf[FRAME_BUF_SIZE];
@@ -142,6 +150,7 @@ static void process_frame(sensor_feed *feed) {
         dashboard_state state = {0};
         if (parse_live_message(buf + 1, &state)) {
             feed->dashboard = state;
+            clock_gettime(CLOCK_MONOTONIC, &feed->last_live_update);
 
             /* If nav string present, parse it too */
             if (strlen(state.nav_string) > 0) {
@@ -166,10 +175,10 @@ static void *poll_thread(void *arg) {
     sensor_feed *feed = (sensor_feed *)arg;
     char read_buf[READ_BUF_SIZE];
 
-    if (connect_feed(feed) != 0) {
-        fprintf(stderr, "sensor_feed: failed to connect\n");
-        return NULL;
+    while (feed->running && connect_feed(feed) != 0) {
+        usleep(500000);
     }
+    if (!feed->running) return NULL;
 
     while (feed->running) {
         memset(read_buf, 0, sizeof(read_buf));
@@ -265,4 +274,14 @@ const nav_state *sensor_feed_nav(const sensor_feed *feed) {
 
 bool sensor_feed_connected(const sensor_feed *feed) {
     return feed ? feed->connected : false;
+}
+
+int sensor_feed_ms_since_update(const sensor_feed *feed) {
+    if (!feed) return -1;
+    if (feed->last_live_update.tv_sec == 0 && feed->last_live_update.tv_nsec == 0) return -1;
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    int ms = (int)((now.tv_sec - feed->last_live_update.tv_sec) * 1000 +
+                   (now.tv_nsec - feed->last_live_update.tv_nsec) / 1000000);
+    return ms;
 }

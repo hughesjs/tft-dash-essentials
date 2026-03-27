@@ -17,6 +17,7 @@ public class PipeWriter : IDisposable
     private CancellationTokenSource? _cancellationTokenSource;
     private DashboardState? _currentState;
     private bool _isRunning;
+    private bool _paused;
     private readonly object _lock = new object();
 
     public bool IsRunning
@@ -28,6 +29,12 @@ public class PipeWriter : IDisposable
                 return _isRunning;
             }
         }
+    }
+
+    public bool Paused
+    {
+        get { lock (_lock) { return _paused; } }
+        set { lock (_lock) { _paused = value; } }
     }
 
     /// <summary>
@@ -147,6 +154,12 @@ public class PipeWriter : IDisposable
                 {
                     try
                     {
+                        if (Paused)
+                        {
+                            Thread.Sleep(100);
+                            continue;
+                        }
+
                         DashboardState state;
                         lock (_lock)
                         {

@@ -4,29 +4,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-TFT Dash is a motorcycle dashboard replacement project. It consists of two main software components plus hardware designs:
+TFT Dash is a motorcycle dashboard replacement project with four main components:
 
+- **Display** (`display/`): Pure C23 application running on a Raspberry Pi that receives serial data and renders the dashboard GUI using SDL3 at 1024x600 resolution. See `display/CLAUDE.md` for detailed module-level documentation.
 - **Firmware** (`firmware/`): Arduino code running on an ATMega32u4 (Gen4 board) that reads bike sensor signals (speed, RPM, coolant temp, fuel level, indicators, etc.) and streams comma-delimited data over USB serial at 115200 bps.
-- **Display** (`display/`): C++ application running on a Raspberry Pi that receives the serial data and renders the dashboard GUI using SDL3 at 1024x600 resolution.
-- **Hardware** (`hardware/`): EAGLE schematic/board files for the Gen4 interface PCB, plus 3D-printable enclosure STLs.
+- **Simulator** (`simulator/`): .NET 10 / Avalonia desktop GUI for development without hardware. Provides interactive controls for all dashboard state, preset scenarios, and writes to a FIFO pipe that the display reads as if it were a serial port.
+- **Hardware** (`hardware/`): EAGLE schematic/board files for the Gen4 interface PCB, 3D-printable enclosure STLs, and component datasheets.
 
 ## Build Commands
 
-### Display Software
+A root `Makefile` provides unified build targets. Run `make help` for the full list.
+
 ```bash
-cd display
-
-# Build (requires zig 0.15+ and SDL3 dev libraries)
-zig build
-
-# Build and run parser tests
-zig build test
-
-# Cross-compile for Raspberry Pi (aarch64)
-zig build -Dtarget=aarch64-linux-gnu -Doptimize=ReleaseSafe
+make display       # Build display natively for dev/testing
+make firmware      # Compile firmware .hex via arduino-cli
+make simulator     # Build the .NET simulator
+make test          # Run all tests (display + simulator)
+make               # Full SD card image (firmware + display cross-compile + buildroot)
+make rebuild       # Rebuild image after app/asset changes
+make update-package # Build USB update package
+make qemu          # Boot image in QEMU from slot A
+make qemu-b        # Boot from slot B (A/B update testing)
+make setup         # First-time Arduino board support + libraries
 ```
 
-Uses Zig as the build system. See `display/build.zig` for configuration.
+### Display Software
+```bash
+cd display && zig build           # Build natively (requires zig 0.15+)
+cd display && zig build test      # Run all tests (45 tests across 5 suites)
+cd display && zig build -Dtarget=aarch64-linux-gnu -Doptimize=ReleaseSafe  # Cross-compile for Pi
+```
 
 ### Firmware
 Open `firmware/firmware.ino` in the Arduino IDE, or compile via `firmware/build.sh build`.
@@ -37,34 +44,31 @@ Open `firmware/firmware.ino` in the Arduino IDE, or compile via `firmware/build.
 
 This controls gear ratios, primary drive ratio, wheel diameter, and RPM calibration constant. See `docs/signal-reverse-engineering.md` for full details of all bike-specific constants and signal formats.
 
+### Simulator
+```bash
+# Build
+dotnet build simulator/src/TftDashSimulator/TftDashSimulator.csproj
+
+# Run GUI only (no pipe output)
+dotnet run --project simulator/src/TftDashSimulator/TftDashSimulator.csproj
+
+# Run with FIFO pipe output to /tmp/tft-dash-pipe (feeds the display)
+dotnet run --project simulator/src/TftDashSimulator/TftDashSimulator.csproj -- --pipe
+
+# Run tests
+dotnet test simulator/tests/TftDashSimulator.Tests/
+```
+
+The simulator creates a FIFO at `/tmp/tft-dash-pipe` and writes protocol messages at 10 Hz. The display's `sensor_feed` module auto-detects this pipe and reads from it. A "Pause Comms" toggle button stops sending to test the stale data warning.
+
 ### SD Card Image (Buildroot)
 ```bash
 cd buildroot-tftdash
-
-# First build (20-30 mins, downloads toolchain + kernel)
-./build.sh
-
-# Rebuild after app/asset changes
-./build.sh rebuild
-
-# Build a USB update package for A/B updates
-./build.sh update-package
+./build.sh          # First build (20-30 mins, downloads toolchain + kernel)
+./build.sh rebuild  # Rebuild after app/asset changes
 ```
 
-Requires Buildroot cloned alongside the repo (`git clone https://github.com/buildroot/buildroot.git ../buildroot-src`) and the display binary pre-built for ARM (see above). Output is `../buildroot-src/output/images/sdcard.img`. See `buildroot-tftdash/README.md` for full details.
-
-### A/B Update Testing
-```bash
-# Boot QEMU from slot A (default)
-make qemu
-
-# Boot QEMU from slot B
-make qemu-b
-
-# Inside QEMU, test update script:
-dd if=/dev/zero of=/tmp/test.img bs=1M count=10
-tft-update.sh /tmp/test.img
-```
+Requires Buildroot cloned alongside the repo (`git clone https://github.com/buildroot/buildroot.git ../buildroot-src`). Output is `../buildroot-src/output/images/sdcard.img`. See `buildroot-tftdash/README.md` for full details.
 
 ## Architecture
 
@@ -74,13 +78,13 @@ The firmware outputs two types of comma-delimited messages continuously:
 - **Live data** `{,speed,rpm,coolant,battery,hour,minute,fuel,...,}` - real-time sensor readings
 - **Menu data** `[,menustate,odo1,odo2,...,settings,...,]` - menu state and configuration values
 
-The display's `pollInterface()` thread reads serial data byte-by-byte, frames messages by looking for `{` or `[` start markers, then calls `UnpackMessage()` or `UnpackMenuMessage()` to parse fields by splitting on commas.
+The display's `sensor_feed` thread reads serial data byte-by-byte, frames messages by looking for `{` or `[` start markers, then calls `parse_live_message()` or `parse_menu_message()` to parse fields via data-driven descriptor tables.
 
 ### Display Application (`main.c` + modules)
 Pure C23 codebase. The main file (~2200 lines) contains the render loop and drawing helpers. Subsystems are extracted into modules:
 
 - **`parser.h/c`** — Serial message deserialisation with data-driven field descriptor tables
-- **`assets.h/c`** — Themed BMP texture loading with two-key hash map lookup
+- **`assets.h/c`** — Themed PNG texture loading with two-key hash map lookup
 - **`sensor_feed.h/c`** — Owns serial/pipe connection and background thread for firmware data
 - **`menu.h/c`** — Menu screen routing, cursor positions, and theme thumbnail lookup tables
 - **`tpms_feed.h/c`** — TPMS serial connection and binary protocol decoding (Standard + eBay)
@@ -94,8 +98,8 @@ Three pthreads:
 ### Theming
 9 colour themes (default/white, green, red, blue, orange, yellow, night, bright, dark). Each theme has its own directory under `assets/themes/`. All themes loaded into the asset store at startup. Textures retrieved via `tex("Name.bmp")` or `tex_from("theme", "Name.bmp")`.
 
-### BMP Assets
-All graphical assets are BMP files in `assets/themes/<theme>/`. Loaded at startup via `asset_store_load_theme()` into a hash map.
+### PNG Assets
+All graphical assets are PNG files in `assets/themes/<theme>/`. Loaded at startup via `asset_store_load_theme()` into a hash map.
 
 ## Key Constants
 - Screen resolution: 1024x600
@@ -189,6 +193,14 @@ tftupdate/
 ├── rootfs.img.sha256     SHA-256 checksum for verification
 └── firmware.hex          Optional Arduino firmware (flashed via avrdude)
 ```
+
+## Documentation (`docs/`)
+
+- **`SERIAL-PROTOCOL.md`** — Complete serial protocol specification: live data (37 fields), menu data, TPMS binary protocol, navigation message format
+- **`signal-reverse-engineering.md`** — Electrical signal details: speed sensor, RPM counter, analogue signals (temp, fuel, battery), digital signals (neutral, oil, indicators), calibration constants, FZS600 variations
+- **`ab-update-plan.md`** — A/B rootfs update system design
+- **`ota-update-plan.md`** — Over-the-air WiFi update architecture (planned)
+- **`gen5-arm-cortex-plan.md`** — Future ARM Cortex M4 board design notes
 
 ### TODO
 - [ ] Calibrate RPM_CONSTANT for FZS600 (warm idle should read 1150-1250 RPM)

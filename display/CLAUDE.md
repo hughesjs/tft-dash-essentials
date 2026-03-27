@@ -10,7 +10,7 @@ This is the display application for the TFT Dash motorcycle dashboard. It runs o
 # Build everything
 zig build
 
-# Build and run all tests (43 tests across 5 suites)
+# Build and run all tests (45 tests across 5 suites)
 zig build test
 
 # Build and run the dashboard
@@ -45,7 +45,7 @@ display/
 │   ├── test_menu.c         Menu data table tests (8 tests)
 │   ├── test_tpms_feed.c    TPMS frame decoding tests (9 tests)
 │   └── TPMSTest.cpp        Legacy standalone TPMS test utility
-├── assets/themes/           BMP files organised by theme
+├── assets/themes/           PNG files organised by theme
 ├── build.zig                Zig build system configuration
 ├── build.zig.zon            Zig package manifest
 ├── CLAUDE.md                This file
@@ -59,7 +59,7 @@ display/
 | Module | Responsibility | SDL dependency |
 |--------|---------------|----------------|
 | `parser` | Deserialise comma-delimited serial messages into structs | None |
-| `assets` | Load themed BMP textures, two-key hash map lookup | Yes (SDL_Texture) |
+| `assets` | Load themed PNG textures, two-key hash map lookup | Yes (SDL_Texture) |
 | `sensor_feed` | Own serial/pipe connection, background thread, expose const state | None |
 | `menu` | Data tables for menu screens (backgrounds, cursors, thumbnails) | None |
 | `tpms_feed` | Own TPMS serial connection, binary protocol decoding, background thread | None |
@@ -85,10 +85,12 @@ These are refreshed each frame from `sensor_feed` and `tpms_feed`. The main file
 
 ### Threading Model
 
-Three threads, no explicit synchronisation:
+Three threads, deliberately no mutex synchronisation:
 1. **Main thread**: SDL event loop + rendering (reads const pointers)
 2. **`sensor_feed` thread**: Reads firmware serial data, writes internal state
 3. **`tpms_feed` thread**: Reads TPMS serial data, writes internal state
+
+Each feed has exactly one writer thread and one reader (the render loop). All shared fields are naturally-aligned 32-bit int/float values, which are atomic on ARM. The worst case is a single render frame showing a mix of two consecutive serial updates — imperceptible at 60 fps. A mutex would add lock contention every frame for no visible benefit.
 
 ### Serial Protocol
 
@@ -127,7 +129,7 @@ Each theme has its own directory under `assets/themes/`. All 9 themes are loaded
 ## Guidelines
 
 - All source is C23 — no C++ features
-- All rendering uses SDL3 textures created from BMP surfaces — no TTF fonts
+- All rendering uses SDL3 textures created from PNG surfaces — no TTF fonts
 - When adding new visual elements, follow the existing sprite-sheet pattern with themed variants
 - Test serial data parsing changes carefully — the message format must match the firmware exactly
 - New subsystems should follow the established pattern: opaque struct, const accessors, integration tests

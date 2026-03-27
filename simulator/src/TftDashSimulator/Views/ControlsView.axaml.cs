@@ -198,6 +198,17 @@ public partial class ControlsView : UserControl
         BuildNavMessage();
     }
 
+    // === Comms Pause ===
+
+    private void OnPauseToggled(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm && vm.PipeWriter is { } pw)
+        {
+            pw.Paused = PauseToggle.IsChecked == true;
+            PauseToggle.Content = pw.Paused ? "Resume Comms" : "Pause Comms";
+        }
+    }
+
     // === Preset Buttons ===
 
     private void OnIdleClick(object? sender, RoutedEventArgs e)

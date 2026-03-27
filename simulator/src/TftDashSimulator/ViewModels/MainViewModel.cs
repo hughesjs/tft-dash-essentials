@@ -10,6 +10,7 @@ public class MainViewModel : INotifyPropertyChanged, IDisposable
     private readonly PipeWriter? _pipeWriter;
 
     public DashboardState DashboardState { get; }
+    public PipeWriter? PipeWriter => _pipeWriter;
 
     public ICommand ApplyIdlePresetCommand { get; }
     public ICommand ApplyCruisingPresetCommand { get; }

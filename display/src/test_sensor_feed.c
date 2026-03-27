@@ -123,6 +123,7 @@ void test_null_safety(void) {
     ASSERT_NULL(sensor_feed_menu(NULL));
     ASSERT_NULL(sensor_feed_nav(NULL));
     ASSERT_FALSE(sensor_feed_connected(NULL));
+    ASSERT_EQ(sensor_feed_ms_since_update(NULL), -1);
 }
 
 void test_connect_to_pipe(void) {
@@ -285,6 +286,43 @@ void test_multiple_messages(void) {
     free(path);
 }
 
+void test_staleness_tracking(void) {
+    char *path = make_test_pipe();
+    ASSERT_NOT_NULL(path);
+
+    sensor_feed *feed = sensor_feed_create(path);
+
+    /* Before start, should return -1 (no data yet) */
+    ASSERT_EQ(sensor_feed_ms_since_update(feed), -1);
+
+    sensor_feed_start(feed);
+
+    int wfd = open_pipe_writer(path);
+    wait_for_processing();
+
+    /* Still -1, no live message yet */
+    ASSERT_EQ(sensor_feed_ms_since_update(feed), -1);
+
+    /* Write a live data message */
+    pipe_write(wfd, "{,068,1234,80,12.5,14,23,477,1,0,1,0,0,200,0,1.2,3.4,23456.7,0,0.5,2,21,3,45,120,85,1,30,0,100,200,0,0,1,2,28,30,}");
+    wait_for_processing();
+
+    /* Should be a small number of ms (less than 500 given 300ms wait) */
+    int ms = sensor_feed_ms_since_update(feed);
+    ASSERT_TRUE(ms >= 0);
+    ASSERT_TRUE(ms < 500);
+
+    /* Wait and check it grows */
+    usleep(200000); /* 200ms */
+    int ms2 = sensor_feed_ms_since_update(feed);
+    ASSERT_TRUE(ms2 > ms);
+
+    close(wfd);
+    sensor_feed_destroy(feed);
+    unlink(path);
+    free(path);
+}
+
 /* --- Main --- */
 
 int main(void) {
@@ -302,6 +340,7 @@ int main(void) {
     TEST(nav_message);
     TEST(message_framing);
     TEST(multiple_messages);
+    TEST(staleness_tracking);
 
     printf("\n  Results: %d/%d passed\n", pass_count, test_count);
     return (pass_count == test_count) ? 0 : 1;

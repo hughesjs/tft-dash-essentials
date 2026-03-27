@@ -40,4 +40,7 @@ const nav_state *sensor_feed_nav(const sensor_feed *feed);
 /* True if currently connected to a data source */
 bool sensor_feed_connected(const sensor_feed *feed);
 
+/* Milliseconds since the last live data frame was received. Returns -1 if no frame has been received yet. */
+int sensor_feed_ms_since_update(const sensor_feed *feed);
+
 #endif /* SENSOR_FEED_H */

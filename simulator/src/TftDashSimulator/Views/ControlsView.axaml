@@ -12,6 +12,10 @@
                 <TextBlock Text="Dashboard Controls"
                           FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
 
+                <ToggleButton x:Name="PauseToggle" Content="Pause Comms"
+                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                             IsCheckedChanged="OnPauseToggled"/>
+
                 <!-- Speed -->
                 <StackPanel>
                     <TextBlock Text="Speed (MPH/KMH)"/>

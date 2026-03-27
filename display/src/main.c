@@ -96,6 +96,7 @@ static const dashboard_state *dash = nullptr;
 static const menu_state *menu = nullptr;
 static const nav_state *nav = nullptr;
 static const tpms_state *tpms = nullptr;
+static sensor_feed *feed = nullptr;
 
 asset_store* g_assets = nullptr;
 const char*  g_current_theme = "default";
@@ -418,6 +419,7 @@ bool overheatwarning = false;
 bool enginerunning = false;
 bool warningbadgeactive = false;
 bool warningbadgecancelled = false;
+static bool comms_stale = false;
 
 int currenttheme = 0; // Current theme we are on
 bool quit = false;
@@ -855,31 +857,31 @@ typedef struct {
 } glyph_font;
 
 static const glyph_font FONT_SMALL_GREY = {
-	"Smallnumbers.bmp", g_small_grey_src_tex_loc[0], g_small_grey_src_tex_loc[1], g_small_grey_src_tex_loc[2], g_small_grey_src_tex_loc[3],
+	"Smallnumbers.png", g_small_grey_src_tex_loc[0], g_small_grey_src_tex_loc[1], g_small_grey_src_tex_loc[2], g_small_grey_src_tex_loc[3],
 	"0123456789.", NULL, 11, 0, 0, false, 0, '.', 18
 };
 static const glyph_font FONT_SMALL_BLUE = {
-	"Smallnumbers.bmp", g_small_blue_src_tex_loc[0], g_small_blue_src_tex_loc[1], g_small_blue_src_tex_loc[2], g_small_blue_src_tex_loc[3],
+	"Smallnumbers.png", g_small_blue_src_tex_loc[0], g_small_blue_src_tex_loc[1], g_small_blue_src_tex_loc[2], g_small_blue_src_tex_loc[3],
 	"0123456789.", NULL, 11, 0, 0, false, 0, '.', 18
 };
 static const glyph_font FONT_MEDIUM = {
-	"Smallnumbers.bmp", g_med_numbers_src_tex_loc[0], g_med_numbers_src_tex_loc[1], g_med_numbers_src_tex_loc[2], g_med_numbers_src_tex_loc[3],
+	"Smallnumbers.png", g_med_numbers_src_tex_loc[0], g_med_numbers_src_tex_loc[1], g_med_numbers_src_tex_loc[2], g_med_numbers_src_tex_loc[3],
 	"0123456789:+-.cf", NULL, 16, 0, 0, false, 0, 0, 0
 };
 static const glyph_font FONT_LARGE = {
-	"Smallnumbers.bmp", g_large_numbers_src_tex_loc[0], g_large_numbers_src_tex_loc[1], g_large_numbers_src_tex_loc[2], g_large_numbers_src_tex_loc[3],
+	"Smallnumbers.png", g_large_numbers_src_tex_loc[0], g_large_numbers_src_tex_loc[1], g_large_numbers_src_tex_loc[2], g_large_numbers_src_tex_loc[3],
 	"1234567890", NULL, 10, 0, 0, false, 0, 0, 0
 };
 static const glyph_font FONT_NAV_LARGE = {
-	"Navgfx.bmp", g_nav_letters_large_src_tex_loc[0], g_nav_letters_large_src_tex_loc[1], g_nav_letters_large_src_tex_loc[2], g_nav_letters_large_src_tex_loc[3],
+	"Navgfx.png", g_nav_letters_large_src_tex_loc[0], g_nav_letters_large_src_tex_loc[1], g_nav_letters_large_src_tex_loc[2], g_nav_letters_large_src_tex_loc[3],
 	"abcdefghijklmnopqrstuvwxyz0123456789,.()", "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.()", 40, 2, 7, true, 412, 0, 0
 };
 static const glyph_font FONT_NAV_SMALL = {
-	"Navgfx.bmp", g_nav_letters_small_src_tex_loc[0], g_nav_letters_small_src_tex_loc[1], g_nav_letters_small_src_tex_loc[2], g_nav_letters_small_src_tex_loc[3],
+	"Navgfx.png", g_nav_letters_small_src_tex_loc[0], g_nav_letters_small_src_tex_loc[1], g_nav_letters_small_src_tex_loc[2], g_nav_letters_small_src_tex_loc[3],
 	"abcdefghijklmnopqrstuvwxyz0123456789,.()", "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.()", 40, 2, 7, true, 412, 0, 0
 };
 static const glyph_font FONT_NAV_DIGITS = {
-	"Navgfx.bmp", g_nav_numbers_src_tex_loc[0], g_nav_numbers_src_tex_loc[1], g_nav_numbers_src_tex_loc[2], g_nav_numbers_src_tex_loc[3],
+	"Navgfx.png", g_nav_numbers_src_tex_loc[0], g_nav_numbers_src_tex_loc[1], g_nav_numbers_src_tex_loc[2], g_nav_numbers_src_tex_loc[3],
 	"0123456789.", NULL, 11, 2, 7, false, 0, '.', 71
 };
 
@@ -946,7 +948,7 @@ void draw_nav_symbol (nav_icon sym, int xpos, int ypos)
 	g_dst_rect.w = g_src_rect.w;
 	g_dst_rect.h = g_src_rect.h;
 
-	SDL_RenderTexture(renderer, tex("Navgfx.bmp"), &g_src_rect, &g_dst_rect);
+	SDL_RenderTexture(renderer, tex("Navgfx.png"), &g_src_rect, &g_dst_rect);
 }
 
 void draw_medium_num (int singledigit, int xpos, int ypos) {
@@ -979,19 +981,19 @@ void draw_speed_digit (char digit, int position)
 			if (position == 3) {
 				spd_digit_three.w = g_speed_src_tex_loc[2][d];
 				spd_digit_three.h = g_speed_src_tex_loc[3][d];
-				SDL_RenderTexture(renderer, tex("Speednumbers.bmp"), &g_src_rect, &spd_digit_three);
+				SDL_RenderTexture(renderer, tex("Speednumbers.png"), &g_src_rect, &spd_digit_three);
 			}
 
 			if (position == 2) {
 				spd_digit_two.w = g_speed_src_tex_loc[2][d];
 				spd_digit_two.h = g_speed_src_tex_loc[3][d];
-				SDL_RenderTexture(renderer, tex("Speednumbers.bmp"), &g_src_rect, &spd_digit_two);
+				SDL_RenderTexture(renderer, tex("Speednumbers.png"), &g_src_rect, &spd_digit_two);
 			}
 
 			if (position == 1) {
 				spd_digit_one.w = g_speed_src_tex_loc[2][d];
 				spd_digit_one.h = g_speed_src_tex_loc[3][d];
-				SDL_RenderTexture(renderer, tex("Speednumbers.bmp"), &g_src_rect, &spd_digit_one);
+				SDL_RenderTexture(renderer, tex("Speednumbers.png"), &g_src_rect, &spd_digit_one);
 			}
 		}
 	}	
@@ -1048,9 +1050,9 @@ bool render_top_icon_grey_texture (int x, int y, int w, int h)
 	dst_rect.h = h;
 
 	if (dash->oil_pressure_available) {
-		return SDL_RenderTexture(renderer, tex("TopiconsgreyOP.bmp"), nullptr, &dst_rect);
+		return SDL_RenderTexture(renderer, tex("TopiconsgreyOP.png"), nullptr, &dst_rect);
 	} else {
-		return SDL_RenderTexture(renderer, tex("Topiconsgrey.bmp"), nullptr, &dst_rect);
+		return SDL_RenderTexture(renderer, tex("Topiconsgrey.png"), nullptr, &dst_rect);
 	}
 }
 
@@ -1063,9 +1065,9 @@ bool render_oil_light_texture (int x, int y, int w, int h)
 	dst_rect.h = h;
 
 	if (dash->oil_pressure_available) {
-		return SDL_RenderTexture(renderer, tex("OillightOP.bmp"), nullptr, &dst_rect);
+		return SDL_RenderTexture(renderer, tex("OillightOP.png"), nullptr, &dst_rect);
 	} else {
-		return SDL_RenderTexture(renderer, tex("Oillight.bmp"), nullptr, &dst_rect);
+		return SDL_RenderTexture(renderer, tex("Oillight.png"), nullptr, &dst_rect);
 	}
 }
 
@@ -1111,7 +1113,7 @@ void draw_menu (int state) {
 		draw_medium_num(menu->coolant_fan_temp, 467, 114);
 		static const int fan_option_y[] = { 306, 383, 460, 537 };
 		if (menu->fan_neutral_option >= 0 && menu->fan_neutral_option <= 3)
-			render_texture(tex("Selecton.bmp"), 741, fan_option_y[menu->fan_neutral_option], 55, 38);
+			render_texture(tex("Selecton.png"), 741, fan_option_y[menu->fan_neutral_option], 55, 38);
 		break;
 	}
 	case MENU_SCREEN_SPROCKET:
@@ -1134,8 +1136,8 @@ void draw_menu (int state) {
 		draw_medium_num(menu->odo2_digit4, 325 + sp * 2, 415);
 		draw_medium_num(menu->odo2_digit5, 325 + sp * 3, 415);
 		draw_medium_num(menu->odo2_digit6, 325 + sp * 4, 415);
-		if (menu->odo_error == 1) render_texture(tex_from("default", "Odoerror1.bmp"), 130, 524, 758, 45);
-		if (menu->odo_error == 2) render_texture(tex_from("default", "Odoerror2.bmp"), 130, 524, 758, 45);
+		if (menu->odo_error == 1) render_texture(tex_from("default", "Odoerror1.png"), 130, 524, 758, 45);
+		if (menu->odo_error == 2) render_texture(tex_from("default", "Odoerror2.png"), 130, 524, 758, 45);
 		break;
 	}
 	case MENU_SCREEN_SPEED_CORRECTION: {
@@ -1161,7 +1163,7 @@ void draw_menu (int state) {
 		break;
 	}
 	case MENU_SCREEN_CONTROL:
-		render_texture(tex("Selectedcontrol.bmp"), menu->control_layout == 0 ? 230 : 555, 195, 236, 30);
+		render_texture(tex("Selectedcontrol.png"), menu->control_layout == 0 ? 230 : 555, 195, 236, 30);
 		break;
 
 	case MENU_SCREEN_LIGHT: {
@@ -1176,9 +1178,9 @@ void draw_menu (int state) {
 		break;
 	}
 	case MENU_SCREEN_SET_UNITS:
-		render_texture(tex("Selecton.bmp"), dash->using_km  ? 894 : 784, 101, 55, 38);
-		render_texture(tex("Selecton.bmp"), dash->using_fh  ? 894 : 784, 262, 55, 38);
-		render_texture(tex("Selecton.bmp"), dash->using_bar ? 894 : 784, 423, 55, 38);
+		render_texture(tex("Selecton.png"), dash->using_km  ? 894 : 784, 101, 55, 38);
+		render_texture(tex("Selecton.png"), dash->using_fh  ? 894 : 784, 262, 55, 38);
+		render_texture(tex("Selecton.png"), dash->using_bar ? 894 : 784, 423, 55, 38);
 		break;
 
 	case MENU_SCREEN_SET_TIME: {
@@ -1228,94 +1230,94 @@ void dashboard_startup () {
 
 		if (startup_anim_count < 1000) {
 			render_top_icon_grey_texture ((0-1000)+startup_anim_count, 0, 627, 138);		
-			render_texture (tex("Topiconedge1.bmp"), (625-1000)+startup_anim_count, 0, 98, 75);
-			render_texture (tex("Topiconedge2.bmp"), (721-1000)+startup_anim_count, 0, 84, 24);	
+			render_texture (tex("Topiconedge1.png"), (625-1000)+startup_anim_count, 0, 98, 75);
+			render_texture (tex("Topiconedge2.png"), (721-1000)+startup_anim_count, 0, 84, 24);	
 			
 			// Trip 1 and 2 and Odometer, Ambient Temp and Time section
-			render_texture (tex("Mileinfo.bmp"), (0-1000)+startup_anim_count, 434, 435, 169);
+			render_texture (tex("Mileinfo.png"), (0-1000)+startup_anim_count, 434, 435, 169);
 
 			if (dash->info_mode == 0) {
 				if (dash->using_km) {
-					render_texture (tex("InfotopKM.bmp"), (0-1000)+startup_anim_count, 176, 510, 97);
+					render_texture (tex("InfotopKM.png"), (0-1000)+startup_anim_count, 176, 510, 97);
 				} else {
-					render_texture (tex("Infotop.bmp"), (0-1000)+startup_anim_count, 176, 510, 97);	
+					render_texture (tex("Infotop.png"), (0-1000)+startup_anim_count, 176, 510, 97);	
 				}
 				
-				render_texture (tex("Infobottom.bmp"), (0-1000)+startup_anim_count, 273, 454, 125);
+				render_texture (tex("Infobottom.png"), (0-1000)+startup_anim_count, 273, 454, 125);
 			}
 		}
 
 		if (startup_anim_count >= 1000) {
 			render_top_icon_grey_texture (0, 0, 627, 138);		
-			render_texture (tex("Topiconedge1.bmp"), 625, 0, 98, 75);
-			render_texture (tex("Topiconedge2.bmp"), 721, 0, 84, 24);	
+			render_texture (tex("Topiconedge1.png"), 625, 0, 98, 75);
+			render_texture (tex("Topiconedge2.png"), 721, 0, 84, 24);	
 
 			// Trip 1 and 2 and Odometer, Ambient Temp and Time section
-			render_texture (tex("Mileinfo.bmp"), 0, 434, 435, 169);
+			render_texture (tex("Mileinfo.png"), 0, 434, 435, 169);
 
 			if (dash->info_mode == 0) {
 				if (dash->using_km) {
-					render_texture (tex("InfotopKM.bmp"), 0, 176, 510, 97);
+					render_texture (tex("InfotopKM.png"), 0, 176, 510, 97);
 				} else {
-					render_texture (tex("Infotop.bmp"), 0, 176, 510, 97);	
+					render_texture (tex("Infotop.png"), 0, 176, 510, 97);	
 				}
 				
-				render_texture (tex("Infobottom.bmp"), 0, 273, 454, 125);
+				render_texture (tex("Infobottom.png"), 0, 273, 454, 125);
 			}
 		}
 
 		int revamountinc = 10;
 		int revinc = 100;
 		if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R0.bmp"), nullptr, &rectg0);
+			SDL_RenderTexture(renderer, tex("R0.png"), nullptr, &rectg0);
 		}
 		revamountinc+=revinc;
 		if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R1.bmp"), nullptr, &rectg1);
+			SDL_RenderTexture(renderer, tex("R1.png"), nullptr, &rectg1);
 		}
 		revamountinc+=revinc;
 		if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R2.bmp"), nullptr, &rectg2);
+			SDL_RenderTexture(renderer, tex("R2.png"), nullptr, &rectg2);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R3.bmp"), nullptr, &rectg3);
+			SDL_RenderTexture(renderer, tex("R3.png"), nullptr, &rectg3);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R4.bmp"), nullptr, &rect_g4);
+			SDL_RenderTexture(renderer, tex("R4.png"), nullptr, &rect_g4);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R5.bmp"), nullptr, &rect_g5);
+			SDL_RenderTexture(renderer, tex("R5.png"), nullptr, &rect_g5);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R6.bmp"), nullptr, &rect_g6);
+			SDL_RenderTexture(renderer, tex("R6.png"), nullptr, &rect_g6);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R7.bmp"), nullptr, &rect_g7);
+			SDL_RenderTexture(renderer, tex("R7.png"), nullptr, &rect_g7);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R8.bmp"), nullptr, &rect_g8);
+			SDL_RenderTexture(renderer, tex("R8.png"), nullptr, &rect_g8);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R9.bmp"), nullptr, &rect_g9);
+			SDL_RenderTexture(renderer, tex("R9.png"), nullptr, &rect_g9);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R10.bmp"), nullptr, &rect_g10);
+			SDL_RenderTexture(renderer, tex("R10.png"), nullptr, &rect_g10);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R11.bmp"), nullptr, &rect_g11);
+			SDL_RenderTexture(renderer, tex("R11.png"), nullptr, &rect_g11);
 		}
 		revamountinc+=revinc;
 			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R12-13.bmp"), nullptr, &rect_g1213);
+			SDL_RenderTexture(renderer, tex("R12-13.png"), nullptr, &rect_g1213);
 		}
 	}
 
@@ -1323,30 +1325,30 @@ void dashboard_startup () {
 		
 		if (startup_anim_count < 1000) {
 			// Fuel Gauge		
-			render_texture (tex("Fuelgauge.bmp"), (676+500)-(startup_anim_count-500), 294, 316, 44);
-			render_texture (tex("Fuelgaugewhite.bmp"), (714+(spin_angle*3)+500)-(startup_anim_count-500), 303, 274, 28);
+			render_texture (tex("Fuelgauge.png"), (676+500)-(startup_anim_count-500), 294, 316, 44);
+			render_texture (tex("Fuelgaugewhite.png"), (714+(spin_angle*3)+500)-(startup_anim_count-500), 303, 274, 28);
 
 			// Coolant Temp
 			if (dash->using_fh) {
-				render_texture (tex("CoolantF.bmp"), (808+500)-(startup_anim_count-500), 196, 209, 80);
+				render_texture (tex("CoolantF.png"), (808+500)-(startup_anim_count-500), 196, 209, 80);
 			} else {
-				render_texture (tex("Coolant.bmp"), (808+500)-(startup_anim_count-500), 196, 209, 80);	
+				render_texture (tex("Coolant.png"), (808+500)-(startup_anim_count-500), 196, 209, 80);	
 			}
 			
-			render_texture (tex("Coolanticon.bmp"), (772+500)-(startup_anim_count-500), 221, 41, 39);
+			render_texture (tex("Coolanticon.png"), (772+500)-(startup_anim_count-500), 221, 41, 39);
 		} else {
 						// Fuel Gauge
-			render_texture (tex("Fuelgauge.bmp"), 676, 294, 316, 44);
-			render_texture (tex("Fuelgaugewhite.bmp"), 714+(spin_angle*3), 303, 274, 28);
+			render_texture (tex("Fuelgauge.png"), 676, 294, 316, 44);
+			render_texture (tex("Fuelgaugewhite.png"), 714+(spin_angle*3), 303, 274, 28);
 
 			// Coolant Temp
 			if (dash->using_fh) {
-				render_texture (tex("CoolantF.bmp"), 808, 196, 209, 80);
+				render_texture (tex("CoolantF.png"), 808, 196, 209, 80);
 			} else {
-				render_texture (tex("Coolant.bmp"), 808, 196, 209, 80);	
+				render_texture (tex("Coolant.png"), 808, 196, 209, 80);	
 			}
 			
-			render_texture (tex("Coolanticon.bmp"), 772, 221, 41, 39);
+			render_texture (tex("Coolanticon.png"), 772, 221, 41, 39);
 		}
 	}
 
@@ -1374,13 +1376,13 @@ void animate_info_mode() {
 	if (dash->info_mode == 3 && currentinfomode == 2) {
 		
 		if (infoanimationreverse == false) {
-			render_texture(tex("tyretop.bmp"), 0-info_animation_count, 176, 510, 97);
-			render_texture(tex("tyrebottom.bmp"), 0-info_animation_count, 273, 454, 125);
+			render_texture(tex("tyretop.png"), 0-info_animation_count, 176, 510, 97);
+			render_texture(tex("tyrebottom.png"), 0-info_animation_count, 273, 454, 125);
 		}
 
 		if (infoanimationreverse == true) {
-			render_texture(tex("Navbg.bmp"), 0 - info_animation_count, 158, 434, 268);
-			//render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Navbg.png"), 0 - info_animation_count, 158, 434, 268);
+			//render_texture(tex("Infobottomdiag.png"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -1393,13 +1395,13 @@ void animate_info_mode() {
 	if (dash->info_mode == 3 && currentinfomode == 1) {
 		
 		if (infoanimationreverse == false) {
-			render_texture(tex("Infotopdiag.bmp"), 0 - info_animation_count, 176, 510, 97);
-			render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Infotopdiag.png"), 0 - info_animation_count, 176, 510, 97);
+			render_texture(tex("Infobottomdiag.png"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (infoanimationreverse == true) {
-			render_texture(tex("Navbg.bmp"), 0 - info_animation_count, 158, 434, 268);
-			//render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Navbg.png"), 0 - info_animation_count, 158, 434, 268);
+			//render_texture(tex("Infobottomdiag.png"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -1413,17 +1415,17 @@ void animate_info_mode() {
 		
 		if (infoanimationreverse == false) {
 			if (dash->using_km) {
-				render_texture(tex("InfotopKM.bmp"), 0 - info_animation_count, 176, 510, 97);
+				render_texture(tex("InfotopKM.png"), 0 - info_animation_count, 176, 510, 97);
 			} else {
-				render_texture(tex("Infotop.bmp"), 0 - info_animation_count, 176, 510, 97);	
+				render_texture(tex("Infotop.png"), 0 - info_animation_count, 176, 510, 97);	
 			}
 			
-			render_texture(tex("Infobottom.bmp"), 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Infobottom.png"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (infoanimationreverse == true) {
-			render_texture(tex("Navbg.bmp"), 0 - info_animation_count, 158, 434, 268);
-			//render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Navbg.png"), 0 - info_animation_count, 158, 434, 268);
+			//render_texture(tex("Infobottomdiag.png"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -1436,13 +1438,13 @@ void animate_info_mode() {
 	if (dash->info_mode == 2 && currentinfomode == 1) {
 		
 		if (infoanimationreverse == false) {
-			render_texture(tex("Infotopdiag.bmp"), 0 - info_animation_count, 176, 510, 97);
-			render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Infotopdiag.png"), 0 - info_animation_count, 176, 510, 97);
+			render_texture(tex("Infobottomdiag.png"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (infoanimationreverse == true) {
-			render_texture(tex("tyretop.bmp"), 0-info_animation_count, 176, 510, 97);
-			render_texture(tex("tyrebottom.bmp"), 0-info_animation_count, 273, 454, 125);
+			render_texture(tex("tyretop.png"), 0-info_animation_count, 176, 510, 97);
+			render_texture(tex("tyrebottom.png"), 0-info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -1456,17 +1458,17 @@ void animate_info_mode() {
 		
 		if (infoanimationreverse == false) {
 			if (dash->using_km) {
-				render_texture(tex("InfotopKM.bmp"), 0 - info_animation_count, 176, 510, 97);
+				render_texture(tex("InfotopKM.png"), 0 - info_animation_count, 176, 510, 97);
 			} else {
-				render_texture(tex("Infotop.bmp"), 0 - info_animation_count, 176, 510, 97);	
+				render_texture(tex("Infotop.png"), 0 - info_animation_count, 176, 510, 97);	
 			}
 			
-			render_texture(tex("Infobottom.bmp"), 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Infobottom.png"), 0 - info_animation_count, 273, 454, 125);
 		}
 
 		if (infoanimationreverse == true) {
-			render_texture(tex("Infotopdiag.bmp"), 0-info_animation_count, 176, 510, 97);
-			render_texture(tex("Infobottomdiag.bmp"), 0-info_animation_count, 273, 454, 125);
+			render_texture(tex("Infotopdiag.png"), 0-info_animation_count, 176, 510, 97);
+			render_texture(tex("Infobottomdiag.png"), 0-info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -1478,19 +1480,19 @@ void animate_info_mode() {
 
 	if (dash->info_mode == 0 && currentinfomode == 3) {
 		if (infoanimationreverse == false) {
-			//render_texture(tex("Infotopdiag.bmp"), 0 - info_animation_count, 176, 510, 97);
-			//render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
-			render_texture(tex("Navbg.bmp"), 0 - info_animation_count, 158, 434, 268);
+			//render_texture(tex("Infotopdiag.png"), 0 - info_animation_count, 176, 510, 97);
+			//render_texture(tex("Infobottomdiag.png"), 0 - info_animation_count, 273, 454, 125);
+			render_texture(tex("Navbg.png"), 0 - info_animation_count, 158, 434, 268);
 		}
 
 		if (infoanimationreverse == true) {
 			if (dash->using_km) {
-				render_texture(tex("InfotopKM.bmp"), 0- info_animation_count, 176, 510, 97);
+				render_texture(tex("InfotopKM.png"), 0- info_animation_count, 176, 510, 97);
 			} else {
-				render_texture(tex("Infotop.bmp"), 0- info_animation_count, 176, 510, 97);	
+				render_texture(tex("Infotop.png"), 0- info_animation_count, 176, 510, 97);	
 			}
 			
-			render_texture(tex("Infobottom.bmp"), 0- info_animation_count, 273, 454, 125);
+			render_texture(tex("Infobottom.png"), 0- info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -1504,19 +1506,19 @@ void animate_info_mode() {
 		
 		// This one goes away
 		if (infoanimationreverse == false) {
-			render_texture(tex("tyretop.bmp"), 0-info_animation_count, 176, 510, 97);
-			render_texture(tex("tyrebottom.bmp"), 0-info_animation_count, 273, 454, 125);
+			render_texture(tex("tyretop.png"), 0-info_animation_count, 176, 510, 97);
+			render_texture(tex("tyrebottom.png"), 0-info_animation_count, 273, 454, 125);
 		}
 
 		// This one comes in
 		if (infoanimationreverse == true) {
 			if (dash->using_km) {
-				render_texture(tex("InfotopKM.bmp"), 0- info_animation_count, 176, 510, 97);
+				render_texture(tex("InfotopKM.png"), 0- info_animation_count, 176, 510, 97);
 			} else {
-				render_texture(tex("Infotop.bmp"), 0- info_animation_count, 176, 510, 97);	
+				render_texture(tex("Infotop.png"), 0- info_animation_count, 176, 510, 97);	
 			}
 			
-			render_texture(tex("Infobottom.bmp"), 0- info_animation_count, 273, 454, 125);
+			render_texture(tex("Infobottom.png"), 0- info_animation_count, 273, 454, 125);
 		}
 
 		if (info_animation_count <= 0 && infoanimationreverse == true) {
@@ -1530,19 +1532,22 @@ void animate_info_mode() {
 typedef struct { bool active; const char *badge_bmp; const char *flash_bmp; int fx, fy, fw, fh; } warning_badge;
 
 static warning_badge resolve_warning(void) {
+	if (comms_stale)
+		return (warning_badge){ true, "Commsbadge.png", "Nocomms.png", 222, 236, 160, 105 };
+
 	bool front_tyre_low = tpms->connected && tpms->front.received && tpms->front.psi <= dash->front_pressure_low;
 	bool rear_tyre_low  = tpms->connected && tpms->rear.received  && tpms->rear.psi  <= dash->rear_pressure_low;
 
 	if (front_tyre_low || rear_tyre_low) {
-		const char *detail = front_tyre_low && rear_tyre_low ? "Frontrearlow.bmp" : front_tyre_low ? "Fronttyrelow.bmp" : "Reartyrelow.bmp";
-		return (warning_badge){ true, "Lowtyrebadge.bmp", detail, 168, 244, 257, 76 };
+		const char *detail = front_tyre_low && rear_tyre_low ? "Frontrearlow.png" : front_tyre_low ? "Fronttyrelow.png" : "Reartyrelow.png";
+		return (warning_badge){ true, "Lowtyrebadge.png", detail, 168, 244, 257, 76 };
 	}
 	if (dash->oil_warning && enginerunning)
-		return (warning_badge){ true, "Lowoilbadge.bmp", "Lowoil.bmp", 222, 236, 134, 105 };
+		return (warning_badge){ true, "Lowoilbadge.png", "Lowoil.png", 222, 236, 134, 105 };
 	if (overheatwarning && enginerunning)
-		return (warning_badge){ true, "Overheatbadge.bmp", "Engineoverheat.bmp", 189, 237, 212, 95 };
+		return (warning_badge){ true, "Overheatbadge.png", "Engineoverheat.png", 189, 237, 212, 95 };
 	if (fuelwarning && enginerunning && dash->info_mode != 3)
-		return (warning_badge){ true, "Fuelwarningbadge.bmp", "Lowfuel.bmp", 222, 236, 134, 105 };
+		return (warning_badge){ true, "Fuelwarningbadge.png", "Lowfuel.png", 222, 236, 134, 105 };
 	return (warning_badge){ false, nullptr, nullptr, 0, 0, 0, 0 };
 }
 
@@ -1568,7 +1573,7 @@ void draw_dashboard () {
 
 
 	// Rev counter rev line texture
-	SDL_RenderTexture(renderer, tex("Revline.bmp"), nullptr, &grevline);
+	SDL_RenderTexture(renderer, tex("Revline.png"), nullptr, &grevline);
 
 	target_rpm_rotation = get_rpm_rotation (dash->rpm);
 	if (target_rpm_rotation > current_rpm_rotation) {
@@ -1584,54 +1589,54 @@ void draw_dashboard () {
 	}
 
 	// White rev counter cover to reveal the rev line
-	SDL_RenderTextureRotated(renderer, tex("Whitesq.bmp"), nullptr, &grrevwhite, current_rpm_rotation , &gwhitepoint, SDL_FLIP_NONE);
+	SDL_RenderTextureRotated(renderer, tex("Whitesq.png"), nullptr, &grrevwhite, current_rpm_rotation , &gwhitepoint, SDL_FLIP_NONE);
 
 	// Top grey icons
 	render_top_icon_grey_texture (0, 0, 627, 138);
-	render_texture (tex("Topiconedge1.bmp"), 625, 0, 98, 75);
-	render_texture (tex("Topiconedge2.bmp"), 721, 0, 84, 24);
+	render_texture (tex("Topiconedge1.png"), 625, 0, 98, 75);
+	render_texture (tex("Topiconedge2.png"), 721, 0, 84, 24);
 
 	// Trip 1 and 2 and Odometer, Ambient Temp and Time section
-	render_texture (tex("Mileinfo.bmp"), 0, 434, 435, 169);
+	render_texture (tex("Mileinfo.png"), 0, 434, 435, 169);
 
 	// Fuel Gauge
 	if (fuelwarning == true && enginerunning == true) {
 		if (flash) 
 		{
-			render_texture (tex("Fuelgauge.bmp"), 676, 294, 316, 44);
-			render_texture (tex("Fuelgaugewhite.bmp"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(dash->fuel_float)), 303, 274, 28);
+			render_texture (tex("Fuelgauge.png"), 676, 294, 316, 44);
+			render_texture (tex("Fuelgaugewhite.png"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(dash->fuel_float)), 303, 274, 28);
 		}
 	} else {
-		render_texture (tex("Fuelgauge.bmp"), 676, 294, 316, 44);
-		render_texture (tex("Fuelgaugewhite.bmp"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(dash->fuel_float)), 303, 274, 28);
+		render_texture (tex("Fuelgauge.png"), 676, 294, 316, 44);
+		render_texture (tex("Fuelgaugewhite.png"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(dash->fuel_float)), 303, 274, 28);
 	}
 	// Coolant Temp
 	if (overheatwarning == true && enginerunning == true) {
 		if (flash) {
 			if (dash->using_fh) {
-				render_texture (tex("CoolantF.bmp"), 808, 196, 209, 80);
+				render_texture (tex("CoolantF.png"), 808, 196, 209, 80);
 			} else {
-				render_texture (tex("Coolant.bmp"), 808, 196, 209, 80);	
+				render_texture (tex("Coolant.png"), 808, 196, 209, 80);	
 			}	
 		}
 	} else {
 		if (dash->using_fh) {
-			render_texture (tex("CoolantF.bmp"), 808, 196, 209, 80);
+			render_texture (tex("CoolantF.png"), 808, 196, 209, 80);
 		} else {
-			render_texture (tex("Coolant.bmp"), 808, 196, 209, 80);	
+			render_texture (tex("Coolant.png"), 808, 196, 209, 80);	
 		}
 	}
 
-	render_texture (tex("Coolanticon.bmp"), 772, 221, 41, 39);
+	render_texture (tex("Coolanticon.png"), 772, 221, 41, 39);
 
 	// Top light icons (Neutral, Oil, Indicator, High beam)
 
 	if (dash->neutral) {
-		render_texture (tex("Neutrallight.bmp"), 0, 0, 130, 136);
+		render_texture (tex("Neutrallight.png"), 0, 0, 130, 136);
 	}
 
 	if (!dash->neutral && dash->current_gear != 0) {
-		render_texture (tex("Gear.bmp"), 0, 0, 131, 136);
+		render_texture (tex("Gear.png"), 0, 0, 131, 136);
 		draw_large_num (dash->current_gear, 30, 22);
 	}
 
@@ -1640,51 +1645,51 @@ void draw_dashboard () {
 	}
 
 	if (dash->indicate_right && !dash->indicate_left) {
-		render_texture (tex("Indicateright.bmp"), 267, 0, 135, 136);
+		render_texture (tex("Indicateright.png"), 267, 0, 135, 136);
 	}
 
 	if (dash->indicate_left && !dash->indicate_right) {
-		render_texture (tex("Indicateleft.bmp"), 267, 0, 135, 136);		
+		render_texture (tex("Indicateleft.png"), 267, 0, 135, 136);		
 	}
 
 	if (dash->indicate_left && dash->indicate_right) {
-		render_texture (tex("Indicateboth.bmp"), 267, 0, 135, 136);			
+		render_texture (tex("Indicateboth.png"), 267, 0, 135, 136);			
 	}
 
 	if (dash->high_beam) {
-		render_texture (tex("Highbeamlight.bmp"), 404, 0, 133, 136);
+		render_texture (tex("Highbeamlight.png"), 404, 0, 133, 136);
 	}
 
 	// Middle info section (Tank Range, MPG, etc..)
 	if (dash->info_mode == 0 && !warningbadgeactive) {
 		if (info_animation_in_progress == false) {
 			if (dash->using_km) {
-				render_texture(tex("InfotopKM.bmp"), 0, 176, 510, 97);
+				render_texture(tex("InfotopKM.png"), 0, 176, 510, 97);
 			} else {
-				render_texture(tex("Infotop.bmp"), 0, 176, 510, 97);	
+				render_texture(tex("Infotop.png"), 0, 176, 510, 97);	
 			}
 			
-			render_texture(tex("Infobottom.bmp"), 0, 273, 454, 125);
+			render_texture(tex("Infobottom.png"), 0, 273, 454, 125);
 		} 
 	}
 
 	if (dash->info_mode == 1 && !warningbadgeactive) {
 		if (info_animation_in_progress == false) {
-			render_texture(tex("Infotopdiag.bmp"), 0, 176, 510, 97);
-			render_texture(tex("Infobottomdiag.bmp"), 0, 273, 454, 125);
+			render_texture(tex("Infotopdiag.png"), 0, 176, 510, 97);
+			render_texture(tex("Infobottomdiag.png"), 0, 273, 454, 125);
 		} 
 	}
 
 	if (dash->info_mode == 2 && !warningbadgeactive) {
 		if (info_animation_in_progress == false) {
-			render_texture(tex("tyretop.bmp"), 0, 176, 510, 97);
-			render_texture(tex("tyrebottom.bmp"), 0, 273, 454, 125);
+			render_texture(tex("tyretop.png"), 0, 176, 510, 97);
+			render_texture(tex("tyrebottom.png"), 0, 273, 454, 125);
 		} 
 	}
 
 	if (dash->info_mode == 3 && !warningbadgeactive) {
 		if (info_animation_in_progress == false) {			
-			render_texture(tex("Navbg.bmp"), 0, 158, 434, 268);
+			render_texture(tex("Navbg.png"), 0, 158, 434, 268);
 		} 
 	}
 
@@ -1700,9 +1705,9 @@ void draw_dashboard () {
 
 	/*
 	if (dash->info_mode == 2) { // Low Fuel
-		render_texture (tex("Fuelwarningbadge.bmp"), 0, 163, 444, 249);
+		render_texture (tex("Fuelwarningbadge.png"), 0, 163, 444, 249);
 		if (dash->neutral) {
-			render_texture (tex("Lowfuel.bmp"), 222, 236, 134, 105);
+			render_texture (tex("Lowfuel.png"), 222, 236, 134, 105);
 		}
 	}
 	*/
@@ -1714,34 +1719,34 @@ void draw_dashboard () {
 		warningbadgeactive = w.active;
 		if (w.active) {
 			render_texture(tex(w.badge_bmp), 0, 163, 444, 249);
-			if (flash) render_texture(tex(w.flash_bmp), w.fx, w.fy, w.fw, w.fh);
+			if (flash && w.flash_bmp) render_texture(tex(w.flash_bmp), w.fx, w.fy, w.fw, w.fh);
 		}
 	}
 
 	// Units - either MPH or KM
 	if (dash->using_km == 1) {
-		render_texture (tex("kph.bmp"), 844, 553, 179, 44);
-		render_texture (tex("km.bmp"), 350, 448, 57, 18);
+		render_texture (tex("kph.png"), 844, 553, 179, 44);
+		render_texture (tex("km.png"), 350, 448, 57, 18);
 	} else {
-		render_texture (tex("mph.bmp"), 844, 553, 142, 45);
-		render_texture (tex("Miles.bmp"), 350, 448, 57, 18);	
+		render_texture (tex("mph.png"), 844, 553, 142, 45);
+		render_texture (tex("Miles.png"), 350, 448, 57, 18);	
 	}
 	
 
 	// Rev counter numbers
-	SDL_RenderTexture(renderer, tex("R12-13.bmp"), nullptr, &rect_g1213);
-	SDL_RenderTexture(renderer, tex("R11.bmp"), nullptr, &rect_g11);
-	SDL_RenderTexture(renderer, tex("R10.bmp"), nullptr, &rect_g10);
-	SDL_RenderTexture(renderer, tex("R9.bmp"), nullptr, &rect_g9);
-	SDL_RenderTexture(renderer, tex("R8.bmp"), nullptr, &rect_g8);
-	SDL_RenderTexture(renderer, tex("R7.bmp"), nullptr, &rect_g7);
-	SDL_RenderTexture(renderer, tex("R6.bmp"), nullptr, &rect_g6);
-	SDL_RenderTexture(renderer, tex("R5.bmp"), nullptr, &rect_g5);
-	SDL_RenderTexture(renderer, tex("R4.bmp"), nullptr, &rect_g4);
-	SDL_RenderTexture(renderer, tex("R3.bmp"), nullptr, &rectg3);
-	SDL_RenderTexture(renderer, tex("R2.bmp"), nullptr, &rectg2);
-	SDL_RenderTexture(renderer, tex("R1.bmp"), nullptr, &rectg1);
-	SDL_RenderTexture(renderer, tex("R0.bmp"), nullptr, &rectg0);
+	SDL_RenderTexture(renderer, tex("R12-13.png"), nullptr, &rect_g1213);
+	SDL_RenderTexture(renderer, tex("R11.png"), nullptr, &rect_g11);
+	SDL_RenderTexture(renderer, tex("R10.png"), nullptr, &rect_g10);
+	SDL_RenderTexture(renderer, tex("R9.png"), nullptr, &rect_g9);
+	SDL_RenderTexture(renderer, tex("R8.png"), nullptr, &rect_g8);
+	SDL_RenderTexture(renderer, tex("R7.png"), nullptr, &rect_g7);
+	SDL_RenderTexture(renderer, tex("R6.png"), nullptr, &rect_g6);
+	SDL_RenderTexture(renderer, tex("R5.png"), nullptr, &rect_g5);
+	SDL_RenderTexture(renderer, tex("R4.png"), nullptr, &rect_g4);
+	SDL_RenderTexture(renderer, tex("R3.png"), nullptr, &rectg3);
+	SDL_RenderTexture(renderer, tex("R2.png"), nullptr, &rectg2);
+	SDL_RenderTexture(renderer, tex("R1.png"), nullptr, &rectg1);
+	SDL_RenderTexture(renderer, tex("R0.png"), nullptr, &rectg0);
 
 	sprintf( str_current_speed, "%d", dash->current_speed);
 	sprintf( str_trip1, "%.1f", dash->trip1);
@@ -1940,12 +1945,12 @@ void draw_dashboard () {
 
 	if (dash->indicate_left && !warningbadgeactive) {		
 		if (dash->info_mode == 0 || dash->info_mode == 1) {
-			render_texture (tex("Indicateleftfar.bmp"), 2, 186, 250, 98);
+			render_texture (tex("Indicateleftfar.png"), 2, 186, 250, 98);
 		}		
 	}
 
 	if (dash->indicate_right && !warningbadgeactive) {		
-		render_texture (tex("Indicaterightfar.bmp"), 802, 192, 209, 84);
+		render_texture (tex("Indicaterightfar.png"), 802, 192, 209, 84);
 	}
 	
 
@@ -1961,11 +1966,11 @@ void draw_dashboard () {
 	}
 
 	if (tpms->connected) {
-		render_texture(tex("tyreicon.bmp"), 630, 553, 22, 45);
+		render_texture(tex("tyreicon.png"), 630, 553, 22, 45);
 	}
 
 	if (tpms->connected && tpms->signal_active) {
-		render_texture(tex("tyresignal.bmp"), 653, 559, 33, 34);
+		render_texture(tex("tyresignal.png"), 653, 559, 33, 34);
 	}
 
 	SDL_RenderPresent(renderer);
@@ -2008,7 +2013,7 @@ int main(int argc, char* args[]) {
 	//std::thread t1(thread_worker, "hello");
 	SDL_HideCursor();
 	
-	sensor_feed *feed = sensor_feed_create(NULL);
+	feed = sensor_feed_create(NULL);
 	sensor_feed_start(feed);
 	dash = sensor_feed_dashboard(feed);
 	menu = sensor_feed_menu(feed);
@@ -2177,6 +2182,8 @@ int main(int argc, char* args[]) {
 			enginerunning = false;
 		}
 
+		int ms_since = sensor_feed_ms_since_update(feed);
+		comms_stale = (ms_since > 1000) || (ms_since == -1);
 
 		SDL_Delay(5);
 

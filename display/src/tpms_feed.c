@@ -5,7 +5,6 @@
 #define _GNU_SOURCE
 #include "tpms_feed.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -33,12 +32,14 @@ struct tpms_feed {
     tpms_model model;
     int front_sensor_id;
     int rear_sensor_id;
-    const char *path;           /* NULL = search defaults */
+    char path[256];             /* empty = search defaults */
     int fd;
     bool running;
     pthread_t thread;
     tpms_state state;
 };
+
+static tpms_feed instance;
 
 /* ── Frame decoding (pure functions) ── */
 
@@ -160,7 +161,7 @@ static int try_connect(tpms_feed *feed, const char *path) {
 }
 
 static int connect_feed(tpms_feed *feed) {
-    if (feed->path) return try_connect(feed, feed->path);
+    if (feed->path[0]) return try_connect(feed, feed->path);
     for (int i = 0; DEFAULT_PATHS[i]; i++) {
         if (try_connect(feed, DEFAULT_PATHS[i]) == 0) return 0;
     }
@@ -270,12 +271,12 @@ static void *poll_thread(void *arg) {
 /* ── Public API ── */
 
 tpms_feed *tpms_feed_create(tpms_model model, int front_sensor_id, int rear_sensor_id, const char *path) {
-    tpms_feed *feed = calloc(1, sizeof(tpms_feed));
-    if (!feed) return NULL;
+    tpms_feed *feed = &instance;
+    memset(feed, 0, sizeof(*feed));
     feed->model = model;
     feed->front_sensor_id = front_sensor_id;
     feed->rear_sensor_id = rear_sensor_id;
-    feed->path = path;
+    if (path) snprintf(feed->path, sizeof(feed->path), "%s", path);
     feed->fd = -1;
     return feed;
 }
@@ -283,7 +284,6 @@ tpms_feed *tpms_feed_create(tpms_model model, int front_sensor_id, int rear_sens
 void tpms_feed_destroy(tpms_feed *feed) {
     if (!feed) return;
     tpms_feed_stop(feed);
-    free(feed);
 }
 
 void tpms_feed_start(tpms_feed *feed) {

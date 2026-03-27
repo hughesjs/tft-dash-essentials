@@ -17,7 +17,6 @@
 #include "parser.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -52,7 +51,7 @@ struct sensor_feed {
     int fd;
     bool connected;
     bool is_pipe;           /* true if connected to a pipe (skip termios) */
-    char *path;             /* configured path (NULL = search defaults) */
+    char path[256];         /* configured path, or empty = search defaults */
 
     /* Thread control */
     bool running;
@@ -63,6 +62,8 @@ struct sensor_feed {
     char frame_buf[FRAME_BUF_SIZE];
     int frame_pos;
 };
+
+static sensor_feed instance;
 
 /* --- Static helpers --- */
 
@@ -130,7 +131,7 @@ static int connect_feed(sensor_feed *feed) {
     feed->connected = false;
     feed->fd = -1;
 
-    if (feed->path) {
+    if (feed->path[0]) {
         return try_connect(feed, feed->path);
     }
 
@@ -229,21 +230,17 @@ static void *poll_thread(void *arg) {
 /* --- Public API --- */
 
 sensor_feed *sensor_feed_create(const char *path) {
-    sensor_feed *feed = calloc(1, sizeof(sensor_feed));
-    if (!feed) return NULL;
-
+    sensor_feed *feed = &instance;
+    memset(feed, 0, sizeof(*feed));
     feed->fd = -1;
-    feed->path = path ? strdup(path) : NULL;
+    if (path) snprintf(feed->path, sizeof(feed->path), "%s", path);
 
     return feed;
 }
 
 void sensor_feed_destroy(sensor_feed *feed) {
     if (!feed) return;
-
     sensor_feed_stop(feed);
-    free(feed->path);
-    free(feed);
 }
 
 void sensor_feed_start(sensor_feed *feed) {

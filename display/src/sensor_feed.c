@@ -156,17 +156,25 @@ static void process_frame(sensor_feed *feed) {
             /* If nav string present, parse it too */
             if (strlen(state.nav_string) > 0) {
                 nav_state ns = {0};
-                if (parse_nav_message(state.nav_string, &ns)) {
+                if (!parse_nav_message(state.nav_string, &ns)) {
+                    fprintf(stderr, "sensor_feed: nav parse failed: %.50s\n", state.nav_string);
+                } else {
                     feed->nav = ns;
                 }
             }
+        } else {
+            fprintf(stderr, "sensor_feed: live parse failed (len=%zu): %.50s\n", len, buf);
         }
     } else if (buf[0] == '[' && len > 78 && len < 150) {
         /* Menu data message */
         menu_state state = {0};
-        if (parse_menu_message(buf + 1, &state)) {
+        if (!parse_menu_message(buf + 1, &state)) {
+            fprintf(stderr, "sensor_feed: menu parse failed (len=%zu): %.50s\n", len, buf);
+        } else {
             feed->menu = state;
         }
+    } else if (buf[0] == '{' || buf[0] == '[') {
+        fprintf(stderr, "sensor_feed: frame rejected (marker='%c', len=%zu)\n", buf[0], len);
     }
 }
 

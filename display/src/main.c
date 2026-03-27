@@ -928,14 +928,14 @@ void draw_medium_char(char digit, int xpos, int ypos) {
 
 void draw_nav_numbers (int num, int xpos, int ypos) {
 	char sz_digit[5];
-	memset (sz_digit, 0, 5);
-	sprintf (sz_digit, "%d", num);
-
+	snprintf(sz_digit, sizeof(sz_digit), "%d", num);
 	draw_nav_digits (sz_digit, xpos, ypos);
 }
 
 void draw_nav_symbol (nav_icon sym, int xpos, int ypos)
 {
+	if (sym < 0 || sym >= NAV_ICON_COUNT) return;
+
 	SDL_FRect g_src_rect;
 	g_src_rect.x = g_nav_icons_src_tex_loc[0][sym];
 	g_src_rect.y = g_nav_icons_src_tex_loc[1][sym];
@@ -953,17 +953,13 @@ void draw_nav_symbol (nav_icon sym, int xpos, int ypos)
 
 void draw_medium_num (int singledigit, int xpos, int ypos) {
 	char sz_digit[4];
-	memset (sz_digit, 0, 4);
-	sprintf (sz_digit, "%d", singledigit);
-
+	snprintf(sz_digit, sizeof(sz_digit), "%d", singledigit);
 	draw_medium_string (sz_digit, xpos, ypos);
 }
 
 void draw_large_num (int singledigit, int xpos, int ypos) {
 	char sz_digit[4];
-	memset (sz_digit, 0, 4);
-	sprintf (sz_digit, "%d", singledigit);
-
+	snprintf(sz_digit, sizeof(sz_digit), "%d", singledigit);
 	draw_large_string (sz_digit, xpos, ypos);
 }
 
@@ -1025,7 +1021,7 @@ void thread_worker(char* msg) {
 		SDL_Delay(1000);
 		i++;
 		fprintf(stderr, "Thread is running"); 
-		sprintf(g_sz_comms_msg, "Thread count is: %d", i);
+		snprintf(g_sz_comms_msg, sizeof(g_sz_comms_msg), "Thread count is: %d", i);
 	}
 }*/
 
@@ -1142,9 +1138,9 @@ void draw_menu (int state) {
 	}
 	case MENU_SCREEN_SPEED_CORRECTION: {
 		strcpy(str_spc_digit0, menu->spc_digit0 == 0 ? "-" : "+");
-		sprintf(str_spc_digit1, "%d", menu->spc_digit1);
-		sprintf(str_spc_digit2, "%d", menu->spc_digit2);
-		sprintf(str_spc_digit3, "%d", menu->spc_digit3);
+		snprintf(str_spc_digit1, sizeof(str_spc_digit1), "%d", menu->spc_digit1);
+		snprintf(str_spc_digit2, sizeof(str_spc_digit2), "%d", menu->spc_digit2);
+		snprintf(str_spc_digit3, sizeof(str_spc_digit3), "%d", menu->spc_digit3);
 		draw_medium_string(str_spc_digit0, 294, 282);
 		draw_medium_string(str_spc_digit1, 408, 277);
 		draw_medium_string(str_spc_digit2, 516, 277);
@@ -1152,10 +1148,10 @@ void draw_menu (int state) {
 		break;
 	}
 	case MENU_SCREEN_TPMS: {
-		sprintf(str_front_sensor_id, "%d", dash->front_sensor_id);
-		sprintf(str_rear_sensor_id, "%d", dash->rear_sensor_id);
-		sprintf(str_front_pressure_low, "%d", dash->front_pressure_low);
-		sprintf(str_rear_pressure_low, "%d", dash->rear_pressure_low);
+		snprintf(str_front_sensor_id, sizeof(str_front_sensor_id), "%d", dash->front_sensor_id);
+		snprintf(str_rear_sensor_id, sizeof(str_rear_sensor_id), "%d", dash->rear_sensor_id);
+		snprintf(str_front_pressure_low, sizeof(str_front_pressure_low), "%d", dash->front_pressure_low);
+		snprintf(str_rear_pressure_low, sizeof(str_rear_pressure_low), "%d", dash->rear_pressure_low);
 		draw_medium_string(str_front_sensor_id, 527, 170);
 		draw_medium_string(str_rear_sensor_id, 832, 170);
 		draw_medium_string(str_front_pressure_low, 830, 288);
@@ -1167,8 +1163,8 @@ void draw_menu (int state) {
 		break;
 
 	case MENU_SCREEN_LIGHT: {
-		sprintf(str_light_switch_value, "%d", menu->light_switch_value);
-		sprintf(str_current_light_level, "%d", menu->current_light_level);
+		snprintf(str_light_switch_value, sizeof(str_light_switch_value), "%d", menu->light_switch_value);
+		snprintf(str_current_light_level, sizeof(str_current_light_level), "%d", menu->current_light_level);
 		draw_medium_string(str_light_switch_value, 625, 477);
 		draw_medium_string(str_current_light_level, 625, 396);
 		const theme_thumb *day = menu_theme_thumb(menu->day_theme);
@@ -1184,10 +1180,10 @@ void draw_menu (int state) {
 		break;
 
 	case MENU_SCREEN_SET_TIME: {
-		sprintf(str_set_time_digit0, "%d", menu->set_time_digit0);
-		sprintf(str_set_time_digit1, "%d", menu->set_time_digit1);
-		sprintf(str_set_time_digit2, "%d", menu->set_time_digit2);
-		sprintf(str_set_time_digit3, "%d", menu->set_time_digit3);
+		snprintf(str_set_time_digit0, sizeof(str_set_time_digit0), "%d", menu->set_time_digit0);
+		snprintf(str_set_time_digit1, sizeof(str_set_time_digit1), "%d", menu->set_time_digit1);
+		snprintf(str_set_time_digit2, sizeof(str_set_time_digit2), "%d", menu->set_time_digit2);
+		snprintf(str_set_time_digit3, sizeof(str_set_time_digit3), "%d", menu->set_time_digit3);
 		draw_medium_string(str_set_time_digit0, 300, 277);
 		draw_medium_string(str_set_time_digit1, 408, 277);
 		draw_medium_string(str_set_time_digit2, 583, 277);
@@ -1748,67 +1744,67 @@ void draw_dashboard () {
 	SDL_RenderTexture(renderer, tex("R1.png"), nullptr, &rectg1);
 	SDL_RenderTexture(renderer, tex("R0.png"), nullptr, &rectg0);
 
-	sprintf( str_current_speed, "%d", dash->current_speed);
-	sprintf( str_trip1, "%.1f", dash->trip1);
-	sprintf( str_trip2, "%.1f", dash->trip2);
-	sprintf( str_odo, "%.0f", dash->odo);
+	snprintf( str_current_speed, sizeof(str_current_speed), "%d", dash->current_speed);
+	snprintf( str_trip1, sizeof(str_trip1), "%.1f", dash->trip1);
+	snprintf( str_trip2, sizeof(str_trip2), "%.1f", dash->trip2);
+	snprintf( str_odo, sizeof(str_odo), "%.0f", dash->odo);
 
 	if (dash->using_fh) { // If using fahrenheit
 		tempf = ((double)dash->ambient_temp*1.8) + 32;
-		sprintf(str_ambient_temp, "%df", (int)tempf);
+		snprintf(str_ambient_temp, sizeof(str_ambient_temp), "%df", (int)tempf);
 	} else {
-		sprintf(str_ambient_temp, "%dc", dash->ambient_temp);
+		snprintf(str_ambient_temp, sizeof(str_ambient_temp), "%dc", dash->ambient_temp);
 	}
 	
 	if (dash->using_fh) { //If using fahrenheit
 		coolant_temp_f = ((double)dash->coolant_temp*1.8) + 32;
-		sprintf(str_coolant_temp, "%d", (int)coolant_temp_f);
+		snprintf(str_coolant_temp, sizeof(str_coolant_temp), "%d", (int)coolant_temp_f);
 	} else {
-		sprintf(str_coolant_temp, "%d", dash->coolant_temp);
+		snprintf(str_coolant_temp, sizeof(str_coolant_temp), "%d", dash->coolant_temp);
 	}
 	
 	if (dash->using_km) {
 		if (dash->mpg > 0) {
-			sprintf(str_mpg, "%d", (int)((double)282.481 / (double)dash->mpg));	
+			snprintf(str_mpg, sizeof(str_mpg), "%d", (int)((double)282.481 / (double)dash->mpg));
 		} else {
-			sprintf(str_mpg, "%d", dash->mpg);	
+			snprintf(str_mpg, sizeof(str_mpg), "%d", dash->mpg);
 		}
 		
 	} else {
-		sprintf(str_mpg, "%d", dash->mpg);
+		snprintf(str_mpg, sizeof(str_mpg), "%d", dash->mpg);
 	}
 	
 	if (dash->using_km) {
-		sprintf(str_range, "%d", (int)((double)dash->range * 1.609));
+		snprintf(str_range, sizeof(str_range), "%d", (int)((double)dash->range * 1.609));
 	} else {
-		sprintf(str_range, "%d", dash->range);	
+		snprintf(str_range, sizeof(str_range), "%d", dash->range);
 	}
 	
-	sprintf(str_max_speed, "%d", dash->max_speed);
-	sprintf(str_rpm, "%d", dash->rpm);
+	snprintf(str_max_speed, sizeof(str_max_speed), "%d", dash->max_speed);
+	snprintf(str_rpm, sizeof(str_rpm), "%d", dash->rpm);
 	
 	if (dash->oil_pressure_available) {
-		sprintf(str_oil_press, "%.1f", get_precise_bar(dash->oil_pressure_ohms));
-		sprintf(str_oil_temp, "%d", (int)get_precise_temp(dash->oil_temp_ohms));	
+		snprintf(str_oil_press, sizeof(str_oil_press), "%.1f", get_precise_bar(dash->oil_pressure_ohms));
+		snprintf(str_oil_temp, sizeof(str_oil_temp), "%d", (int)get_precise_temp(dash->oil_temp_ohms));
 	}
 
 	if (tpms->front.received) {
-		sprintf(str_sensor2_psi, "%.1f", dash->using_bar ? tpms->front.bar : tpms->front.psi);
+		snprintf(str_sensor2_psi, sizeof(str_sensor2_psi), "%.1f", dash->using_bar ? tpms->front.bar : tpms->front.psi);
 		if (dash->using_fh)
-			sprintf(str_sensor2_temp, "%df", (int)((double)tpms->front.temp_celsius * 1.8 + 32));
+			snprintf(str_sensor2_temp, sizeof(str_sensor2_temp), "%df", (int)((double)tpms->front.temp_celsius * 1.8 + 32));
 		else
-			sprintf(str_sensor2_temp, "%dc", tpms->front.temp_celsius);
+			snprintf(str_sensor2_temp, sizeof(str_sensor2_temp), "%dc", tpms->front.temp_celsius);
 	} else {
 		strcpy(str_sensor2_psi, "..");
 		strcpy(str_sensor2_temp, "..");
 	}
 
 	if (tpms->rear.received) {
-		sprintf(str_sensor4_psi, "%.1f", dash->using_bar ? tpms->rear.bar : tpms->rear.psi);
+		snprintf(str_sensor4_psi, sizeof(str_sensor4_psi), "%.1f", dash->using_bar ? tpms->rear.bar : tpms->rear.psi);
 		if (dash->using_fh)
-			sprintf(str_sensor4_temp, "%df", (int)((double)tpms->rear.temp_celsius * 1.8 + 32));
+			snprintf(str_sensor4_temp, sizeof(str_sensor4_temp), "%df", (int)((double)tpms->rear.temp_celsius * 1.8 + 32));
 		else
-			sprintf(str_sensor4_temp, "%dc", tpms->rear.temp_celsius);
+			snprintf(str_sensor4_temp, sizeof(str_sensor4_temp), "%dc", tpms->rear.temp_celsius);
 	} else {
 		strcpy(str_sensor4_psi, "..");
 		strcpy(str_sensor4_temp, "..");
@@ -1816,13 +1812,13 @@ void draw_dashboard () {
 	
 
 	if (get_litres_remaining(dash->fuel_float) != 0) {
-		sprintf(str_fuel, "%.1f", litres_remaining);
+		snprintf(str_fuel, sizeof(str_fuel), "%.1f", litres_remaining);
 	} else {
 		strcpy (str_fuel, "..");
 	}
 	
-	sprintf(str_batt, "%.1f", dash->batt);
-	sprintf(str_spd_correct, "%.1f", dash->spd_correct);
+	snprintf(str_batt, sizeof(str_batt), "%.1f", dash->batt);
+	snprintf(str_spd_correct, sizeof(str_spd_correct), "%.1f", dash->spd_correct);
 
 
 	// Draw the current speed
@@ -1867,12 +1863,12 @@ void draw_dashboard () {
 
 		if (nav->nav_active == true) {
 			// Format nav distance strings from numeric state
-			sprintf(str_nav_yards, "%d", nav->nav_yards);
-			sprintf(str_nav_miles, "%.1f", nav->nav_miles);
-			sprintf(str_nav_metres, "%d", (int)((double)nav->nav_yards / 1.094));
-			sprintf(str_nav_km, "%.1f", nav->nav_miles * 1.609);
-			sprintf(str_nav_dest_miles, "%.1f", nav->nav_dest_distance);
-			sprintf(str_nav_dest_km, "%.1f", nav->nav_dest_distance * 1.609);
+			snprintf(str_nav_yards, sizeof(str_nav_yards), "%d", nav->nav_yards);
+			snprintf(str_nav_miles, sizeof(str_nav_miles), "%.1f", nav->nav_miles);
+			snprintf(str_nav_metres, sizeof(str_nav_metres), "%d", (int)((double)nav->nav_yards / 1.094));
+			snprintf(str_nav_km, sizeof(str_nav_km), "%.1f", nav->nav_miles * 1.609);
+			snprintf(str_nav_dest_miles, sizeof(str_nav_dest_miles), "%.1f", nav->nav_dest_distance);
+			snprintf(str_nav_dest_km, sizeof(str_nav_dest_km), "%.1f", nav->nav_dest_distance * 1.609);
 
 			if (strlen (nav->nav_road) > 0) {
 				draw_nav_symbol (NAV_ICON_ONTO, 13, 350);

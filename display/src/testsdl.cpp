@@ -87,6 +87,7 @@ NAV TO DO
 // Asset management
 #include "assets.h"
 #include "sensor_feed.h"
+#include "menu.h"
 
 // Read-only pointers to current state — refreshed each frame from sensor_feed
 static const dashboard_state *dash = nullptr;
@@ -1470,563 +1471,128 @@ void draw_menu (int state) {
 	} else {
 		SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
 	}
-
 	SDL_RenderClear(renderer);
 
-	// COOLANT FAN TEMP MENU
-	if (state >= 500 && state < 590) {render_texture (tex("Coolantfantemp.bmp"), 0, 0, 1024, 600);}
+	menu_screen screen = menu_screen_for_state(state);
 
-	if (state >= 500 && state < 590) {
-		if (state == 500) {render_texture (tex("Uparrowsmall.bmp"), 115, 185, 60, 62);}
-		if (state == 510) {render_texture (tex("Uparrowsmall.bmp"), 341, 173, 60, 62);}
-		if (state == 520) {render_texture (tex("Uparrowsmall.bmp"), 625, 173, 60, 62);}
-		if (state == 530) {render_texture (tex("Leftmenuarrowex.bmp"), 667, 300, 56, 50);}
-		if (state == 540) {render_texture (tex("Leftmenuarrowex.bmp"), 667, 378, 56, 50);}
-		if (state == 550) {render_texture (tex("Leftmenuarrowex.bmp"), 667, 454, 56, 50);}
-		if (state == 560) {render_texture (tex("Leftmenuarrowex.bmp"), 667, 532, 56, 50);}
-		//tex("Leftmenuarrowex.bmp")
-
-		if (state == 570) {render_texture (tex("Uparrowsmall.bmp"), 884, 534, 60, 62);}
-
-		draw_medium_num (menu->coolant_fan_temp, 467, 114);
-
-		if (menu->fan_neutral_option == 0) {
-			render_texture (tex("Selecton.bmp"), 741, 306, 55, 38); // Coolant temp fan always on in Neutral
-		}
-
-		if (menu->fan_neutral_option == 1) {
-			render_texture (tex("Selecton.bmp"), 741, 383, 55, 38); // Coolant temp fan on after 1 minute
-		}
-
-		if (menu->fan_neutral_option == 2) {
-			render_texture (tex("Selecton.bmp"), 741, 460, 55, 38); // Coolant temp fan on after 50 degrees engine temp
-		}
-
-		if (menu->fan_neutral_option == 3) {
-			render_texture (tex("Selecton.bmp"), 741, 537, 55, 38); // Coolant temp fan on after throttle blip
-		}
+	// Background texture
+	const menu_bg *bg = menu_screen_background(screen);
+	if (bg && bg->texture) {
+		if (bg->theme_specific) render_texture(tex(bg->texture), 0, 0, 1024, 600);
+		else                    render_texture(tex_from("default", bg->texture), 0, 0, 1024, 600);
 	}
 
-	// SPROCKET SETUP MENU
-	if (state >= 400 && state < 490) {render_texture (tex("Sprocketsetup.bmp"), 0, 0, 1024, 600);}
-	
-	if (state >= 400 && state < 490) {
-		if (state == 400) {render_texture (tex("Uparrowsmall.bmp"), 113, 296, 60, 62);}
-		if (state == 410) {render_texture (tex("Uparrowsmall.bmp"), 286, 300, 60, 62);}
-		if (state == 420) {render_texture (tex("Uparrowsmall.bmp"), 373, 300, 60, 62);}
-		if (state == 430) {render_texture (tex("Uparrowsmall.bmp"), 590, 300, 60, 62);}
-		if (state == 440) {render_texture (tex("Uparrowsmall.bmp"), 678, 300, 60, 62);}
-		if (state == 450) {render_texture (tex("Uparrowsmall.bmp"), 594, 485, 60, 62);}
-		if (state == 460) {render_texture (tex("Uparrowsmall.bmp"), 861, 485, 60, 62);}
-		if (state == 470) {render_texture (tex("Uparrowsmall.bmp"), 848, 300, 60, 62);}
-
-		draw_medium_num (menu->front_sprocket, 332, 127);
-		draw_medium_num (menu->rear_sprocket, 638, 127);
-		draw_medium_num (menu->gear_ratio_interval, 715, 415);
-
+	// Selection cursor (sub-menu arrow)
+	menu_cursor cur;
+	if (menu_cursor_for_state(state, &cur)) {
+		render_texture(tex(cur.texture), cur.x, cur.y, cur.w, cur.h);
 	}
 
-
-	// SET ODOMETER MENU
-	if (state >= 300 && state < 390) {render_texture (tex_from("default", "Setodometer.bmp"), 0, 0, 1024, 600);}
-
-	// Arrow positions for odometer first line
-	if (state == 300) {render_texture (tex("Uparrow.bmp"), 175, 279, 104, 107);}
-	if (state == 305) {render_texture (tex("Uparrow.bmp"), 286, 279, 104, 107);}
-	if (state == 310) {render_texture (tex("Uparrow.bmp"), 399, 279, 104, 107);}
-	if (state == 315) {render_texture (tex("Uparrow.bmp"), 510, 279, 104, 107);}
-	if (state == 320) {render_texture (tex("Uparrow.bmp"), 620, 279, 104, 107);}
-	if (state == 325) {render_texture (tex("Uparrow.bmp"), 733, 279, 104, 107);}
-	// Arrow positions for odometer second line
-	if (state == 330) {render_texture (tex("Uparrow.bmp"), 175, 493, 104, 107);}
-	if (state == 335) {render_texture (tex("Uparrow.bmp"), 286, 493, 104, 107);}
-	if (state == 340) {render_texture (tex("Uparrow.bmp"), 399, 493, 104, 107);}
-	if (state == 345) {render_texture (tex("Uparrow.bmp"), 510, 493, 104, 107);}
-	if (state == 350) {render_texture (tex("Uparrow.bmp"), 620, 493, 104, 107);}
-	if (state == 355) {render_texture (tex("Uparrow.bmp"), 733, 493, 104, 107);}
-	if (state == 360) {render_texture (tex("Uparrow.bmp"), 877, 493, 104, 107);} // Ok button
-
-	// Odo digits
-	if (state >= 300 && state < 390) {
-		int ododigitspacing = 111;
-		draw_medium_num (menu->odo_digit1, 214, 209);
-		draw_medium_num (menu->odo_digit2, 325, 209);
-		draw_medium_num (menu->odo_digit3, 325+(ododigitspacing*1), 209);
-		draw_medium_num (menu->odo_digit4, 325+(ododigitspacing*2), 209);
-		draw_medium_num (menu->odo_digit5, 325+(ododigitspacing*3), 209);
-		draw_medium_num (menu->odo_digit6, 325+(ododigitspacing*4), 209);
-		// Second row dash->odo digits
-		draw_medium_num (menu->odo2_digit1, 214, 415);
-		draw_medium_num (menu->odo2_digit2, 325, 415);
-		draw_medium_num (menu->odo2_digit3, 325+(ododigitspacing*1), 415);
-		draw_medium_num (menu->odo2_digit4, 325+(ododigitspacing*2), 415);
-		draw_medium_num (menu->odo2_digit5, 325+(ododigitspacing*3), 415);
-		draw_medium_num (menu->odo2_digit6, 325+(ododigitspacing*4), 415);	
-	}		
-
-	// If the dash->odo error flag has been set then show the error
-	if (menu->odo_error == 1) {
-		render_texture (tex_from("default", "Odoerror1.bmp"), 130, 524, 758, 45);
-	}
-	if (menu->odo_error == 2) {
-		render_texture (tex_from("default", "Odoerror2.bmp"), 130, 524, 758, 45);	
+	// Main menu left+right bracket arrows
+	menu_cursor left, right;
+	if (menu_main_item_arrows(state, &left, &right)) {
+		render_texture(tex(left.texture), left.x, left.y, left.w, left.h);
+		render_texture(tex(right.texture), right.x, right.y, right.w, right.h);
 	}
 
-	// THEME MENU
-	if (state >= 200 && state < 290) {
-		render_texture (tex_from("default", "Themeoptions.bmp"), 0, 0, 1024, 600);
+	// Theme menu left+right arrows (default theme only)
+	if (menu_theme_arrows(state, &left, &right)) {
+		render_texture(tex_from("default", left.texture), left.x, left.y, left.w, left.h);
+		render_texture(tex_from("default", right.texture), right.x, right.y, right.w, right.h);
 	}
 
-	if (state == 200) { // Default theme 0
-		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 8, 28, 48, 159);
-		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 330, 29, 48, 159);
+	// Screen-specific dynamic content
+	switch (screen) {
+	case MENU_SCREEN_COOLANT_FAN: {
+		draw_medium_num(menu->coolant_fan_temp, 467, 114);
+		static const int fan_option_y[] = { 306, 383, 460, 537 };
+		if (menu->fan_neutral_option >= 0 && menu->fan_neutral_option <= 3)
+			render_texture(tex("Selecton.bmp"), 741, fan_option_y[menu->fan_neutral_option], 55, 38);
+		break;
 	}
-	if (state == 210) { // theme 1
-		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 330, 28, 48, 159);
-		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 652, 29, 48, 159);		
-	}
-	if (state == 220) { // theme 2
-		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 660, 28, 48, 159);
-		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 982, 29, 48, 159);		
-	}
-	if (state == 230) { // theme 3
-		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 3, 221, 48, 159);
-		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 325, 221, 48, 159);		
-	}
-	if (state == 240) { // theme 4
-		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 331, 221, 48, 159);
-		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 653, 221, 48, 159);		
-	}
-	if (state == 250) { // theme 5
-		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 661, 221, 48, 159);
-		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 983, 221, 48, 159);		
-	}
-	if (state == 260) { // theme 6
-		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 8, 423, 48, 159);
-		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 330, 423, 48, 159);		
-	}
+	case MENU_SCREEN_SPROCKET:
+		draw_medium_num(menu->front_sprocket, 332, 127);
+		draw_medium_num(menu->rear_sprocket, 638, 127);
+		draw_medium_num(menu->gear_ratio_interval, 715, 415);
+		break;
 
-	if (state == 270) { // theme 7
-		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 328, 423, 48, 159);
-		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 650, 423, 48, 159);		
+	case MENU_SCREEN_SET_ODOMETER: {
+		int sp = 111;
+		draw_medium_num(menu->odo_digit1, 214, 209);
+		draw_medium_num(menu->odo_digit2, 325, 209);
+		draw_medium_num(menu->odo_digit3, 325 + sp * 1, 209);
+		draw_medium_num(menu->odo_digit4, 325 + sp * 2, 209);
+		draw_medium_num(menu->odo_digit5, 325 + sp * 3, 209);
+		draw_medium_num(menu->odo_digit6, 325 + sp * 4, 209);
+		draw_medium_num(menu->odo2_digit1, 214, 415);
+		draw_medium_num(menu->odo2_digit2, 325, 415);
+		draw_medium_num(menu->odo2_digit3, 325 + sp * 1, 415);
+		draw_medium_num(menu->odo2_digit4, 325 + sp * 2, 415);
+		draw_medium_num(menu->odo2_digit5, 325 + sp * 3, 415);
+		draw_medium_num(menu->odo2_digit6, 325 + sp * 4, 415);
+		if (menu->odo_error == 1) render_texture(tex_from("default", "Odoerror1.bmp"), 130, 524, 758, 45);
+		if (menu->odo_error == 2) render_texture(tex_from("default", "Odoerror2.bmp"), 130, 524, 758, 45);
+		break;
 	}
-
-	if (state == 280) { // theme 8
-		render_texture (tex_from("default", "Arrowlefttheme.bmp"), 653, 423, 48, 159);
-		render_texture (tex_from("default", "Arrowrighttheme.bmp"), 982, 423, 48, 159);		
-	}
-
-
-	// SPEED CORRECTION MENU
-	if (state >= 100 && state < 170) {
-		render_texture (tex("Speedcorrection.bmp"), 0, 0, 1024, 600);
-
-		if (menu->spc_digit0 == 0) {
-			strcpy (str_spc_digit0, "-");
-		}
-
-		if (menu->spc_digit0 == 1) {
-			strcpy (str_spc_digit0, "+");
-		}
-
+	case MENU_SCREEN_SPEED_CORRECTION: {
+		strcpy(str_spc_digit0, menu->spc_digit0 == 0 ? "-" : "+");
 		sprintf(str_spc_digit1, "%d", menu->spc_digit1);
 		sprintf(str_spc_digit2, "%d", menu->spc_digit2);
 		sprintf(str_spc_digit3, "%d", menu->spc_digit3);
-
-		draw_medium_string (str_spc_digit0, 294, 282);
-		draw_medium_string (str_spc_digit1, 408, 277);
-		draw_medium_string (str_spc_digit2, 516, 277);
-		draw_medium_string (str_spc_digit3, 693, 277);
+		draw_medium_string(str_spc_digit0, 294, 282);
+		draw_medium_string(str_spc_digit1, 408, 277);
+		draw_medium_string(str_spc_digit2, 516, 277);
+		draw_medium_string(str_spc_digit3, 693, 277);
+		break;
 	}
-
-	if (state == 100) { // Speed correction cancel
-		render_texture (tex("Uparrow.bmp"), 83, 352, 104, 107);
-	}
-
-	if (state == 110) { // Speed correction digit 1
-		render_texture (tex("Uparrow.bmp"), 262, 352, 104, 107);
-	}
-
-	if (state == 120) { // Speed correction digit 2
-		render_texture (tex("Uparrow.bmp"), 372, 352, 104, 107);
-	}
-
-	if (state == 130) { // Speed correction digit 3
-		render_texture (tex("Uparrow.bmp"), 477, 352, 104, 107);
-	}
-
-	if (state == 140) { // Speed correction digit 4
-		render_texture (tex("Uparrow.bmp"), 657, 352, 104, 107);
-	}
-
-	if (state == 150) { // Speed correction ok
-		render_texture (tex("Uparrow.bmp"), 824, 352, 104, 107);
-	}
-
-	// SET TPMS MENU
-	if (state >= 700 && state < 790) { // Set TPMS menu options
-
-		render_texture (tex("TPMSsetup.bmp"), 0, 0, 1024, 600);
-		
+	case MENU_SCREEN_TPMS: {
 		sprintf(str_front_sensor_id, "%d", dash->front_sensor_id);
 		sprintf(str_rear_sensor_id, "%d", dash->rear_sensor_id);
 		sprintf(str_front_pressure_low, "%d", dash->front_pressure_low);
 		sprintf(str_rear_pressure_low, "%d", dash->rear_pressure_low);
-
-		draw_medium_string (str_front_sensor_id, 527, 170);
-		draw_medium_string (str_rear_sensor_id, 832, 170);
-		draw_medium_string (str_front_pressure_low, 830, 288);
-		draw_medium_string (str_rear_pressure_low, 830, 405);
-
-		if (state == 700) { // TPMS menu cancel
-			render_texture (tex("Uparrowsmall.bmp"), 65, 182, 60, 62);
-		}				
-
-		if (state == 705) { // Front sensor +
-			render_texture (tex("Uparrowsmall.bmp"), 420, 220, 60, 62);
-		}
-
-		if (state == 710) { // Front sensor -
-			render_texture (tex("Uparrowsmall.bmp"), 610, 220, 60, 62);
-		}
-
-		if (state == 715) { // Rear sensor +
-			render_texture (tex("Uparrowsmall.bmp"), 726, 220, 60, 62);
-		}
-
-		if (state == 720) { // Rear sensor -
-			render_texture (tex("Uparrowsmall.bmp"), 917, 220, 60, 62);
-		}
-
-		if (state == 725) { // Front pressure warning +
-			render_texture (tex("Uparrowsmall.bmp"), 727, 337, 60, 62);
-		}
-
-		if (state == 730) { // Front pressure warning -
-			render_texture (tex("Uparrowsmall.bmp"), 918, 337, 60, 62);
-		}
-
-		if (state == 735) { // Rear pressure warning  +
-			render_texture (tex("Uparrowsmall.bmp"), 728, 456, 60, 62);
-		}
-
-		if (state == 740) { // Rear pressure warning -
-			render_texture (tex("Uparrowsmall.bmp"), 918, 456, 60, 62);
-		}
-
-		if (state == 745) { // TPMS setup OK
-			render_texture (tex("Uparrowsmall.bmp"), 65, 528, 60, 62);
-		}
+		draw_medium_string(str_front_sensor_id, 527, 170);
+		draw_medium_string(str_rear_sensor_id, 832, 170);
+		draw_medium_string(str_front_pressure_low, 830, 288);
+		draw_medium_string(str_rear_pressure_low, 830, 405);
+		break;
 	}
+	case MENU_SCREEN_CONTROL:
+		render_texture(tex("Selectedcontrol.bmp"), menu->control_layout == 0 ? 230 : 555, 195, 236, 30);
+		break;
 
-	// SET CONTROL MENU
-	if (state >= 800 && state < 830) { // Set control options
-		render_texture (tex("Controloptions.bmp"), 0, 0, 1024, 600);	
-
-		if (menu->control_layout == 0) {
-			render_texture (tex("Selectedcontrol.bmp"), 230, 195, 236, 30);
-		}
-
-		if (menu->control_layout == 1) {
-			render_texture (tex("Selectedcontrol.bmp"), 555, 195, 236, 30);
-		}
-
-		if (state == 800) { // Control cancel
-			render_texture (tex("Uparrowsmall.bmp"), 69, 363, 60, 62);
-		}
-
-		if (state == 805) { // Control layout 1
-			render_texture (tex("Uparrowsmall.bmp"), 316, 394, 60, 62);
-		}
-
-		if (state == 810) { // Control layout 2
-			render_texture (tex("Uparrowsmall.bmp"), 648, 394, 60, 62);
-		}
-
-		if (state == 815) { // OK
-			render_texture (tex("Uparrowsmall.bmp"), 890, 363, 60, 62);
-		}
-	}
-
-
-	// LIGHT SETUP MENU
-	if (state >= 900 && state < 950) { // Set light options		
-		render_texture (tex("Lightoptions.bmp"), 0, 0, 1024, 600);	
-
+	case MENU_SCREEN_LIGHT: {
 		sprintf(str_light_switch_value, "%d", menu->light_switch_value);
 		sprintf(str_current_light_level, "%d", menu->current_light_level);
-
-		draw_medium_string (str_light_switch_value, 625, 477);
-		draw_medium_string (str_current_light_level, 625, 396);
-
-		if (menu->day_theme == 0) {
-			render_texture (tex_from("default", "whitethumb.bmp"), 772, 118, 126, 74);
-		}
-
-		if (menu->day_theme == 1) {
-			render_texture (tex_from("green", "greenthumb.bmp"), 772, 118, 126, 74);
-		}
-
-		if (menu->day_theme == 2) {
-			render_texture (tex_from("red", "redthumb.bmp"), 772, 118, 126, 74);
-		}
-
-		if (menu->day_theme == 3) {
-			render_texture (tex_from("blue", "bluethumb.bmp"), 772, 118, 126, 74);
-		}
-
-		if (menu->day_theme == 4) {
-			render_texture (tex_from("orange", "orangethumb.bmp"), 772, 118, 126, 74);
-		}
-
-		if (menu->day_theme == 5) {
-			render_texture (tex_from("yellow", "yellowthumb.bmp"), 772, 118, 126, 74);
-		}
-
-		if (menu->day_theme == 6) {
-			render_texture (tex_from("night", "nightthumb.bmp"), 772, 118, 126, 74);
-		}
-
-		if (menu->day_theme == 7) {
-			render_texture (tex_from("bright", "brightthumb.bmp"), 772, 118, 126, 74);
-		}
-
-		if (menu->day_theme == 8) {
-			render_texture (tex_from("dark", "darkthumb.bmp"), 772, 118, 126, 74);
-		}
-
-		if (menu->night_theme == 0) {
-			render_texture (tex_from("default", "whitethumb.bmp"), 772, 236, 126, 74);
-		}
-
-		if (menu->night_theme == 1) {
-			render_texture (tex_from("green", "greenthumb.bmp"), 772, 236, 126, 74);
-		}
-
-		if (menu->night_theme == 2) {
-			render_texture (tex_from("red", "redthumb.bmp"), 772, 236, 126, 74);
-		}
-
-		if (menu->night_theme == 3) {
-			render_texture (tex_from("blue", "bluethumb.bmp"), 772, 236, 126, 74);
-		}
-
-		if (menu->night_theme == 4) {
-			render_texture (tex_from("orange", "orangethumb.bmp"), 772, 236, 126, 74);
-		}
-
-		if (menu->night_theme == 5) {
-			render_texture (tex_from("yellow", "yellowthumb.bmp"), 772, 236, 126, 74);
-		}
-
-		if (menu->night_theme == 6) {
-			render_texture (tex_from("night", "nightthumb.bmp"), 772, 236, 126, 74);
-		}
-
-		if (menu->night_theme == 7) {
-			render_texture (tex_from("bright", "brightthumb.bmp"), 772, 236, 126, 74);
-		}
-
-		if (menu->night_theme == 8) {
-			render_texture (tex_from("dark", "darkthumb.bmp"), 772, 236, 126, 74);
-		}
-
-
-		if (state == 900) {
-			render_texture (tex("Uparrowsmall.bmp"), 66, 207, 60, 62);
-		}
-
-		if (state == 905) {
-			render_texture (tex("Uparrowsmall.bmp"), 708, 183, 60, 62);
-		}
-
-		if (state == 910) {
-			render_texture (tex("Uparrowsmall.bmp"), 899, 183, 60, 62);
-		}
-
-		if (state == 915) {
-			render_texture (tex("Uparrowsmall.bmp"), 708, 302, 60, 62);
-		}
-
-		if (state == 920) {
-			render_texture (tex("Uparrowsmall.bmp"), 898, 302, 60, 62);
-		}
-
-		if (state == 925) {
-			render_texture (tex("Uparrowsmall.bmp"), 531, 529, 60, 62);
-		}
-
-		if (state == 930) {
-			render_texture (tex("Uparrowsmall.bmp"), 722, 529, 60, 62);
-		}
-
-		if (state == 935) {
-			render_texture (tex("Uparrowsmall.bmp"), 890, 529, 60, 62);
-		}		
+		draw_medium_string(str_light_switch_value, 625, 477);
+		draw_medium_string(str_current_light_level, 625, 396);
+		const theme_thumb *day = menu_theme_thumb(menu->day_theme);
+		if (day) render_texture(tex_from(day->theme_name, day->thumb_file), 772, 118, 126, 74);
+		const theme_thumb *night = menu_theme_thumb(menu->night_theme);
+		if (night) render_texture(tex_from(night->theme_name, night->thumb_file), 772, 236, 126, 74);
+		break;
 	}
+	case MENU_SCREEN_SET_UNITS:
+		render_texture(tex("Selecton.bmp"), dash->using_km  ? 894 : 784, 101, 55, 38);
+		render_texture(tex("Selecton.bmp"), dash->using_fh  ? 894 : 784, 262, 55, 38);
+		render_texture(tex("Selecton.bmp"), dash->using_bar ? 894 : 784, 423, 55, 38);
+		break;
 
-	// SET UNITS MENU
-	if (state >= 600 && state < 690) { // Set units options
-		render_texture (tex("Setunits.bmp"), 0, 0, 1024, 600);	
-
-		if (dash->using_km) {
-			render_texture (tex("Selecton.bmp"), 894, 101, 55, 38);
-		} else {
-			render_texture (tex("Selecton.bmp"), 784, 101, 55, 38);
-		}
-
-		if (dash->using_fh) {
-			render_texture (tex("Selecton.bmp"), 894, 262, 55, 38);
-		} else {	
-			render_texture (tex("Selecton.bmp"), 784, 262, 55, 38);
-		}
-
-		if (dash->using_bar) {
-			render_texture (tex("Selecton.bmp"), 894, 423, 55, 38);
-		} else {
-			render_texture (tex("Selecton.bmp"), 784, 423, 55, 38);
-		}
-		
-
-		if (state == 600) { // Set units cancel
-			render_texture (tex("Uparrowsmall.bmp"), 34, 197, 60, 62);
-		}
-
-		if (state == 605) { // Set units digit 1
-			render_texture (tex("Uparrowsmall.bmp"), 780, 154, 60, 62);
-		}
-
-		if (state == 610) { // Set units digit 2
-			render_texture (tex("Uparrowsmall.bmp"), 891, 154, 60, 62);
-		}
-
-		if (state == 615) { // Set units digit 3
-			render_texture (tex("Uparrowsmall.bmp"), 780, 314, 60, 62); 
-		}
-
-		if (state == 620) { // Set units digit 4
-			render_texture (tex("Uparrowsmall.bmp"), 891, 314, 60, 62);
-		}
-
-		if (state == 625) { // Set units ok
-			render_texture (tex("Uparrowsmall.bmp"), 780, 475, 60, 62);
-		}
-
-		if (state == 630) { // Set units ok
-			render_texture (tex("Uparrowsmall.bmp"), 891, 475, 60, 62);
-		}
-
-		if (state == 635) { // Set units ok
-			render_texture (tex("Uparrowsmall.bmp"), 35, 539, 60, 62);
-		}
-	}
-
-	//SET TIME MENU
-	if (state >= 20 && state < 90) { // Set time options
-		render_texture (tex("Settime.bmp"), 0, 0, 1024, 600);	
-
+	case MENU_SCREEN_SET_TIME: {
 		sprintf(str_set_time_digit0, "%d", menu->set_time_digit0);
 		sprintf(str_set_time_digit1, "%d", menu->set_time_digit1);
 		sprintf(str_set_time_digit2, "%d", menu->set_time_digit2);
 		sprintf(str_set_time_digit3, "%d", menu->set_time_digit3);
-
-		draw_medium_string (str_set_time_digit0, 300, 277);
-		draw_medium_string (str_set_time_digit1, 408, 277);
-		draw_medium_string (str_set_time_digit2, 583, 277);
-		draw_medium_string (str_set_time_digit3, 693, 277);
+		draw_medium_string(str_set_time_digit0, 300, 277);
+		draw_medium_string(str_set_time_digit1, 408, 277);
+		draw_medium_string(str_set_time_digit2, 583, 277);
+		draw_medium_string(str_set_time_digit3, 693, 277);
+		break;
 	}
-
-	if (state == 20) { // Set time cancel
-		render_texture (tex("Uparrow.bmp"), 92, 355, 104, 107);
+	case MENU_SCREEN_MAIN:
+	case MENU_SCREEN_THEME:
+	case MENU_SCREEN_NONE:
+		break;
 	}
-
-	if (state == 30) { // Set time digit 1
-		render_texture (tex("Uparrow.bmp"), 262, 355, 104, 107);
-	}
-
-	if (state == 40) { // Set time digit 2
-		render_texture (tex("Uparrow.bmp"), 371, 355, 104, 107);
-	}
-
-	if (state == 50) { // Set time digit 3
-		render_texture (tex("Uparrow.bmp"), 545, 355, 104, 107);
-	}
-
-	if (state == 60) { // Set time digit 4
-		render_texture (tex("Uparrow.bmp"), 657, 355, 104, 107);
-	}
-
-	if (state == 70) { // Set time ok
-		render_texture (tex("Uparrow.bmp"), 824, 355, 104, 107);
-	}
-
-	//MAIN MENU
-	if (state > 0 && state < 20) {
-		render_texture (tex("Menuoptionsex.bmp"), 0, 0, 1024, 600);	
-	}
-
-	int yarrowoffset = 51;
-	if (state == 1) { // Reset trip 1
-		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94, 56, 50);
-		render_texture (tex("Rightmenuarrowex.bmp"), 465, 94, 56, 50);
-	}
-
-	if (state == 2) { // Reset trip 2
-		render_texture (tex("Leftmenuarrowex.bmp"), 505, 94, 56, 50);
-		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94, 56, 50);
-	}
-
-	if (state == 3) { // Control setup
-		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset), 56, 50);
-		render_texture (tex("Rightmenuarrowex.bmp"), 465, 94+(yarrowoffset), 56, 50);
-	}
-
-	if (state == 4) { // Set units
-		render_texture (tex("Leftmenuarrowex.bmp"), 505, 94+(yarrowoffset), 56, 50);
-		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset), 56, 50);
-	}
-
-	if (state == 5) { // Set time
-		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*2), 56, 50);
-		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*2), 56, 50);
-	}
-
-	//if (state == 6) { // Accel timer - skipping this feature for the July August 2020 update due to time constraints
-		//render_texture (tex("Leftmenuarrowex.bmp"), 505, 94+(yarrowoffset*2), 56, 50);
-		//render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*2), 56, 50);
-	//}
-
-	if (state == 6) { // Ambient light setup
-		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*3), 56, 50);
-		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*3), 56, 50);
-	}
-
-	if (state == 7) { // Speed correction menu
-		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*4), 56, 50);
-		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*4), 56, 50);
-	}
-
-	if (state == 8) { // Set theme
-		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*5), 56, 50);
-		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*5), 56, 50);
-	}
-
-	if (state == 9) { // Gear indicator setup
-		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*6), 56, 50);
-		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*6), 56, 50);
-	}
-
-	if (state == 10) { // Coolant fan setup
-		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*7), 56, 50);
-		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*7), 56, 50);
-	}
-
-	if (state == 11) { // TPMS Setup
-		render_texture (tex("Leftmenuarrowex.bmp"), 77, 94+(yarrowoffset*8), 56, 50);
-		render_texture (tex("Rightmenuarrowex.bmp"), 897, 94+(yarrowoffset*8), 56, 50);
-	}
-
-
 
 	SDL_RenderPresent(renderer);
 }

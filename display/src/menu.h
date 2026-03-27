@@ -43,6 +43,9 @@ bool menu_cursor_for_state(int state, menu_cursor *out);
 /* Main menu items (state 1-11) have left+right arrows. */
 bool menu_main_item_arrows(int state, menu_cursor *left, menu_cursor *right);
 
+/* Theme menu items (state 200-280) have left+right arrows (default theme only). */
+bool menu_theme_arrows(int state, menu_cursor *left, menu_cursor *right);
+
 /* Theme thumbnail lookup by theme ID (0-8). Returns NULL for out-of-range. */
 typedef struct { const char *theme_name; const char *thumb_file; } theme_thumb;
 const theme_thumb *menu_theme_thumb(int theme_id);

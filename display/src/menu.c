@@ -227,6 +227,42 @@ bool menu_main_item_arrows(int state, menu_cursor *left, menu_cursor *right) {
     return false;
 }
 
+/* ---------- Theme menu arrows (state 200-280) ---------- */
+
+static const main_arrow_entry theme_arrows[] = {
+    { 200,   8,  28, 330,  29 },  /* Default theme 0 */
+    { 210, 330,  28, 652,  29 },  /* Theme 1 */
+    { 220, 660,  28, 982,  29 },  /* Theme 2 */
+    { 230,   3, 221, 325, 221 },  /* Theme 3 */
+    { 240, 331, 221, 653, 221 },  /* Theme 4 */
+    { 250, 661, 221, 983, 221 },  /* Theme 5 */
+    { 260,   8, 423, 330, 423 },  /* Theme 6 */
+    { 270, 328, 423, 650, 423 },  /* Theme 7 */
+    { 280, 653, 423, 982, 423 },  /* Theme 8 */
+};
+
+#define THEME_ARROW_COUNT (sizeof(theme_arrows) / sizeof(theme_arrows[0]))
+
+bool menu_theme_arrows(int state, menu_cursor *left, menu_cursor *right) {
+    if (!left || !right) return false;
+    for (size_t i = 0; i < THEME_ARROW_COUNT; i++) {
+        if (theme_arrows[i].state == state) {
+            left->texture  = "Arrowlefttheme.bmp";
+            left->x  = theme_arrows[i].lx;
+            left->y  = theme_arrows[i].ly;
+            left->w  = 48;
+            left->h  = 159;
+            right->texture = "Arrowrighttheme.bmp";
+            right->x = theme_arrows[i].rx;
+            right->y = theme_arrows[i].ry;
+            right->w = 48;
+            right->h = 159;
+            return true;
+        }
+    }
+    return false;
+}
+
 /* ---------- Theme thumbnails ---------- */
 
 static const theme_thumb theme_thumbs[] = {

@@ -16,8 +16,8 @@ TFTDASH_INSTALL_DIR = $(TARGET_DIR)/home/pi/tftdash
 
 define TFTDASH_INSTALL_TARGET_CMDS
 	# Install pre-built binary
-	$(INSTALL) -D -m 0755 $(TFTDASH_SITE)/zig-out/bin/testsdl \
-		$(TFTDASH_INSTALL_DIR)/testsdl
+	$(INSTALL) -D -m 0755 $(TFTDASH_SITE)/zig-out/bin/dashboard \
+		$(TFTDASH_INSTALL_DIR)/dashboard
 
 	# Install theme assets (new directory layout)
 	mkdir -p $(TFTDASH_INSTALL_DIR)/assets/themes

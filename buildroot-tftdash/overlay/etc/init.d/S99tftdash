@@ -9,12 +9,12 @@ case "$1" in
 	start)
 		printf "Starting TFT Dash: "
 		cd "$TFTDASH_DIR"
-		./testsdl 2>&1 &
+		./dashboard 2>&1 &
 		echo "OK"
 		;;
 	stop)
 		printf "Stopping TFT Dash: "
-		killall testsdl 2>/dev/null
+		killall dashboard 2>/dev/null
 		echo "OK"
 		;;
 	restart)

@@ -117,7 +117,7 @@ buildroot-tftdash/
 
 This uses Buildroot's [BR2_EXTERNAL](https://buildroot.org/downloads/manual/manual.html#outside-br-custom) mechanism. Our custom configs, packages, and overlays live in this directory while Buildroot itself is a separate checkout. The `build.sh` script ties them together.
 
-The Zig cross-compiler builds the `testsdl` binary separately. The Buildroot package recipe (`tftdash.mk`) just copies the pre-built binary and BMP assets into the image — it doesn't compile anything.
+The Zig cross-compiler builds the `dashboard` binary separately. The Buildroot package recipe (`tftdash.mk`) just copies the pre-built binary and BMP assets into the image — it doesn't compile anything.
 
 ## Boot sequence
 

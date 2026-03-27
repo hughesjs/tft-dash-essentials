@@ -95,7 +95,7 @@ fi
 # --- Stop the dashboard ---
 
 log "Stopping dashboard..."
-killall testsdl 2>/dev/null || true
+killall dashboard 2>/dev/null || true
 sleep 1
 
 # --- Write image to standby partition ---

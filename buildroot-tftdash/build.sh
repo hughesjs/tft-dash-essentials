@@ -48,7 +48,7 @@ cross_compile() {
     zig build "-Dtarget=aarch64-linux-gnu.${glibc_ver}" -Doptimize=ReleaseSafe
     cd "$SCRIPT_DIR"
 
-    local bin="$DISPLAY_DIR/zig-out/bin/testsdl"
+    local bin="$DISPLAY_DIR/zig-out/bin/dashboard"
     if [ ! -f "$bin" ]; then
         echo "ERROR: Build produced no binary at $bin"
         exit 1

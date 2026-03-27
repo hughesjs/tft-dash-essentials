@@ -16,8 +16,8 @@ pub fn build(b: *std.Build) void {
     const sdl_lib = sdl.artifact("SDL3");
 
     // --- Main dashboard executable ---
-    const testsdl = b.addExecutable(.{
-        .name = "testsdl",
+    const dashboard = b.addExecutable(.{
+        .name = "dashboard",
         .root_module = b.createModule(.{
             .target = target,
             .optimize = optimize,
@@ -25,16 +25,16 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
-    testsdl.root_module.addCSourceFiles(.{
-        .files = &.{ "src/testsdl.c", "src/parser.c", "src/assets.c", "src/sensor_feed.c", "src/menu.c", "src/tpms_feed.c" },
+    dashboard.root_module.addCSourceFiles(.{
+        .files = &.{ "src/main.c", "src/parser.c", "src/assets.c", "src/sensor_feed.c", "src/menu.c", "src/tpms_feed.c" },
         .flags = &.{"-std=c23"},
     });
 
-    testsdl.root_module.addIncludePath(b.path("src"));
-    testsdl.linkLibrary(sdl_lib);
-    testsdl.root_module.linkSystemLibrary("pthread", .{});
+    dashboard.root_module.addIncludePath(b.path("src"));
+    dashboard.linkLibrary(sdl_lib);
+    dashboard.root_module.linkSystemLibrary("pthread", .{});
 
-    b.installArtifact(testsdl);
+    b.installArtifact(dashboard);
 
     // Copy assets alongside the binary
     b.installDirectory(.{
@@ -187,7 +187,7 @@ pub fn build(b: *std.Build) void {
         test_step.dependOn(&run_tpms_feed_tests.step);
 
         // 'zig build run' step - builds and runs the dashboard
-        const run_dash = b.addRunArtifact(testsdl);
+        const run_dash = b.addRunArtifact(dashboard);
         run_dash.setCwd(b.path("zig-out/bin"));
         if (b.args) |args| {
             run_dash.addArgs(args);

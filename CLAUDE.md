@@ -76,31 +76,26 @@ The firmware outputs two types of comma-delimited messages continuously:
 
 The display's `pollInterface()` thread reads serial data byte-by-byte, frames messages by looking for `{` or `[` start markers, then calls `UnpackMessage()` or `UnpackMenuMessage()` to parse fields by splitting on commas.
 
-### Display Application (`testsdl.cpp`)
-Single ~6000 line file with this structure:
+### Display Application (`main.c` + modules)
+Pure C23 codebase. The main file (~2200 lines) contains the render loop and drawing helpers. Subsystems are extracted into modules:
 
-- **Global state** (lines 1-700): All dashboard state as global variables - speed, RPM, temps, indicators, theme, menu state, TPMS sensor data
-- **Sprite/bitmap rendering helpers** (lines 700-3000): Functions to render numbers, gauges, indicators, and navigation icons using BMP sprite sheets
-- **`UnpackMenuMessage()` / `UnpackMessage()`** (lines 3007-3500): Deserialise the comma-delimited serial strings into global state variables
-- **`connectInterface()` / `pollInterface()`** (lines 3524-3696): Serial port connection (tries `/dev/ttyACM0`, `/dev/ttyACM1` on Linux; `cu.usbserial-*`, `cu.usbmodem*` on macOS) and background read thread
-- **TPMS interface** (lines 3698-3950): Separate serial connection and polling thread for tyre pressure monitoring sensors (supports two TPMS hardware models: `STANDARDTPMS` and `EBAYTPMS`)
-- **`Drawmenu()`** (line 4234): Renders on-screen menu system for settings (trip reset, units, time, theme, sprocket ratio, coolant fan temp, TPMS, odometer)
-- **`Drawdashboard()`** (line 5137): Main rendering - speed, RPM bar, coolant, fuel gauge, indicators, warnings, info panels, navigation overlay
-- **`main()`** (line 5746): Initialises SDL, spawns serial polling threads, loads themed BMP surfaces, runs the main event/render loop
+- **`parser.h/c`** — Serial message deserialisation with data-driven field descriptor tables
+- **`assets.h/c`** — Themed BMP texture loading with two-key hash map lookup
+- **`sensor_feed.h/c`** — Owns serial/pipe connection and background thread for firmware data
+- **`menu.h/c`** — Menu screen routing, cursor positions, and theme thumbnail lookup tables
+- **`tpms_feed.h/c`** — TPMS serial connection and binary protocol decoding (Standard + eBay)
 
 ### Threading Model
-The display uses pthreads with three threads:
-1. **Main thread**: SDL event loop + rendering
-2. **`pollInterface` thread**: Reads firmware serial data and updates global state
-3. **`pollTPMSInterface`/`pollTPMSInterface2` thread**: Reads TPMS serial data
-
-Global variables are shared between threads without explicit synchronisation.
+Three pthreads:
+1. **Main thread**: SDL event loop + rendering (reads const pointers)
+2. **`sensor_feed` thread**: Reads firmware serial data, writes internal state
+3. **`tpms_feed` thread**: Reads TPMS serial data, writes internal state
 
 ### Theming
-The display supports multiple colour themes (default/white, green, red, blue, orange, yellow, night, high-contrast). Each theme has a complete set of BMP sprite files prefixed with the theme name (e.g. `blue-Coolant.bmp`). Theme is selected via the on-screen menu and stored in EEPROM on the firmware side.
+9 colour themes (default/white, green, red, blue, orange, yellow, night, bright, dark). Each theme has its own directory under `assets/themes/`. All themes loaded into the asset store at startup. Textures retrieved via `tex("Name.bmp")` or `tex_from("theme", "Name.bmp")`.
 
 ### BMP Assets
-All graphical assets are BMP files that must be in the same directory as the `testsdl` binary. They are loaded as SDL surfaces and converted to textures at startup via `loadsurfaces()`.
+All graphical assets are BMP files in `assets/themes/<theme>/`. Loaded at startup via `asset_store_load_theme()` into a hash map.
 
 ## Key Constants
 - Screen resolution: 1024x600

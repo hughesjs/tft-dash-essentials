@@ -1,7 +1,7 @@
 /*
  * menu.c - Menu system data tables for TFT Dash
  *
- * All data extracted from draw_menu() in testsdl.cpp.
+ * All data extracted from draw_menu() in main.c.
  */
 
 #include "menu.h"

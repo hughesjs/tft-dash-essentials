@@ -43,7 +43,7 @@ Each theme directory contains bitmap assets for:
 2. Copy BMP files from an existing theme
 3. Modify colours/contrast as needed
 4. Create a thumbnail: `{theme_name}thumb.bmp` inside the theme directory
-5. Update `testsdl.cpp` to add theme selection logic
+5. Update `main.c` to add theme selection logic
 
 ## File Format
 
@@ -61,23 +61,17 @@ Theme is controlled by:
 
 ## Loading Mechanism
 
-Assets are loaded at runtime via `SDL_LoadBMP()` in `testsdl.cpp`:
+Assets are loaded at startup via `asset_store_load_theme()` into a hash map. Textures are retrieved by name:
 
 ```c
-SDL_Surface *surface = Loadsurface(existing, "filename.bmp", "blue");
-// Loads: assets/themes/blue/filename.bmp
-```
-
-Thumbnails are loaded with their theme name:
-```c
-SDL_Surface *thumb = Loadsurface(existing, "bluethumb.bmp", "blue");
-// Loads: assets/themes/blue/bluethumb.bmp
+tex("Coolant.bmp")                          // current theme
+tex_from("blue", "bluethumb.bmp")           // specific theme
 ```
 
 ## Deployment
 
 When deploying to Raspberry Pi, ensure:
-- `testsdl` binary and `assets/` directory are in the same location
+- `dashboard` binary and `assets/` directory are in the same location
 - Relative path `assets/themes/` must be accessible from working directory
 - All BMP files have correct permissions (readable)
 

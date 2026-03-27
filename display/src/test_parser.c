@@ -156,7 +156,7 @@ void test_null_safety() {
 /* Test: Real-world message from comments */
 void test_real_world_message() {
     dashboard_state state = {0};
-    /* From testsdl.cpp comment: "S,079,12500,100,12.5,14:23,477,0,0,0,0,0,200,E" */
+    /* From main.c comment: "S,079,12500,100,12.5,14:23,477,0,0,0,0,0,200,E" */
     const char* msg = ",079,12500,100,12.5,14,23,477,0,0,0,0,0,200,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,";
 
     ASSERT_TRUE(parse_live_message(msg, &state));

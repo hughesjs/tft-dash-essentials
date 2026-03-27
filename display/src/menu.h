@@ -1,7 +1,7 @@
 /*
  * menu.h - Menu system data tables for TFT Dash
  *
- * Pure data lookup tables extracted from draw_menu() in testsdl.c.
+ * Pure data lookup tables extracted from draw_menu() in main.c.
  * No SDL dependency — suitable for unit testing.
  */
 

@@ -52,7 +52,7 @@ Red - 360, 96 from Night
 //29/10/2019 - Introduced Far hazard left & right for additional indicators on far left & right of screen (Suggested by George)
 //29/10/2019 - Added a degrees C to ambient temp readout
 //28/02/2020 - Includes changes to include a fix for the odometer reading
-//28/02/2020 - Poll interface no longer checks for an Ending E for the message, now just checks the length is within a good range
+//28/02/2020 - Poll interface no longer checks for an Ending E for the message, now just checks the length is within a good dash->range
 //28/02/2020 - Changed Get Litres remaining to not show .. as much and account for a value greater than 5 volts.
 //28/02/2020 - Changed the trip time to display 0:00 when under 10 minutes trip time as it looked wrong
 //30/04/2020 - Custom changes made to read Oil Pressure and Oil Temperature for a customer with Oil gauges installed
@@ -73,13 +73,12 @@ NAV TO DO
 #include <SDL3/SDL_main.h>
 #include <stdio.h>
 #include <pthread.h>
-#include <fstream>
 #include <string.h>
 
 // Linux headers
 #include <fcntl.h> // Contains file controls like O_RDWR
-#include <errno.h> // Error integer and strerror() function
-#include <termios.h> // Contains POSIX terminal control definitions
+#include <termios.h>
+#include <errno.h>
 #include <unistd.h> // write(), read(), close()
 
 // Parser module
@@ -87,6 +86,12 @@ NAV TO DO
 
 // Asset management
 #include "assets.h"
+#include "sensor_feed.h"
+
+// Read-only pointers to current state — refreshed each frame from sensor_feed
+static const dashboard_state *dash = nullptr;
+static const menu_state *menu = nullptr;
+static const nav_state *nav = nullptr;
 
 asset_store* g_assets = nullptr;
 const char*  g_current_theme = "default";
@@ -366,63 +371,17 @@ SDL_FRect spd_digit_two;
 SDL_FRect spd_digit_three;
 
 
-char g_sz_comms_msg[1024];
-int serial_port;
-pthread_t tid[2];
-
 // Bike specific values
 int spin_angle = 0; // revline reveal
 int test_counter = 0; // Number to use for test scenarios
 
 int tpms_model = EBAYTPMS; // Standard version I recommend or EBAYTPMS
 
-
-/*
-	RPM		Spinangle
-	0		6
-	500		
-*/
-
-
-// Core values
-int current_speed = 68;
-double trip1 = 1234.2;
-double trip2 = 3456.4;
-double odo = 23456;
-int coolant_temp = 56;
+// Display-side derived state
 double coolant_temp_f = 0;
-int mpg = 10;
-int range = 100;
-int max_speed = 40;
-int trip_time_hour = 0;
-int trip_time_min = 0;
-int using_km = 0;
-int driving_left = 1;
-int using_fh = 0;
-int using_bar = 0;
-int rpm = 5000;
-double batt = 12.5;
-double spd_correct = 0;
 int fuel_percent = 47;
-int fuel_float = 0;
-int ambient_temp = 21;
-double tempf = 0;
-bool neutral = false;
-bool oil_warning = false;
-bool indicate_left = false;
-bool indicate_right = false;
-bool high_beam = false;
-int info_mode = 0;
-int theme = 0; // The theme set in the arduino
-int current_gear = 0;
 double litres_remaining = 0;
-int control_layout = 0;
-int day_theme = 0;
-int night_theme = 0;
-int light_switch_value = 0;
-int current_light_level = 0;
-int fan_neutral_option = 0;
-int gear_ratio_interval = 0;
+double tempf = 0;
 
 
 bool front_tyre_warning_triggered = false;
@@ -459,11 +418,7 @@ int g_sensor2_state = 0;
 int g_sensor3_state = 0;
 int g_sensor4_state = 0;
 
-// TPMS configurable values
-int front_sensor_id = 1;
-int rear_sensor_id = 3;
-int front_pressure_low = -1;
-int rear_pressure_low = -1;
+// TPMS display strings (formatted from sensor_feed state)
 char str_front_sensor_id[16];
 char str_rear_sensor_id[16];
 char str_front_pressure_low[16];
@@ -476,13 +431,13 @@ char str_sensor4_psi[16];
 char str_sensor2_temp[16];
 char str_sensor4_temp[16];
 
+// Display format buffers (sprintf'd each frame from struct data)
 char str_coolant_temp[16];
 char str_current_speed[16];
 char str_trip1[16];
 char str_trip2[16];
 char str_odo[16];
 char str_time[16];
-char str_nav[255];
 char str_mpg[16];
 char str_rpm[16];
 char str_fuel[16];
@@ -496,23 +451,13 @@ char str_oil_press[16];
 char str_oil_temp[16];
 char str_light_switch_value[16];
 char str_current_light_level[16];
-
-char str_nav_symbol[16];
-char str_nav_road[255];
-char str_nav_towards[255];
-char str_nav_exit[16];
 char str_nav_yards[16];
 char str_nav_miles[16];
+char str_nav_metres[16];
+char str_nav_km[16];
 char str_nav_dest_miles[16];
 char str_nav_dest_km[16];
 
-char str_nav_metres[16];
-char str_nav_km[16];
-
-int nav_yards = 0;
-double nav_miles = 0;
-bool nav_active = false;
-double nav_dest_distance = 0;
 
 bool fuelwarning = false;
 bool overheatwarning = false;
@@ -541,56 +486,15 @@ int info_animation_count = 0;
 bool infoanimationreverse = false;
 int currentinfomode = 0;
 
-int front_sprocket = 16;
-int rear_sprocket = 44;
-int coolant_fan_temp = 100;
-
-// This bit is emulating the button presses from the arduino
-// To control menu states
-int choice_state = 0; // Set to -1 for production
-
-// Set time digits
-int settimedigit0 = 0;
-int settimedigit1 = 0;
-int settimedigit2 = 0;
-int settimedigit3 = 0;
-
+// Display format strings (built each frame from struct data)
 char str_set_time_digit0[16];
 char str_set_time_digit1[16];
 char str_set_time_digit2[16];
 char str_set_time_digit3[16];
-
-// Speed correction digits
-int spcdigit0 = 0;
-int spcdigit1 = 0;
-int spcdigit2 = 0;
-int spcdigit3 = 0;
-
 char str_spc_digit0[16];
 char str_spc_digit1[16];
 char str_spc_digit2[16];
 char str_spc_digit3[16];
-
-// Odometer digits
-int ododigit1 = 0;
-int ododigit2 = 0;
-int ododigit3 = 0;
-int ododigit4 = 0;
-int ododigit5 = 0;
-int ododigit6 = 0;
-
-int odo2digit1 = 0;
-int odo2digit2 = 0;
-int odo2digit3 = 0;
-int odo2digit4 = 0;
-int odo2digit5 = 0;
-int odo2digit6 = 0;
-int odoerror = 0;
-
-// Oil pressure values
-bool oil_pressure_available = false;
-int oil_pressure_ohms = 0;
-int oil_temp_ohms = 0;
 
 int barohms[11];
 int tempnum[6];
@@ -622,362 +526,12 @@ int cycle_digit (int value, int max) {
 	return value;
 }
 
-void choice() { // Pressed the choice button
+// choice() and select() removed — menu state is now read-only via sensor_feed.
+// On real hardware, the firmware handles button presses. On the simulator, the GUI does.
 
-	if (choice_state >= 0 && choice_state < 20) { // Main menu
-		choice_state++;	
-	}
-	
-	if (choice_state > 12 && choice_state < 20) { // Main menu return
-		choice_state = 0;
-	}
-
-	// Set time menu
-	if (choice_state >= 20 && choice_state < 90) { // Set time menu
-		choice_state+=10;
-	}
-
-	if (choice_state > 70 && choice_state < 90) { // Set time menu recycle
-		choice_state = 20;
-	}
-
-	// Speed correction menu
-	if (choice_state >= 100 && choice_state < 160) { // Speed correction menu
-		choice_state+=10;
-	}
-
-	if (choice_state > 150 && choice_state < 170) { // Speed correction recycle
-		choice_state = 100;
-	}
-
-
-	if (choice_state >= 200 && choice_state < 290) { // Theme menu
-		choice_state+=10;
-	}
-
-	if (choice_state > 260 && choice_state < 290) { // Theme recycle
-		choice_state = 200;
-	}
-
-	if (choice_state >= 300 && choice_state < 390) { // Set odometer menu
-		odoerror = 0;
-		choice_state += 5;
-	}
-
-	if (choice_state > 360 && choice_state < 390) { // Set odometer menu recycle
-		choice_state = 300;
-	}
-
-	if (choice_state >= 600 && choice_state < 640) { // Set units menu
-		choice_state += 5;
-	}
-
-	if (choice_state > 635 && choice_state < 690) { // Set units menu recycle
-		choice_state = 600;
-	}
+static bool file_exists(const char *path) {
+	return access(path, F_OK) == 0;
 }
-
-void select() { // Pressed the select button
-
-	if (choice_state == 0) {
-		if (info_mode == 3) {
-			info_mode = 0;
-			return;
-		}
-		
-		if (info_mode == 2) {
-			info_mode = 3;
-			return;
-		}		
-
-		if (info_mode == 1) {
-			info_mode = 2;
-			return;
-		}
-
-		if (info_mode == 0) {
-			info_mode = 1;
-			return;
-		}
-	}
-
-	if (choice_state == 1) {
-		// Reset trip one
-		choice_state = 0;
-		return;
-	}
-
-	if (choice_state == 2) {
-		// Reset trip two
-		choice_state = 0;
-		return;
-	}
-
-
-	if (choice_state == 3) { // Will become set units menu
-		// Toggle miles / km
-		
-		/*
-		if (using_km == 0) {
-			using_km = 1;
-		} else {
-			using_km = 0;
-		}
-		*/
-		choice_state = 600;
-		return;
-	}
-
-	if (choice_state == 605) { // Set units to miles
-		using_km = 0;
-	}
-
-	if (choice_state == 610) { // Set units to km
-		using_km = 1;
-	}
-
-	if (choice_state == 615) { // Set units to celsius
-		using_fh = 0;
-	}	
-
-	if (choice_state == 620) { // Set units to fahrenheit
-		using_fh = 1;
-	}	
-
-	if (choice_state == 625) { // Set units to psi
-		using_bar = 0;
-	}	
-
-	if (choice_state == 630) { // Set units to bar
-		using_bar = 1;
-	}	
-
-	if (choice_state == 4) { // Main menu set time
-		choice_state = 20; // Jump to time menu
-		return;
-	}
-
-	if (choice_state == 5) {
-		choice_state = 100; // Jump to speed correction menu
-		return;
-	}
-
-	if (choice_state == 6) {
-		choice_state = 200; // Jump to theme selection menu
-		return;
-	}
-
-	if (choice_state == 20) { // Set time cancel
-		choice_state = 0;
-		return;
-	}
-
-	if (choice_state == 30) { // Digit 0
-		settimedigit0++;
-		if (settimedigit0 > 2) {
-			settimedigit0 = 0;
-		}
-		return;
-	}
-
-	if (choice_state == 40) { // Set time digit 1
-		settimedigit1++;
-		if (settimedigit1 > 9) {
-			settimedigit1 = 0;
-		}
-
-		if (settimedigit0 == 2) {
-			if (settimedigit1 > 3) {
-				settimedigit1 = 0;
-			}
-		}
-		return;
-	}
-
-	if (choice_state == 50) { // Set time digit 2
-		settimedigit2++;
-		if (settimedigit2 > 5) {
-			settimedigit2 = 0;
-		}
-		return;
-	}
-
-	if (choice_state == 60) { // Set time digit 3
-		settimedigit3++;
-		if (settimedigit3 > 9) {
-			settimedigit3 = 0;
-		}
-		return;
-	}
-
-	if (choice_state == 70) { // Set time ok
-
-		// Do stuff to set the time here but on the arduino.
-		// Update time vars
-
-		choice_state = 0; // Return to dashboard
-		return;
-	}
-
-
-	if (choice_state == 100) { // Speed correction cancel
-		choice_state = 0; // Jump to main menu
-		return;
-	}
-
-	if (choice_state == 110) { // Speed correction digit 1
-		spcdigit0++;
-		if (spcdigit0 > 1) {
-			spcdigit0 = 0;
-		}
-		return;
-	}
-
-	if (choice_state == 120) { // Speed correction digit 2
-		spcdigit1++;
-		if (spcdigit1 > 9) {
-			spcdigit1 = 0;
-		}
-		return;
-	}
-
-	if (choice_state == 130) { // Speed correction digit 3
-		spcdigit2++;
-		if (spcdigit2 > 9) {
-			spcdigit2 = 0;
-		}
-		return;
-	}
-
-	if (choice_state == 140) { // Speed correction digit 4
-		spcdigit3++;
-		if (spcdigit3 > 9) {
-			spcdigit3 = 0;
-		}
-		return;
-	}
-
-	if (choice_state == 150) {
-
-		// Do stuff to update and save the speed correction value
-		choice_state = 0;
-		return;
-	}
-
-	if (choice_state == 200) {
-		// Set theme
-		theme = 0;
-		choice_state = 0;
-		return;
-	}
-
-	if (choice_state == 210) {
-		// Set theme
-		theme = 1;
-		choice_state = 0;
-		return;
-	}
-
-	if (choice_state == 220) {
-		// Set theme
-		theme = 2;
-		choice_state = 0;
-		return;
-	}
-
-	if (choice_state == 230) {
-		// Set theme
-		theme = 3;
-		choice_state = 0;
-		return;
-	}
-
-	if (choice_state == 240) {
-		// Set theme
-		theme = 4;
-		choice_state = 0;
-		return;
-	}
-
-	if (choice_state == 250) {
-		// Set theme
-		theme = 5;
-		choice_state = 0;
-		return;
-	}
-
-	if (choice_state == 260) {
-		// Set theme
-		theme = 6;
-		choice_state = 0;
-		return;
-	}
-
-	// Set units menu - Cancel
-	if (choice_state == 600) {
-		choice_state = 0;
-		return;
-	}
-
-	if (choice_state == 605) {
-
-	}
-
-	// Set units - OK
-	if (choice_state == 635) {
-		choice_state = 0;
-		return;
-	}
-
-
-
-	// Odometer menu digit setting
-	if (choice_state == 300) {ododigit1 = cycle_digit (ododigit1, 9); return;}
-	if (choice_state == 305) {ododigit2 = cycle_digit (ododigit2, 9); return;}
-	if (choice_state == 310) {ododigit3 = cycle_digit (ododigit3, 9); return;}
-	if (choice_state == 315) {ododigit4 = cycle_digit (ododigit4, 9); return;}
-	if (choice_state == 320) {ododigit5 = cycle_digit (ododigit5, 9); return;}
-	if (choice_state == 325) {ododigit6 = cycle_digit (ododigit6, 9); return;}
-
-	if (choice_state == 330) {odo2digit1 = cycle_digit (odo2digit1, 9); return;}
-	if (choice_state == 335) {odo2digit2 = cycle_digit (odo2digit2, 9); return;}
-	if (choice_state == 340) {odo2digit3 = cycle_digit (odo2digit3, 9); return;}
-	if (choice_state == 345) {odo2digit4 = cycle_digit (odo2digit4, 9); return;}
-	if (choice_state == 350) {odo2digit5 = cycle_digit (odo2digit5, 9); return;}
-	if (choice_state == 355) {odo2digit6 = cycle_digit (odo2digit6, 9); return;}
-
-	if (choice_state == 360) {
-		// Set and save the odometer here
-		if (ododigit1 != odo2digit1) {odoerror = 1; return;}
-		if (ododigit2 != odo2digit2) {odoerror = 1; return;}
-		if (ododigit3 != odo2digit3) {odoerror = 1; return;}
-		if (ododigit4 != odo2digit4) {odoerror = 1; return;}
-		if (ododigit5 != odo2digit5) {odoerror = 1; return;}
-		if (ododigit6 != odo2digit6) {odoerror = 1; return;}
-
-		int num_digits_at_zero = 0;
-		if (ododigit1 == 0) {num_digits_at_zero++;}
-		if (ododigit2 == 0) {num_digits_at_zero++;}
-		if (ododigit3 == 0) {num_digits_at_zero++;}
-		if (ododigit4 == 0) {num_digits_at_zero++;}
-		if (ododigit5 == 0) {num_digits_at_zero++;}
-		if (ododigit6 == 0) {num_digits_at_zero++;}
-		if (odo2digit1 == 0) {num_digits_at_zero++;}
-		if (odo2digit2 == 0) {num_digits_at_zero++;}
-		if (odo2digit3 == 0) {num_digits_at_zero++;}
-		if (odo2digit4 == 0) {num_digits_at_zero++;}
-		if (odo2digit5 == 0) {num_digits_at_zero++;}
-		if (odo2digit6 == 0) {num_digits_at_zero++;}
-
-		if (num_digits_at_zero == 12) {
-			odoerror = 2;
-			return;
-		}
-
-		choice_state = 0; 
-	}
-}
-
 
 int get_diff (int n1, int n2) {
 	if (n1 >= n2) {
@@ -1134,13 +688,6 @@ void init_rects()
 }
 
 
-
-bool file_exists (const char* name) {
-
-	std::ifstream ifile (name);
-	return (bool)ifile;
-
-}
 
 int get_litres_remaining (int fuelintfloat) {
 
@@ -1410,13 +957,13 @@ void draw_glyph_string(const glyph_font *font, const char *text, int xpos, int y
 	}
 }
 
-void draw_small_grey_string(char *digits, int xpos, int ypos) { draw_glyph_string(&FONT_SMALL_GREY, digits, xpos, ypos); }
-void draw_small_blue_string(char *digits, int xpos, int ypos) { draw_glyph_string(&FONT_SMALL_BLUE, digits, xpos, ypos); }
-void draw_medium_string(char *digits, int xpos, int ypos)     { draw_glyph_string(&FONT_MEDIUM, digits, xpos, ypos); }
-void draw_large_string(char *digits, int xpos, int ypos)      { draw_glyph_string(&FONT_LARGE, digits, xpos, ypos); }
-void draw_nav_large_string(char *digits, int xpos, int ypos)  { draw_glyph_string(&FONT_NAV_LARGE, digits, xpos, ypos); }
-void draw_nav_small_string(char *digits, int xpos, int ypos)  { draw_glyph_string(&FONT_NAV_SMALL, digits, xpos, ypos); }
-void draw_nav_digits(char *digits, int xpos, int ypos)        { draw_glyph_string(&FONT_NAV_DIGITS, digits, xpos, ypos); }
+void draw_small_grey_string(const char *digits, int xpos, int ypos) { draw_glyph_string(&FONT_SMALL_GREY, digits, xpos, ypos); }
+void draw_small_blue_string(const char *digits, int xpos, int ypos) { draw_glyph_string(&FONT_SMALL_BLUE, digits, xpos, ypos); }
+void draw_medium_string(const char *digits, int xpos, int ypos)     { draw_glyph_string(&FONT_MEDIUM, digits, xpos, ypos); }
+void draw_large_string(const char *digits, int xpos, int ypos)      { draw_glyph_string(&FONT_LARGE, digits, xpos, ypos); }
+void draw_nav_large_string(const char *digits, int xpos, int ypos)  { draw_glyph_string(&FONT_NAV_LARGE, digits, xpos, ypos); }
+void draw_nav_small_string(const char *digits, int xpos, int ypos)  { draw_glyph_string(&FONT_NAV_SMALL, digits, xpos, ypos); }
+void draw_nav_digits(const char *digits, int xpos, int ypos)        { draw_glyph_string(&FONT_NAV_DIGITS, digits, xpos, ypos); }
 
 void draw_medium_char(char digit, int xpos, int ypos) {
 	char s[2] = { digit, 0 };
@@ -1526,795 +1073,29 @@ void thread_worker(char* msg) {
 	}
 }*/
 
-void unpack_menu_message() {
-
-	//S,300,0,0,0,0,0,0,0,0,0,0,0,0,E
-	//M,006,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,44,N
-
-	char sz_current[16];
-	int message_number = 0;
-	int current_pointer = 0;
-
-	memset(sz_current, 0, 16);
-
-	for (int c=0;c<strlen(g_sz_comms_msg);c++) {
-
-
-
-		if (g_sz_comms_msg[c] == ',') {
-
-			if (message_number == 1) { // Menu choice state
-				choice_state = atoi (sz_current);
-			}
-
-			if (message_number == 2) { // Odo digit 1
-				ododigit1 = atoi (sz_current);
-			}
-			if (message_number == 3) { // Odo digit 2
-				ododigit2 = atoi (sz_current);
-			}
-			if (message_number == 4) { // Odo digit 3
-				ododigit3 = atoi (sz_current);
-			}
-			if (message_number == 5) { // Odo digit 4
-				ododigit4 = atoi (sz_current);
-			}
-			if (message_number == 6) { // Odo digit 5
-				ododigit5 = atoi (sz_current);
-			}
-			if (message_number == 7) { // Odo digit 6
-				ododigit6 = atoi (sz_current);
-			}
-
-			if (message_number == 8) { // Odo2 digit 1
-				odo2digit1 = atoi (sz_current);
-			}
-			if (message_number == 9) { // Odo2 digit 2
-				odo2digit2 = atoi (sz_current);
-			}
-			if (message_number == 10) { // Odo2 digit 3
-				odo2digit3 = atoi (sz_current);
-			}
-			if (message_number == 11) { // Odo2 digit 4
-				odo2digit4 = atoi (sz_current);
-			}
-			if (message_number == 12) { // Odo2 digit 5
-				odo2digit5 = atoi (sz_current);
-			}
-			if (message_number == 13) { // Odo2 digit 6
-				odo2digit6 = atoi (sz_current);
-			}
-			if (message_number == 14) { // Odo error
-				odoerror = atoi (sz_current);
-			}
-			if (message_number == 15) { // Set time digit 0
-				settimedigit0 = atoi (sz_current);
-			}
-			if (message_number == 16) { // Set time digit 1
-				settimedigit1 = atoi (sz_current);
-			}
-			if (message_number == 17) { // Set time digit 2
-				settimedigit2 = atoi (sz_current);
-			}
-			if (message_number == 18) { // Set time digit 3
-				settimedigit3 = atoi (sz_current);
-			}
-			if (message_number == 19) { // Speed correction digit 0 (+ or -)
-				spcdigit0 = atoi (sz_current);
-			}
-			if (message_number == 20) { // Speed correction digit 1 
-				spcdigit1 = atoi (sz_current);
-			}
-			if (message_number == 21) { // Speed correction digit 2 
-				spcdigit2 = atoi (sz_current);
-			}
-			if (message_number == 22) { // Speed correction digit 3 
-				spcdigit3 = atoi (sz_current);
-			}
-			if (message_number == 23) { // Front sprocket
-				front_sprocket = atoi (sz_current);
-			}
-			if (message_number == 24) { // Rear sprocket
-				rear_sprocket = atoi (sz_current);
-			}
-			if (message_number == 25) { // Coolant fan temp
-				coolant_fan_temp = atoi (sz_current);
-			}
-			if (message_number == 26) { // Usingkm
-				using_km = atoi (sz_current);
-			}
-
-			if (message_number == 27) { // Usingfh
-				using_fh = atoi (sz_current);
-			}
-
-			if (message_number == 28) { // Usingbar
-				using_bar = atoi (sz_current);
-			}
-
-			if (message_number == 29) { // Front sensor ID
-				front_sensor_id = atoi (sz_current);
-			}
-
-			if (message_number == 30) { // Rear sensor ID
-				rear_sensor_id = atoi (sz_current);
-			}
-
-			if (message_number == 31) { // Front pressure low setting
-				front_pressure_low = atoi (sz_current);
-			}
-
-			if (message_number == 32) { // Rear pressure low setting
-				rear_pressure_low = atoi (sz_current);
-			}
-
-			if (message_number == 33) { // Control layout
-				control_layout = atoi (sz_current);
-			}
-
-			if (message_number == 34) { // Day Theme
-				day_theme = atoi (sz_current);
-			}
-
-			if (message_number == 35) { // Night Theme
-				night_theme = atoi (sz_current);
-			}
-
-			if (message_number == 36) { // Current light level
-				current_light_level = atoi (sz_current);
-			}
-
-			if (message_number == 37) { // Light switch value
-				light_switch_value = atoi (sz_current);
-			}
-
-			if (message_number == 38) { // Fan Neutral optin in coolant fan setup menu
-				fan_neutral_option = atoi (sz_current);
-			}
-
-			if (message_number == 39) { // Gear Ratio Interval setting
-				gear_ratio_interval = atoi (sz_current);
-			}
-			
-			//fprintf(stderr, "%s\n", sz_current);
-			memset(sz_current, 0, 16);
-			current_pointer = 0;
-			message_number++;
-
-		} else {
-			if (current_pointer < 16) {
-				sz_current[current_pointer] = g_sz_comms_msg[c];
-				current_pointer++;
-			}
-		}
-
-	}
-
-}
-
-void unpack_nav_message () {
-
-	// Just a routine to unpack the delimited Nav message handed to us via BLE from a Phone
-	char sz_current[255];
-	int message_number = 0;
-	int current_pointer = 0;
-
-	memset (sz_current, 0, 255);
-
-	for (int c=0;c<strlen (str_nav);c++) {
-
-		if (str_nav[c] == '%') {
-
-			if (message_number == 1) { // Nav Symbol
-				//fprintf(stderr, "Nav MSG 1: %s\n", sz_current);
-				memset (str_nav_symbol, 0, 16);
-				strcpy (str_nav_symbol, sz_current);
-			}
-
-			if (message_number == 2) { // Onto Roadname
-				//fprintf(stderr, "Nav MSG 2: %s\n", sz_current);
-				memset (str_nav_road, 0, 255);
-				strcpy (str_nav_road, sz_current);
-			}
-
-			if (message_number == 3) { // Towards Placename
-				//fprintf(stderr, "Nav MSG 3: %s\n", sz_current);
-				memset (str_nav_towards, 0, 255);
-				strcpy (str_nav_towards, sz_current);
-			}
-
-			if (message_number == 4) { // Motorway Exit Number
-				//fprintf(stderr, "Nav MSG 4: %s\n", sz_current);
-				memset (str_nav_exit, 0, 16);
-				strcpy (str_nav_exit, sz_current);
-			}
-
-			if (message_number == 5) { // Yards Away
-				//fprintf(stderr, "Nav MSG 5: %s\n", sz_current);
-				memset (str_nav_yards, 0, 16);
-				strcpy (str_nav_yards, sz_current);
-				nav_yards = atoi (str_nav_yards);
-
-				memset (str_nav_metres, 0, 16);
-				double nav_meters = (double)nav_yards / 1.094;
-				sprintf( str_nav_metres, "%d", (int)nav_meters);				
-			}			
-
-			if (message_number == 6) { // Miles Away 
-				//fprintf(stderr, "Nav MSG 6: %s\n", sz_current);
-				memset (str_nav_miles, 0, 16);
-				strcpy (str_nav_miles, sz_current);
-				nav_miles = atof (str_nav_miles);
-
-				memset (str_nav_km, 0, 16);
-				double nav_km_local = nav_miles * 1.609;
-				sprintf( str_nav_km, "%.1f", nav_km_local);
-			}
-
-			if (message_number == 7) { // Driving on the left
-				if (atoi (sz_current) == 1) {
-					driving_left = 1;
-				} else {
-					driving_left = 0;
-				}
-			}
-
-			if (message_number == 8) { // Distance to Destination
-				memset (str_nav_dest_miles, 0, 16);
-				strcpy (str_nav_dest_miles, sz_current);
-				nav_dest_distance = atof (str_nav_dest_miles);
-
-				memset (str_nav_dest_km, 0, 16);
-				double nav_dest_km = nav_dest_distance * 1.609;
-				sprintf( str_nav_dest_km, "%.1f", nav_dest_km);
-			}
-
-			memset(sz_current, 0, 255);
-			current_pointer = 0;
-			message_number++;
-
-		} else {
-			if (current_pointer < 255) {
-				sz_current[current_pointer] = str_nav[c];
-				current_pointer++;
-			}
-		}
-
-	}
-
-}
-
-void unpack_message_old () {
-
-	//char g_sz_comms_msg[255];
-	//g_sz_comms_msg[255];
-	//strcpy (g_sz_comms_msg, "S,078,2244,3456,23456,56,10,100,40,0,5000,12.5,9.2,47,21,0,0,0,0,0,0,0,200,0,1,4,2,0,9,9,2");
-
-	//    OK                   OK                 OK    OK         OK      OKOKOKOKOK
-	//    SPD T1   T2   ODO    T   MP  RNG  MX  K RPM   BAT  SPD   FUE TMP N O L R H I T CH  1 2 3 4 1 2 3 4
-	// "S,068,1234,3456,023456,056,010,0100,040,0,05000,12.5,009.2,047,021,0,0,0,0,0,0,0,200,0,1,4,2,0,9,9,2,E"
-	// "S,079,12500,E"
-
-	// Lights order: neutrallight, oillight, highbeamlight, leftlight, rightlight
-	// "S,079,12500,100,12.5,14:23,477,0,0,0,0,0,200,E"
-	// 
-
-	//S,000,00000,0069,0.00,09:58,007,0,1,0,0,0,000,0,E
-	//S,000,00000,-099,0.00,11:26,011,0,1,0,0,0,000,0,   0.0,E
-	//S,000,00000,-099,0.00,11:32,010,0,1,0,0,0,000,0,   0.0,   0.0,E
-
-/*
-
-	if (neutral) {
-	if (oil_warning) {
-	if (indicate_right) {
-	if (indicate_left) {
-	if (high_beam)	
-*/
-
-
-	char sz_current[255];
-	int message_number = 0;
-	int current_pointer = 0;
-
-	memset(sz_current, 0, 255);
-
-	for (int c=0;c<strlen(g_sz_comms_msg);c++) {
-
-
-
-		if (g_sz_comms_msg[c] == ',') {
-
-			if (message_number == 1) { // Speed
-				current_speed = atoi (sz_current);
-			}
-
-			if (message_number == 2) { // Rpm
-				rpm = atoi (sz_current);
-			}
-
-			if (message_number == 3) { // Coolant temp
-				coolant_temp = atoi (sz_current);
-			}
-
-			if (message_number == 4) { // Battery voltage
-				batt = atof (sz_current);
-			}
-
-			if (message_number == 5) { // Current time - real time clock
-				memset (str_time, 0, 16);
-				strcpy (str_time, sz_current);
-			}
-
-			if (message_number == 6) { // Fuel value - float level
-				fuel_float = atoi (sz_current);
-			}
-
-			if (message_number == 7) { // Neutral Light
-				if (atoi (sz_current) == 1) {
-					neutral = true;
-				} else {
-					neutral = false;
-				}
-			}
-
-			if (message_number == 8) { // Oil Light
-				if (atoi (sz_current) == 1) {
-					oil_warning = true;
-				} else {
-					oil_warning = false;
-				}
-			}
-
-			if (message_number == 9) { // high_beam Light
-				if (atoi (sz_current) == 1) {
-					high_beam = true;
-				} else {
-					high_beam = false;
-				}
-			}
-
-			if (message_number == 10) { // indicate_left Light
-				if (atoi (sz_current) == 1) {
-					indicate_left = true;
-				} else {
-					indicate_left = false;
-				}
-			}
-
-			if (message_number == 11) { // indicate_right Light
-				if (atoi (sz_current) == 1) {
-					indicate_right = true;
-				} else {
-					indicate_right = false;
-				}
-			}
-		
-			if (message_number == 12) { // Choice state - menu options
-				choice_state = atoi (sz_current);
-			}
-
-			if (message_number == 13) { // Info Mode - menu options
-				info_mode = atoi (sz_current);
-			}
-
-			if (message_number == 14) { // Trip 1
-				trip1 = atof (sz_current);
-			}
-
-			if (message_number == 15) { // Trip 2
-				trip2 = atof (sz_current);
-			}
-
-			if (message_number == 16) { // Odo
-				odo = atof (sz_current);
-			}
-
-			if (message_number == 17) { // KM / Miles
-				using_km = atoi (sz_current);
-			}
-
-			if (message_number == 18) { // Speed correction value
-				spd_correct = atof (sz_current);
-			}
-
-			if (message_number == 19) { // Speed correction value
-				theme = atoi (sz_current);
-			}
-
-			if (message_number == 20) { // Ambient temp
-				ambient_temp = atoi (sz_current);
-			}
-
-			if (message_number == 21) { // Current gear (gear indicator)
-				current_gear = atoi (sz_current);
-			}
-
-			if (message_number == 22) { // MPG
-				mpg = atoi (sz_current);
-			}
-
-			if (message_number == 23) { // Range
-				range = atoi (sz_current);
-			}
-
-			if (message_number == 24) { // MaxSpeed
-				max_speed = atoi (sz_current);
-			}
-
-			if (message_number == 25) { // Trip time hour
-				trip_time_hour = atoi (sz_current);
-			}
-
-			if (message_number == 26) { // Trip time min
-				trip_time_min = atoi (sz_current);
-			}
-
-			if (message_number == 27) { // Oil pressure available (1 or 0)
-				if (atoi (sz_current) == 1) {
-					oil_pressure_available = true;
-				} else {
-					oil_pressure_available = false;
-				}
-			}
-
-			if (message_number == 28) { // Oil pressure in ohms
-				oil_pressure_ohms = atoi (sz_current);
-			}
-
-			if (message_number == 29) { // Oil temp in ohms
-				oil_temp_ohms = atoi (sz_current);
-			}
-
-			memset (str_trip_time, 0, 16);
-			if (trip_time_min < 10) {
-				sprintf (str_trip_time, "%d:0%d", trip_time_hour, trip_time_min);			
-			} else {
-				sprintf (str_trip_time, "%d:%d", trip_time_hour, trip_time_min);			
-			}
-			
-
-			if (message_number == 30) { // Fahrenheit or Celcius
-				using_fh = atoi (sz_current);
-			}
-
-			if (message_number == 31) { // Bar or PSI
-				using_bar = atoi (sz_current);
-			}
-
-			if (message_number == 32) { // Front sensor ID
-				front_sensor_id = atoi (sz_current);
-			}
-
-			if (message_number == 33) { // Rear sensor ID
-				rear_sensor_id = atoi (sz_current);
-			}
-
-			if (message_number == 34) { // Front pressure low setting
-				front_pressure_low = atoi (sz_current);
-			}
-
-			if (message_number == 35) { // Rear pressure low setting
-				rear_pressure_low = atoi (sz_current);				
-			}
-
-			if (message_number == 36) { // Nav Message from Phone
-				memset (str_nav, 0, 255);
-				strcpy (str_nav, sz_current);
-
-				if (strlen (str_nav) > 0) {
-					//fprintf(stderr, "%s\n", str_nav);
-					unpack_nav_message ();
-					nav_active = true;
-				}
-
-				
-				//fprintf(stderr, "%i\n", strlen (str_nav));
-				//printf(sz_current);
-				//printf (strlen (str_nav));
-				//rear_pressure_low = atoi (sz_current);
-
-				//fprintf(stderr, sz_current); 
-			}
-
-			//fprintf(stderr, "%s\n", sz_current);
-			memset(sz_current, 0, 255);
-			current_pointer = 0;
-
-
-			message_number++;
-
-
-
-		} else {
-			if (current_pointer < 255) {
-				sz_current[current_pointer] = g_sz_comms_msg[c];
-				current_pointer++;
-			}
-		}
-
-	}
-
-}
-
-void unpack_message() {
-	// Use new parser module - cleaner and faster than old if-ladder
-	dashboard_state state = {0};
-
-	if (!parse_live_message(g_sz_comms_msg, &state)) {
-		fprintf(stderr, "Failed to parse live message\n");
-		return;
-	}
-
-	// Copy parsed values to globals
-	current_speed = state.current_speed;
-	rpm = state.rpm;
-	coolant_temp = state.coolant_temp;
-	batt = state.batt;
-	// Note: currenthour/currentminute don't exist as globals - we build str_time instead
-	fuel_float = state.fuel_float;
-	neutral = state.neutral;
-	oil_warning = state.oil_warning;
-	high_beam = state.high_beam;
-	indicate_left = state.indicate_left;
-	indicate_right = state.indicate_right;
-	choice_state = state.choice_state;
-	info_mode = state.info_mode;
-	trip1 = state.trip1;
-	trip2 = state.trip2;
-	odo = state.odo;
-	using_km = state.using_km;
-	spd_correct = state.spd_correct;
-	theme = state.theme;
-	ambient_temp = state.ambient_temp;
-	current_gear = state.current_gear;
-	mpg = state.mpg;
-	range = state.range;
-	max_speed = state.max_speed;
-	trip_time_hour = state.trip_time_hour;
-	trip_time_min = state.trip_time_min;
-	oil_pressure_available = state.oil_pressure_available;
-	oil_pressure_ohms = state.oil_pressure_ohms;
-	oil_temp_ohms = state.oil_temp_ohms;
-	using_fh = state.using_fh;
-	using_bar = state.using_bar;
-	front_sensor_id = state.front_sensor_id;
-	rear_sensor_id = state.rear_sensor_id;
-	front_pressure_low = state.front_pressure_low;
-	rear_pressure_low = state.rear_pressure_low;
-
-	// Build time string from hour/minute
-	memset(str_time, 0, 16);
-	sprintf(str_time, "%.2d:%.2d", state.current_hour, state.current_minute);
-
-	// Build trip time string
-	memset(str_trip_time, 0, 16);
-	if (trip_time_min < 10) {
-		sprintf(str_trip_time, "%d:0%d", trip_time_hour, trip_time_min);
-	} else {
-		sprintf(str_trip_time, "%d:%d", trip_time_hour, trip_time_min);
-	}
-
-	// Handle navigation message
-	if (strlen(state.nav_string) > 0) {
-		memset(str_nav, 0, 255);
-		strcpy(str_nav, state.nav_string);
-		unpack_nav_message();
-		nav_active = true;
-	}
-}
-
-
-int connect_interface ()
-{
-// Open the serial port. Change device path as needed (currently set to an standard FTDI USB-UART cable type device)
-// Priority: Check simulator pipe first, then real hardware
-
-	// Try simulator pipe first (for development/testing with tft-dash-simulator)
-	if (file_exists ("/tmp/tft-dash-pipe")) {
-		fprintf(stderr, "Connecting to simulator pipe...\n");
-		serial_port = open("/tmp/tft-dash-pipe", O_RDONLY);
-		if (serial_port >= 0) {
-			fprintf(stderr, "Simulator connected!\n");
-			// No termios setup needed for pipe - just read raw data
-			return 0;
-		}
-	}
-
-	// Try real hardware serial ports
-	if (file_exists ("/dev/cu.usbserial-1430")) {
-		serial_port = open("/dev/cu.usbserial-1430", O_RDWR); // Nano board connected!
-	} else {
-		if (file_exists ("/dev/cu.usbmodem14301")) {
-			serial_port = open("/dev/cu.usbmodem14301", O_RDWR);
-		} else {
-			if (file_exists ("/dev/cu.usbmodem1101")) {
-				//fprintf(stderr, "Bike interface connected!");
-				serial_port = open("/dev/cu.usbmodem1101", O_RDWR);
-			} else {
-
-				if (file_exists ("/dev/ttyACM0")) {
-					//fprintf(stderr, "Bike interface connected!");
-					serial_port = open("/dev/ttyACM0", O_RDWR);
-				} else {
-					if (file_exists ("/dev/ttyACM1")) {
-						//fprintf(stderr, "Bike interface connected!");
-						serial_port = open("/dev/ttyACM1", O_RDWR);
-					} else {
-						//fprintf(stderr, "Bike interface NOT connected!");
-						return 0;
-					}
-				}
-			}
-		}
-	}
-
-
-
-	
-
-	// Create new termios struc, we call it 'tty' for convention
-	struct termios tty;
-	memset(&tty, 0, sizeof(tty));
-
-	// Read in existing settings, and handle any error
-	if(tcgetattr(serial_port, &tty) != 0) {
-	    //printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
-	}
-
-	tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
-	tty.c_cflag &= ~CSTOPB; // Clear stop field, only one stop bit used in communication (most common)
-	tty.c_cflag |= CS8; // 8 bits per byte (most common)
-	tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
-	tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
-
-	tty.c_lflag &= ~ICANON;
-	tty.c_lflag &= ~ECHO; // Disable echo
-	tty.c_lflag &= ~ECHOE; // Disable erasure
-	tty.c_lflag &= ~ECHONL; // Disable new-line echo
-	tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
-	tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
-	tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
-
-	tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
-	tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
-	// tty.c_oflag &= ~OXTABS; // Prevent conversion of tabs to spaces (NOT PRESENT ON LINUX)
-	// tty.c_oflag &= ~ONOEOT; // Prevent removal of C-d chars (0x004) in output (NOT PRESENT ON LINUX)
-
-	tty.c_cc[VTIME] = 10;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
-	tty.c_cc[VMIN] = 0;
-
-	// Set in/out baud rate to be 115200
-	cfsetispeed(&tty, B115200);
-	cfsetospeed(&tty, B115200);
-
-	// Save tty settings, also checking for error
-	if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
-	    //printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
-	}
-
-	return 0;
-	// Write to serial port
-	//unsigned char msg[] = { 'H', 'e', 'l', 'l', 'o', '\r' };
-	//write(serial_port, "Hello, world!", sizeof(msg));
-
-	// Allocate memory for read buffer, set size according to your needs
-}
-
-
-void* pollInterface(void *arg)
-{
-	//unpack_message();
-/*
-	bool x = true;
-	int i = 0;
-	while (x == true) {
-		
-		i++;
-		//fprintf(stderr, "Thread is running"); 
-		sprintf(g_sz_comms_msg, "Thread count is: %d", i);
-	}
-	return 0;
-	*/
-
-	char appendbuf [1024];
-	
-	char read_buf [1024];
-	bool quit = false;
-	int appendpointer = 0;
-
-	connect_interface();
-
-	while (quit == false) {
-		memset(&read_buf, '\0', sizeof(read_buf));
-
-		// Read bytes. The behaviour of read() (e.g. does it block?,
-		// how long does it block for?) depends on the configuration
-		// settings above, specifically VMIN and VTIME
-		//printf ("R..");
-		int num_bytes = read(serial_port, &read_buf, sizeof(read_buf));
-
-		// n is the number of bytes read. n may be 0 if no bytes were received, and can also be -1 to signal an error.
-		if (num_bytes <= 0) {
-		    //printf("Error reading: %s", strerror(errno));
-		    close (serial_port);
-		    connect_interface();
-		}
-
-		// Here we assume we received ASCII data, but you might be sending raw bytes (in that case, don't try and
-		// print it to the screen like this!)
-		//printf("Read %i bytes. Received message: %s", num_bytes, read_buf);
-
-		//printf("%s", read_buf);
-
-		for (int r=0;r<num_bytes;r++) {
-			// S marks the beginning of a live data message, and M marks the beginning of a menu data message
-			if (read_buf[r] == '{' || read_buf[r] == '[') {
-				appendpointer = 0;
-				memset (appendbuf, 0, 1024);
-				appendbuf[appendpointer] = read_buf[r];
-				appendpointer++;
-			} else {
-				if (appendpointer < 1024) {
-					appendbuf[appendpointer] = read_buf[r];
-					appendpointer++;
-				}
-			}
-
-		}
-
-		//if (appendbuf[0] == 'S' && strlen(appendbuf) == 107 && appendbuf[106] == 'E') {
-		if (appendbuf[0] == '{' && strlen(appendbuf) > 90 && strlen (appendbuf) < 400) {
-			//printf("%s\n", appendbuf);
-			memset (g_sz_comms_msg, 0, 1024);
-			strcpy (g_sz_comms_msg, appendbuf);
-
-			//fprintf(stderr, "Data: %s\n", g_sz_comms_msg);
-
-			unpack_message();
-		} else {
-			//if (appendbuf[0] == 'M' && strlen(appendbuf) == 59 && appendbuf[58] == 'N') {
-			if (appendbuf[0] == '[' && strlen(appendbuf) > 78 && strlen(appendbuf) < 150) {
-
-				memset (g_sz_comms_msg, 0, 1024);
-				strcpy (g_sz_comms_msg, appendbuf);
-				unpack_menu_message();
-			}
-			//fprintf(stderr, "NO Messages received! Buffer length: %i",(int)strlen(appendbuf)); 
-		}
-
-		//usleep (1000);	
-	}
-	
-
-	close(serial_port);
-
-	return 0;
-}
-
 int connect_tpms_interface ()
 {
 // Open the serial port. Change device path as needed (currently set to an standard FTDI USB-UART cable type device)
 
-	if (file_exists ("/dev/cu.usbserial-D3077502")) {
+	if (file_exists("/dev/cu.usbserial-D3077502")) {
 		tpms_serial_port = open("/dev/cu.usbserial-D3077502", O_RDWR); // Nano board connected!
 		//cu.usbserial-D3077502
 		fprintf(stderr, "TPMS interface connected!"); 
 		tpms_connected= true;
 	} else {
-		if (file_exists ("/dev/ttyUSB0")) {		
+		if (file_exists("/dev/ttyUSB0")) {		
 			fprintf(stderr, "TPMS interface connected!"); 
 			tpms_serial_port = open("/dev/ttyUSB0", O_RDWR);
 			tpms_connected= true;
 		} else {
 
-			if (file_exists ("/dev/ttyUSB1")) {
+			if (file_exists("/dev/ttyUSB1")) {
 				fprintf(stderr, "TPMS interface connected!"); 
 				tpms_serial_port = open("/dev/ttyUSB1", O_RDWR);
 				tpms_connected= true;
 			} else {
 
-				if (file_exists ("/dev/cu.usbserial-210")) {
+				if (file_exists("/dev/cu.usbserial-210")) {
 					fprintf(stderr, "Attempt 210 connect....");
 					tpms_serial_port = open("/dev/cu.usbserial-210", O_RDWR);
 					//tty.usbserial-1420
@@ -2468,7 +1249,7 @@ void* pollTPMSInterface2 (void *arg) // Poll the interface of the cheaper eBay T
 				g_sensor1_state = sensor_state;
 			}
 
-			if (sensor_num == front_sensor_id) {
+			if (sensor_num == dash->front_sensor_id) {
 				g_sensor2_bar = bar;
 				g_sensor2_psi = psi;
 				g_sensor2_temp = celsius;
@@ -2485,7 +1266,7 @@ void* pollTPMSInterface2 (void *arg) // Poll the interface of the cheaper eBay T
 				g_sensor3_state = sensor_state;
 			}
 
-			if (sensor_num == rear_sensor_id) {
+			if (sensor_num == dash->rear_sensor_id) {
 				g_sensor4_bar = bar;
 				g_sensor4_psi = psi;
 				g_sensor4_temp = celsius;
@@ -2598,7 +1379,7 @@ void* pollTPMSInterface(void *arg)
 				g_sensor1_state = sensor_state;
 			}
 
-			if (sensor_num == front_sensor_id) {
+			if (sensor_num == dash->front_sensor_id) {
 				g_sensor2_bar = bar;
 				g_sensor2_psi = psi;
 				g_sensor2_temp = celsius;
@@ -2615,7 +1396,7 @@ void* pollTPMSInterface(void *arg)
 				g_sensor3_state = sensor_state;
 			}
 
-			if (sensor_num == rear_sensor_id) {
+			if (sensor_num == dash->rear_sensor_id) {
 				g_sensor4_bar = bar;
 				g_sensor4_psi = psi;
 				g_sensor4_temp = celsius;
@@ -2661,7 +1442,7 @@ bool render_top_icon_grey_texture (int x, int y, int w, int h)
 	dst_rect.w = w;
 	dst_rect.h = h;
 
-	if (oil_pressure_available) {
+	if (dash->oil_pressure_available) {
 		return SDL_RenderTexture(renderer, tex("TopiconsgreyOP.bmp"), nullptr, &dst_rect);
 	} else {
 		return SDL_RenderTexture(renderer, tex("Topiconsgrey.bmp"), nullptr, &dst_rect);
@@ -2676,163 +1457,15 @@ bool render_oil_light_texture (int x, int y, int w, int h)
 	dst_rect.w = w;
 	dst_rect.h = h;
 
-	if (oil_pressure_available) {
+	if (dash->oil_pressure_available) {
 		return SDL_RenderTexture(renderer, tex("OillightOP.bmp"), nullptr, &dst_rect);
 	} else {
 		return SDL_RenderTexture(renderer, tex("Oillight.bmp"), nullptr, &dst_rect);
 	}
 }
 
-void run_rpm_test()
-{
-	if (reverse == false) {
-		rpm+=100;
-	}
-	else {
-		rpm-=100;
-	}
-
-	if (rpm > 13000) {
-		reverse = true;		
-	}
-
-	if (rpm < 1) {
-		reverse = false;
-	}
-}
-
-void run_partial_test() {
-	
-	if (reverse == false) {
-		test_counter++;
-	}
-	else {
-		test_counter--;
-	}
-
-	if (test_counter > 100) {
-		reverse = true;
-		
-	}
-
-	if (test_counter < 1) {
-		reverse = false;
-		
-	}
-
-	//fuelwarning = true;
-
-	indicate_left = reverse;
-	indicate_right = reverse;
-	//bool indicate_left = false;
-	//bool indicate_right = false;
-
-
-}
-
-void run_full_test_scenarios () {
-		if (reverse == false) {
-			spin_angle++;
-		}
-		else {
-			spin_angle--;
-		}
-
-		if (spin_angle > 100) {
-			reverse = true;
-			ncount++;
-		}
-
-		if (spin_angle < 1) {
-			reverse = false;
-			ncount++;
-		}
-		
-
-		if (reverse == false) {
-				indicate_left = false;
-			//if ((spin_angle % 10) == 0) {
-				if (current_speed < 200) {
-					current_speed+=2;	
-					max_speed+=2;
-					trip1+=2;	
-					trip2+=3;
-					odo+=14;
-					coolant_temp++;
-					mpg++;
-					range++;
-					rpm+=100;
-				}	
-
-				if ((spin_angle % 30) == 0) {
-					neutral = !neutral;
-					high_beam = !high_beam;
-				}			
-
-				if ((spin_angle % 40) == 0) {
-					oil_warning = !oil_warning;
-				}		
-
-				if ((spin_angle % 20) == 0) {
-					indicate_right = !indicate_right;
-					//indicate_left = !indicate_right;
-				}		
-			//}			
-		} else {
-			indicate_right = false;
-			//if ((spin_angle % 10) == 0) {
-				if (current_speed > 0) {
-					current_speed-=2;	
-					max_speed-=2;
-					trip1-=2;
-					trip2-=3;
-					odo-=14;
-					coolant_temp--;
-					mpg--;
-					range--;
-					rpm-=100;
-				}	
-
-				if ((spin_angle % 30) == 0) {
-					neutral = !neutral;
-					high_beam = !high_beam;
-				}
-
-				if ((spin_angle % 40) == 0) {
-					oil_warning = !oil_warning;
-				}		
-
-				if ((spin_angle % 20) == 0) {
-					indicate_left = !indicate_left;					
-				}							
-			//}				
-			
-		}
-
-
-		if (ncount > 13) {
-			ncount = 0;
-		}
-
-		if (ncount == 1 || ncount == 2 || ncount == 3) {
-			info_mode = 1;				
-		}
-
-		if (ncount == 4 || ncount == 5 || ncount == 6) {
-			info_mode = 2;				
-		}
-
-		if (ncount == 7 || ncount == 8 || ncount == 9) {
-			info_mode = 3;				
-		}
-
-		if (ncount == 10 || ncount == 11 || ncount == 12 || ncount == 13) {
-			info_mode = 0;				
-		}
-}
-
 void draw_menu (int state) {
-	if (theme == 0 || theme == 7) {
+	if (dash->theme == 0 || dash->theme == 7) {
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
 	} else {
 		SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
@@ -2855,21 +1488,21 @@ void draw_menu (int state) {
 
 		if (state == 570) {render_texture (tex("Uparrowsmall.bmp"), 884, 534, 60, 62);}
 
-		draw_medium_num (coolant_fan_temp, 467, 114);
+		draw_medium_num (menu->coolant_fan_temp, 467, 114);
 
-		if (fan_neutral_option == 0) {
+		if (menu->fan_neutral_option == 0) {
 			render_texture (tex("Selecton.bmp"), 741, 306, 55, 38); // Coolant temp fan always on in Neutral
 		}
 
-		if (fan_neutral_option == 1) {
+		if (menu->fan_neutral_option == 1) {
 			render_texture (tex("Selecton.bmp"), 741, 383, 55, 38); // Coolant temp fan on after 1 minute
 		}
 
-		if (fan_neutral_option == 2) {
+		if (menu->fan_neutral_option == 2) {
 			render_texture (tex("Selecton.bmp"), 741, 460, 55, 38); // Coolant temp fan on after 50 degrees engine temp
 		}
 
-		if (fan_neutral_option == 3) {
+		if (menu->fan_neutral_option == 3) {
 			render_texture (tex("Selecton.bmp"), 741, 537, 55, 38); // Coolant temp fan on after throttle blip
 		}
 	}
@@ -2887,9 +1520,9 @@ void draw_menu (int state) {
 		if (state == 460) {render_texture (tex("Uparrowsmall.bmp"), 861, 485, 60, 62);}
 		if (state == 470) {render_texture (tex("Uparrowsmall.bmp"), 848, 300, 60, 62);}
 
-		draw_medium_num (front_sprocket, 332, 127);
-		draw_medium_num (rear_sprocket, 638, 127);
-		draw_medium_num (gear_ratio_interval, 715, 415);
+		draw_medium_num (menu->front_sprocket, 332, 127);
+		draw_medium_num (menu->rear_sprocket, 638, 127);
+		draw_medium_num (menu->gear_ratio_interval, 715, 415);
 
 	}
 
@@ -2916,26 +1549,26 @@ void draw_menu (int state) {
 	// Odo digits
 	if (state >= 300 && state < 390) {
 		int ododigitspacing = 111;
-		draw_medium_num (ododigit1, 214, 209);
-		draw_medium_num (ododigit2, 325, 209);
-		draw_medium_num (ododigit3, 325+(ododigitspacing*1), 209);
-		draw_medium_num (ododigit4, 325+(ododigitspacing*2), 209);
-		draw_medium_num (ododigit5, 325+(ododigitspacing*3), 209);
-		draw_medium_num (ododigit6, 325+(ododigitspacing*4), 209);
-		// Second row odo digits
-		draw_medium_num (odo2digit1, 214, 415);
-		draw_medium_num (odo2digit2, 325, 415);
-		draw_medium_num (odo2digit3, 325+(ododigitspacing*1), 415);
-		draw_medium_num (odo2digit4, 325+(ododigitspacing*2), 415);
-		draw_medium_num (odo2digit5, 325+(ododigitspacing*3), 415);
-		draw_medium_num (odo2digit6, 325+(ododigitspacing*4), 415);	
+		draw_medium_num (menu->odo_digit1, 214, 209);
+		draw_medium_num (menu->odo_digit2, 325, 209);
+		draw_medium_num (menu->odo_digit3, 325+(ododigitspacing*1), 209);
+		draw_medium_num (menu->odo_digit4, 325+(ododigitspacing*2), 209);
+		draw_medium_num (menu->odo_digit5, 325+(ododigitspacing*3), 209);
+		draw_medium_num (menu->odo_digit6, 325+(ododigitspacing*4), 209);
+		// Second row dash->odo digits
+		draw_medium_num (menu->odo2_digit1, 214, 415);
+		draw_medium_num (menu->odo2_digit2, 325, 415);
+		draw_medium_num (menu->odo2_digit3, 325+(ododigitspacing*1), 415);
+		draw_medium_num (menu->odo2_digit4, 325+(ododigitspacing*2), 415);
+		draw_medium_num (menu->odo2_digit5, 325+(ododigitspacing*3), 415);
+		draw_medium_num (menu->odo2_digit6, 325+(ododigitspacing*4), 415);	
 	}		
 
-	// If the odo error flag has been set then show the error
-	if (odoerror == 1) {
+	// If the dash->odo error flag has been set then show the error
+	if (menu->odo_error == 1) {
 		render_texture (tex_from("default", "Odoerror1.bmp"), 130, 524, 758, 45);
 	}
-	if (odoerror == 2) {
+	if (menu->odo_error == 2) {
 		render_texture (tex_from("default", "Odoerror2.bmp"), 130, 524, 758, 45);	
 	}
 
@@ -2988,17 +1621,17 @@ void draw_menu (int state) {
 	if (state >= 100 && state < 170) {
 		render_texture (tex("Speedcorrection.bmp"), 0, 0, 1024, 600);
 
-		if (spcdigit0 == 0) {
+		if (menu->spc_digit0 == 0) {
 			strcpy (str_spc_digit0, "-");
 		}
 
-		if (spcdigit0 == 1) {
+		if (menu->spc_digit0 == 1) {
 			strcpy (str_spc_digit0, "+");
 		}
 
-		sprintf(str_spc_digit1, "%d", spcdigit1);
-		sprintf(str_spc_digit2, "%d", spcdigit2);
-		sprintf(str_spc_digit3, "%d", spcdigit3);
+		sprintf(str_spc_digit1, "%d", menu->spc_digit1);
+		sprintf(str_spc_digit2, "%d", menu->spc_digit2);
+		sprintf(str_spc_digit3, "%d", menu->spc_digit3);
 
 		draw_medium_string (str_spc_digit0, 294, 282);
 		draw_medium_string (str_spc_digit1, 408, 277);
@@ -3035,10 +1668,10 @@ void draw_menu (int state) {
 
 		render_texture (tex("TPMSsetup.bmp"), 0, 0, 1024, 600);
 		
-		sprintf(str_front_sensor_id, "%d", front_sensor_id);
-		sprintf(str_rear_sensor_id, "%d", rear_sensor_id);
-		sprintf(str_front_pressure_low, "%d", front_pressure_low);
-		sprintf(str_rear_pressure_low, "%d", rear_pressure_low);
+		sprintf(str_front_sensor_id, "%d", dash->front_sensor_id);
+		sprintf(str_rear_sensor_id, "%d", dash->rear_sensor_id);
+		sprintf(str_front_pressure_low, "%d", dash->front_pressure_low);
+		sprintf(str_rear_pressure_low, "%d", dash->rear_pressure_low);
 
 		draw_medium_string (str_front_sensor_id, 527, 170);
 		draw_medium_string (str_rear_sensor_id, 832, 170);
@@ -3090,11 +1723,11 @@ void draw_menu (int state) {
 	if (state >= 800 && state < 830) { // Set control options
 		render_texture (tex("Controloptions.bmp"), 0, 0, 1024, 600);	
 
-		if (control_layout == 0) {
+		if (menu->control_layout == 0) {
 			render_texture (tex("Selectedcontrol.bmp"), 230, 195, 236, 30);
 		}
 
-		if (control_layout == 1) {
+		if (menu->control_layout == 1) {
 			render_texture (tex("Selectedcontrol.bmp"), 555, 195, 236, 30);
 		}
 
@@ -3120,81 +1753,81 @@ void draw_menu (int state) {
 	if (state >= 900 && state < 950) { // Set light options		
 		render_texture (tex("Lightoptions.bmp"), 0, 0, 1024, 600);	
 
-		sprintf(str_light_switch_value, "%d", light_switch_value);
-		sprintf(str_current_light_level, "%d", current_light_level);
+		sprintf(str_light_switch_value, "%d", menu->light_switch_value);
+		sprintf(str_current_light_level, "%d", menu->current_light_level);
 
 		draw_medium_string (str_light_switch_value, 625, 477);
 		draw_medium_string (str_current_light_level, 625, 396);
 
-		if (day_theme == 0) {
+		if (menu->day_theme == 0) {
 			render_texture (tex_from("default", "whitethumb.bmp"), 772, 118, 126, 74);
 		}
 
-		if (day_theme == 1) {
+		if (menu->day_theme == 1) {
 			render_texture (tex_from("green", "greenthumb.bmp"), 772, 118, 126, 74);
 		}
 
-		if (day_theme == 2) {
+		if (menu->day_theme == 2) {
 			render_texture (tex_from("red", "redthumb.bmp"), 772, 118, 126, 74);
 		}
 
-		if (day_theme == 3) {
+		if (menu->day_theme == 3) {
 			render_texture (tex_from("blue", "bluethumb.bmp"), 772, 118, 126, 74);
 		}
 
-		if (day_theme == 4) {
+		if (menu->day_theme == 4) {
 			render_texture (tex_from("orange", "orangethumb.bmp"), 772, 118, 126, 74);
 		}
 
-		if (day_theme == 5) {
+		if (menu->day_theme == 5) {
 			render_texture (tex_from("yellow", "yellowthumb.bmp"), 772, 118, 126, 74);
 		}
 
-		if (day_theme == 6) {
+		if (menu->day_theme == 6) {
 			render_texture (tex_from("night", "nightthumb.bmp"), 772, 118, 126, 74);
 		}
 
-		if (day_theme == 7) {
+		if (menu->day_theme == 7) {
 			render_texture (tex_from("bright", "brightthumb.bmp"), 772, 118, 126, 74);
 		}
 
-		if (day_theme == 8) {
+		if (menu->day_theme == 8) {
 			render_texture (tex_from("dark", "darkthumb.bmp"), 772, 118, 126, 74);
 		}
 
-		if (night_theme == 0) {
+		if (menu->night_theme == 0) {
 			render_texture (tex_from("default", "whitethumb.bmp"), 772, 236, 126, 74);
 		}
 
-		if (night_theme == 1) {
+		if (menu->night_theme == 1) {
 			render_texture (tex_from("green", "greenthumb.bmp"), 772, 236, 126, 74);
 		}
 
-		if (night_theme == 2) {
+		if (menu->night_theme == 2) {
 			render_texture (tex_from("red", "redthumb.bmp"), 772, 236, 126, 74);
 		}
 
-		if (night_theme == 3) {
+		if (menu->night_theme == 3) {
 			render_texture (tex_from("blue", "bluethumb.bmp"), 772, 236, 126, 74);
 		}
 
-		if (night_theme == 4) {
+		if (menu->night_theme == 4) {
 			render_texture (tex_from("orange", "orangethumb.bmp"), 772, 236, 126, 74);
 		}
 
-		if (night_theme == 5) {
+		if (menu->night_theme == 5) {
 			render_texture (tex_from("yellow", "yellowthumb.bmp"), 772, 236, 126, 74);
 		}
 
-		if (night_theme == 6) {
+		if (menu->night_theme == 6) {
 			render_texture (tex_from("night", "nightthumb.bmp"), 772, 236, 126, 74);
 		}
 
-		if (night_theme == 7) {
+		if (menu->night_theme == 7) {
 			render_texture (tex_from("bright", "brightthumb.bmp"), 772, 236, 126, 74);
 		}
 
-		if (night_theme == 8) {
+		if (menu->night_theme == 8) {
 			render_texture (tex_from("dark", "darkthumb.bmp"), 772, 236, 126, 74);
 		}
 
@@ -3236,19 +1869,19 @@ void draw_menu (int state) {
 	if (state >= 600 && state < 690) { // Set units options
 		render_texture (tex("Setunits.bmp"), 0, 0, 1024, 600);	
 
-		if (using_km) {
+		if (dash->using_km) {
 			render_texture (tex("Selecton.bmp"), 894, 101, 55, 38);
 		} else {
 			render_texture (tex("Selecton.bmp"), 784, 101, 55, 38);
 		}
 
-		if (using_fh) {
+		if (dash->using_fh) {
 			render_texture (tex("Selecton.bmp"), 894, 262, 55, 38);
 		} else {	
 			render_texture (tex("Selecton.bmp"), 784, 262, 55, 38);
 		}
 
-		if (using_bar) {
+		if (dash->using_bar) {
 			render_texture (tex("Selecton.bmp"), 894, 423, 55, 38);
 		} else {
 			render_texture (tex("Selecton.bmp"), 784, 423, 55, 38);
@@ -3292,10 +1925,10 @@ void draw_menu (int state) {
 	if (state >= 20 && state < 90) { // Set time options
 		render_texture (tex("Settime.bmp"), 0, 0, 1024, 600);	
 
-		sprintf(str_set_time_digit0, "%d", settimedigit0);
-		sprintf(str_set_time_digit1, "%d", settimedigit1);
-		sprintf(str_set_time_digit2, "%d", settimedigit2);
-		sprintf(str_set_time_digit3, "%d", settimedigit3);
+		sprintf(str_set_time_digit0, "%d", menu->set_time_digit0);
+		sprintf(str_set_time_digit1, "%d", menu->set_time_digit1);
+		sprintf(str_set_time_digit2, "%d", menu->set_time_digit2);
+		sprintf(str_set_time_digit3, "%d", menu->set_time_digit3);
 
 		draw_medium_string (str_set_time_digit0, 300, 277);
 		draw_medium_string (str_set_time_digit1, 408, 277);
@@ -3402,7 +2035,7 @@ void dashboard_startup () {
 	startup_anim_count++;
 
 
-	if (theme == 0 || theme == 7) {
+	if (dash->theme == 0 || dash->theme == 7) {
 
 		if (startup_anim_count > 0 && startup_anim_count < 255) {
 			startup_anim_count+=3;
@@ -3431,8 +2064,8 @@ void dashboard_startup () {
 			// Trip 1 and 2 and Odometer, Ambient Temp and Time section
 			render_texture (tex("Mileinfo.bmp"), (0-1000)+startup_anim_count, 434, 435, 169);
 
-			if (info_mode == 0) {
-				if (using_km) {
+			if (dash->info_mode == 0) {
+				if (dash->using_km) {
 					render_texture (tex("InfotopKM.bmp"), (0-1000)+startup_anim_count, 176, 510, 97);
 				} else {
 					render_texture (tex("Infotop.bmp"), (0-1000)+startup_anim_count, 176, 510, 97);	
@@ -3450,8 +2083,8 @@ void dashboard_startup () {
 			// Trip 1 and 2 and Odometer, Ambient Temp and Time section
 			render_texture (tex("Mileinfo.bmp"), 0, 434, 435, 169);
 
-			if (info_mode == 0) {
-				if (using_km) {
+			if (dash->info_mode == 0) {
+				if (dash->using_km) {
 					render_texture (tex("InfotopKM.bmp"), 0, 176, 510, 97);
 				} else {
 					render_texture (tex("Infotop.bmp"), 0, 176, 510, 97);	
@@ -3524,7 +2157,7 @@ void dashboard_startup () {
 			render_texture (tex("Fuelgaugewhite.bmp"), (714+(spin_angle*3)+500)-(startup_anim_count-500), 303, 274, 28);
 
 			// Coolant Temp
-			if (using_fh) {
+			if (dash->using_fh) {
 				render_texture (tex("CoolantF.bmp"), (808+500)-(startup_anim_count-500), 196, 209, 80);
 			} else {
 				render_texture (tex("Coolant.bmp"), (808+500)-(startup_anim_count-500), 196, 209, 80);	
@@ -3537,7 +2170,7 @@ void dashboard_startup () {
 			render_texture (tex("Fuelgaugewhite.bmp"), 714+(spin_angle*3), 303, 274, 28);
 
 			// Coolant Temp
-			if (using_fh) {
+			if (dash->using_fh) {
 				render_texture (tex("CoolantF.bmp"), 808, 196, 209, 80);
 			} else {
 				render_texture (tex("Coolant.bmp"), 808, 196, 209, 80);	
@@ -3568,7 +2201,7 @@ void animate_info_mode() {
 		infoanimationreverse = true;
 	}
 
-	if (info_mode == 3 && currentinfomode == 2) {
+	if (dash->info_mode == 3 && currentinfomode == 2) {
 		
 		if (infoanimationreverse == false) {
 			render_texture(tex("tyretop.bmp"), 0-info_animation_count, 176, 510, 97);
@@ -3587,7 +2220,7 @@ void animate_info_mode() {
 		return;
 	}
 
-	if (info_mode == 3 && currentinfomode == 1) {
+	if (dash->info_mode == 3 && currentinfomode == 1) {
 		
 		if (infoanimationreverse == false) {
 			render_texture(tex("Infotopdiag.bmp"), 0 - info_animation_count, 176, 510, 97);
@@ -3606,10 +2239,10 @@ void animate_info_mode() {
 		return;
 	}
 
-	if (info_mode == 3 && currentinfomode == 0) {
+	if (dash->info_mode == 3 && currentinfomode == 0) {
 		
 		if (infoanimationreverse == false) {
-			if (using_km) {
+			if (dash->using_km) {
 				render_texture(tex("InfotopKM.bmp"), 0 - info_animation_count, 176, 510, 97);
 			} else {
 				render_texture(tex("Infotop.bmp"), 0 - info_animation_count, 176, 510, 97);	
@@ -3630,7 +2263,7 @@ void animate_info_mode() {
 		return;
 	}
 
-	if (info_mode == 2 && currentinfomode == 1) {
+	if (dash->info_mode == 2 && currentinfomode == 1) {
 		
 		if (infoanimationreverse == false) {
 			render_texture(tex("Infotopdiag.bmp"), 0 - info_animation_count, 176, 510, 97);
@@ -3649,10 +2282,10 @@ void animate_info_mode() {
 		return;
 	}
 
-	if (info_mode == 1 && currentinfomode == 0) {
+	if (dash->info_mode == 1 && currentinfomode == 0) {
 		
 		if (infoanimationreverse == false) {
-			if (using_km) {
+			if (dash->using_km) {
 				render_texture(tex("InfotopKM.bmp"), 0 - info_animation_count, 176, 510, 97);
 			} else {
 				render_texture(tex("Infotop.bmp"), 0 - info_animation_count, 176, 510, 97);	
@@ -3673,7 +2306,7 @@ void animate_info_mode() {
 		return;
 	}
 
-	if (info_mode == 0 && currentinfomode == 3) {
+	if (dash->info_mode == 0 && currentinfomode == 3) {
 		if (infoanimationreverse == false) {
 			//render_texture(tex("Infotopdiag.bmp"), 0 - info_animation_count, 176, 510, 97);
 			//render_texture(tex("Infobottomdiag.bmp"), 0 - info_animation_count, 273, 454, 125);
@@ -3681,7 +2314,7 @@ void animate_info_mode() {
 		}
 
 		if (infoanimationreverse == true) {
-			if (using_km) {
+			if (dash->using_km) {
 				render_texture(tex("InfotopKM.bmp"), 0- info_animation_count, 176, 510, 97);
 			} else {
 				render_texture(tex("Infotop.bmp"), 0- info_animation_count, 176, 510, 97);	
@@ -3697,7 +2330,7 @@ void animate_info_mode() {
 		return;
 	}
 
-	if (info_mode == 0 && currentinfomode == 2) {
+	if (dash->info_mode == 0 && currentinfomode == 2) {
 		
 		// This one goes away
 		if (infoanimationreverse == false) {
@@ -3707,7 +2340,7 @@ void animate_info_mode() {
 
 		// This one comes in
 		if (infoanimationreverse == true) {
-			if (using_km) {
+			if (dash->using_km) {
 				render_texture(tex("InfotopKM.bmp"), 0- info_animation_count, 176, 510, 97);
 			} else {
 				render_texture(tex("Infotop.bmp"), 0- info_animation_count, 176, 510, 97);	
@@ -3731,12 +2364,12 @@ void draw_dashboard () {
 		flash = !flash;
 	}
 
-	if ((info_mode != currentinfomode && warningbadgeactive)) {		
+	if ((dash->info_mode != currentinfomode && warningbadgeactive)) {		
 		warningbadgecancelled = true;
 		warningbadgeactive = false;
 	}
 
-	if (theme == 0 || theme == 7) {
+	if (dash->theme == 0 || dash->theme == 7) {
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
 	} else {
 		SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
@@ -3748,7 +2381,7 @@ void draw_dashboard () {
 	// Rev counter rev line texture
 	SDL_RenderTexture(renderer, tex("Revline.bmp"), nullptr, &grevline);
 
-	target_rpm_rotation = get_rpm_rotation (rpm);
+	target_rpm_rotation = get_rpm_rotation (dash->rpm);
 	if (target_rpm_rotation > current_rpm_rotation) {
 		if (current_rpm_rotation < 100) {
 			current_rpm_rotation++;
@@ -3777,23 +2410,23 @@ void draw_dashboard () {
 		if (flash) 
 		{
 			render_texture (tex("Fuelgauge.bmp"), 676, 294, 316, 44);
-			render_texture (tex("Fuelgaugewhite.bmp"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(fuel_float)), 303, 274, 28);
+			render_texture (tex("Fuelgaugewhite.bmp"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(dash->fuel_float)), 303, 274, 28);
 		}
 	} else {
 		render_texture (tex("Fuelgauge.bmp"), 676, 294, 316, 44);
-		render_texture (tex("Fuelgaugewhite.bmp"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(fuel_float)), 303, 274, 28);
+		render_texture (tex("Fuelgaugewhite.bmp"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(dash->fuel_float)), 303, 274, 28);
 	}
 	// Coolant Temp
 	if (overheatwarning == true && enginerunning == true) {
 		if (flash) {
-			if (using_fh) {
+			if (dash->using_fh) {
 				render_texture (tex("CoolantF.bmp"), 808, 196, 209, 80);
 			} else {
 				render_texture (tex("Coolant.bmp"), 808, 196, 209, 80);	
 			}	
 		}
 	} else {
-		if (using_fh) {
+		if (dash->using_fh) {
 			render_texture (tex("CoolantF.bmp"), 808, 196, 209, 80);
 		} else {
 			render_texture (tex("Coolant.bmp"), 808, 196, 209, 80);	
@@ -3804,39 +2437,39 @@ void draw_dashboard () {
 
 	// Top light icons (Neutral, Oil, Indicator, High beam)
 
-	if (neutral) {
+	if (dash->neutral) {
 		render_texture (tex("Neutrallight.bmp"), 0, 0, 130, 136);
 	}
 
-	if (!neutral && current_gear != 0) {
+	if (!dash->neutral && dash->current_gear != 0) {
 		render_texture (tex("Gear.bmp"), 0, 0, 131, 136);
-		draw_large_num (current_gear, 30, 22);
+		draw_large_num (dash->current_gear, 30, 22);
 	}
 
-	if (oil_warning) {
+	if (dash->oil_warning) {
 		render_oil_light_texture (131, 0, 135, 138);
 	}
 
-	if (indicate_right && !indicate_left) {
+	if (dash->indicate_right && !dash->indicate_left) {
 		render_texture (tex("Indicateright.bmp"), 267, 0, 135, 136);
 	}
 
-	if (indicate_left && !indicate_right) {
+	if (dash->indicate_left && !dash->indicate_right) {
 		render_texture (tex("Indicateleft.bmp"), 267, 0, 135, 136);		
 	}
 
-	if (indicate_left && indicate_right) {
+	if (dash->indicate_left && dash->indicate_right) {
 		render_texture (tex("Indicateboth.bmp"), 267, 0, 135, 136);			
 	}
 
-	if (high_beam) {
+	if (dash->high_beam) {
 		render_texture (tex("Highbeamlight.bmp"), 404, 0, 133, 136);
 	}
 
 	// Middle info section (Tank Range, MPG, etc..)
-	if (info_mode == 0 && !warningbadgeactive) {
+	if (dash->info_mode == 0 && !warningbadgeactive) {
 		if (info_animation_in_progress == false) {
-			if (using_km) {
+			if (dash->using_km) {
 				render_texture(tex("InfotopKM.bmp"), 0, 176, 510, 97);
 			} else {
 				render_texture(tex("Infotop.bmp"), 0, 176, 510, 97);	
@@ -3846,27 +2479,27 @@ void draw_dashboard () {
 		} 
 	}
 
-	if (info_mode == 1 && !warningbadgeactive) {
+	if (dash->info_mode == 1 && !warningbadgeactive) {
 		if (info_animation_in_progress == false) {
 			render_texture(tex("Infotopdiag.bmp"), 0, 176, 510, 97);
 			render_texture(tex("Infobottomdiag.bmp"), 0, 273, 454, 125);
 		} 
 	}
 
-	if (info_mode == 2 && !warningbadgeactive) {
+	if (dash->info_mode == 2 && !warningbadgeactive) {
 		if (info_animation_in_progress == false) {
 			render_texture(tex("tyretop.bmp"), 0, 176, 510, 97);
 			render_texture(tex("tyrebottom.bmp"), 0, 273, 454, 125);
 		} 
 	}
 
-	if (info_mode == 3 && !warningbadgeactive) {
+	if (dash->info_mode == 3 && !warningbadgeactive) {
 		if (info_animation_in_progress == false) {			
 			render_texture(tex("Navbg.bmp"), 0, 158, 434, 268);
 		} 
 	}
 
-	if ((info_mode != currentinfomode && !warningbadgeactive)) {		
+	if ((dash->info_mode != currentinfomode && !warningbadgeactive)) {		
 		if (info_animation_in_progress == false) {
 			info_animation_count = 0;
 			infoanimationreverse = false;
@@ -3877,9 +2510,9 @@ void draw_dashboard () {
 	}
 
 	/*
-	if (info_mode == 2) { // Low Fuel
+	if (dash->info_mode == 2) { // Low Fuel
 		render_texture (tex("Fuelwarningbadge.bmp"), 0, 163, 444, 249);
-		if (neutral) {
+		if (dash->neutral) {
 			render_texture (tex("Lowfuel.bmp"), 222, 236, 134, 105);
 		}
 	}
@@ -3889,13 +2522,13 @@ void draw_dashboard () {
 	if (tpms_connected == true) {
 
 		if (front_sensor_read) {
-			if (g_sensor2_psi <= front_pressure_low) {
+			if (g_sensor2_psi <= dash->front_pressure_low) {
 				front_tyre_warning_triggered = true;
 			}
 		}
 
 		if (rear_sensor_read) {
-			if (g_sensor4_psi <= rear_pressure_low) {
+			if (g_sensor4_psi <= dash->rear_pressure_low) {
 				rear_tyre_warning_triggered = true;
 			}	
 		}
@@ -3911,11 +2544,11 @@ void draw_dashboard () {
 			                   : front_tyre_warning_triggered ? "Fronttyrelow.bmp" : "Reartyrelow.bmp";
 			return { true, "Lowtyrebadge.bmp", detail, 168, 244, 257, 76 };
 		}
-		if (oil_warning && enginerunning)
+		if (dash->oil_warning && enginerunning)
 			return { true, "Lowoilbadge.bmp", "Lowoil.bmp", 222, 236, 134, 105 };
 		if (overheatwarning && enginerunning)
 			return { true, "Overheatbadge.bmp", "Engineoverheat.bmp", 189, 237, 212, 95 };
-		if (fuelwarning && enginerunning && info_mode != 3)
+		if (fuelwarning && enginerunning && dash->info_mode != 3)
 			return { true, "Fuelwarningbadge.bmp", "Lowfuel.bmp", 222, 236, 134, 105 };
 		return { false, nullptr, nullptr, 0, 0, 0, 0 };
 	};
@@ -3930,7 +2563,7 @@ void draw_dashboard () {
 	}
 
 	// Units - either MPH or KM
-	if (using_km == 1) {
+	if (dash->using_km == 1) {
 		render_texture (tex("kph.bmp"), 844, 553, 179, 44);
 		render_texture (tex("km.bmp"), 350, 448, 57, 18);
 	} else {
@@ -3954,52 +2587,52 @@ void draw_dashboard () {
 	SDL_RenderTexture(renderer, tex("R1.bmp"), nullptr, &rectg1);
 	SDL_RenderTexture(renderer, tex("R0.bmp"), nullptr, &rectg0);
 
-	sprintf( str_current_speed, "%d", current_speed);
-	sprintf( str_trip1, "%.1f", trip1);
-	sprintf( str_trip2, "%.1f", trip2);
-	sprintf( str_odo, "%.0f", odo);
+	sprintf( str_current_speed, "%d", dash->current_speed);
+	sprintf( str_trip1, "%.1f", dash->trip1);
+	sprintf( str_trip2, "%.1f", dash->trip2);
+	sprintf( str_odo, "%.0f", dash->odo);
 
-	if (using_fh) { // If using fahrenheit
-		tempf = ((double)ambient_temp*1.8) + 32;
+	if (dash->using_fh) { // If using fahrenheit
+		tempf = ((double)dash->ambient_temp*1.8) + 32;
 		sprintf(str_ambient_temp, "%df", (int)tempf);
 	} else {
-		sprintf(str_ambient_temp, "%dc", ambient_temp);
+		sprintf(str_ambient_temp, "%dc", dash->ambient_temp);
 	}
 	
-	if (using_fh) { //If using fahrenheit
-		coolant_temp_f = ((double)coolant_temp*1.8) + 32;
+	if (dash->using_fh) { //If using fahrenheit
+		coolant_temp_f = ((double)dash->coolant_temp*1.8) + 32;
 		sprintf(str_coolant_temp, "%d", (int)coolant_temp_f);
 	} else {
-		sprintf(str_coolant_temp, "%d", coolant_temp);
+		sprintf(str_coolant_temp, "%d", dash->coolant_temp);
 	}
 	
-	if (using_km) {
-		if (mpg > 0) {
-			sprintf(str_mpg, "%d", (int)((double)282.481 / (double)mpg));	
+	if (dash->using_km) {
+		if (dash->mpg > 0) {
+			sprintf(str_mpg, "%d", (int)((double)282.481 / (double)dash->mpg));	
 		} else {
-			sprintf(str_mpg, "%d", mpg);	
+			sprintf(str_mpg, "%d", dash->mpg);	
 		}
 		
 	} else {
-		sprintf(str_mpg, "%d", mpg);
+		sprintf(str_mpg, "%d", dash->mpg);
 	}
 	
-	if (using_km) {
-		sprintf(str_range, "%d", (int)((double)range * 1.609));
+	if (dash->using_km) {
+		sprintf(str_range, "%d", (int)((double)dash->range * 1.609));
 	} else {
-		sprintf(str_range, "%d", range);	
+		sprintf(str_range, "%d", dash->range);	
 	}
 	
-	sprintf(str_max_speed, "%d", max_speed);
-	sprintf(str_rpm, "%d", rpm);
+	sprintf(str_max_speed, "%d", dash->max_speed);
+	sprintf(str_rpm, "%d", dash->rpm);
 	
-	if (oil_pressure_available) {
-		sprintf(str_oil_press, "%.1f", get_precise_bar(oil_pressure_ohms));
-		sprintf(str_oil_temp, "%d", (int)get_precise_temp(oil_temp_ohms));	
+	if (dash->oil_pressure_available) {
+		sprintf(str_oil_press, "%.1f", get_precise_bar(dash->oil_pressure_ohms));
+		sprintf(str_oil_temp, "%d", (int)get_precise_temp(dash->oil_temp_ohms));	
 	}
 
 	if (g_sensor2_psi != -99) {
-		if (using_bar) {
+		if (dash->using_bar) {
 			sprintf (str_sensor2_psi, "%.1f", g_sensor2_bar);
 		} else {
 			sprintf (str_sensor2_psi, "%.1f", g_sensor2_psi);
@@ -4010,7 +2643,7 @@ void draw_dashboard () {
 	}
 
 	if (g_sensor4_psi != -99) {
-		if (using_bar) {
+		if (dash->using_bar) {
 			sprintf (str_sensor4_psi, "%.1f", g_sensor4_bar);	
 		} else {
 			sprintf (str_sensor4_psi, "%.1f", g_sensor4_psi);
@@ -4021,7 +2654,7 @@ void draw_dashboard () {
 	}
 	
 	if (g_sensor2_temp != -99) {
-		if (using_fh) {
+		if (dash->using_fh) {
 			g_sensor2_temp_f = ((double)g_sensor2_temp*1.8) + 32;
 			sprintf (str_sensor2_temp, "%df", (int)g_sensor2_temp_f);	
 		} else {
@@ -4032,7 +2665,7 @@ void draw_dashboard () {
 	}
 	
 	if (g_sensor4_temp != -99) {
-		if (using_fh) {
+		if (dash->using_fh) {
 			g_sensor4_temp_f = ((double)g_sensor4_temp*1.8) + 32;
 			sprintf (str_sensor4_temp, "%df", (int)g_sensor4_temp_f);
 		} else {
@@ -4043,14 +2676,14 @@ void draw_dashboard () {
 	}
 	
 
-	if (get_litres_remaining(fuel_float) != 0) {
+	if (get_litres_remaining(dash->fuel_float) != 0) {
 		sprintf(str_fuel, "%.1f", litres_remaining);
 	} else {
 		strcpy (str_fuel, "..");
 	}
 	
-	sprintf(str_batt, "%.1f", batt);
-	sprintf(str_spd_correct, "%.1f", spd_correct);
+	sprintf(str_batt, "%.1f", dash->batt);
+	sprintf(str_spd_correct, "%.1f", dash->spd_correct);
 
 
 	// Draw the current speed
@@ -4061,14 +2694,14 @@ void draw_dashboard () {
 	draw_medium_string (str_coolant_temp, 873, 224);
 
 	// Middle Info
-	if (info_mode == 0 && info_animation_in_progress == false && !warningbadgeactive) {
+	if (dash->info_mode == 0 && info_animation_in_progress == false && !warningbadgeactive) {
 		draw_medium_string (str_mpg, 60, 224);
 		draw_medium_string (str_range, 292, 224);
 		draw_medium_string (str_trip_time, 17, 332);
 		draw_medium_string (str_max_speed, 246, 332);
 	}
 
-	if (info_mode == 1 && info_animation_in_progress == false && !warningbadgeactive) {
+	if (dash->info_mode == 1 && info_animation_in_progress == false && !warningbadgeactive) {
 		// RPM, FUEL, BATT, SPEED CORRECTION %
 		//char str_rpm[16];
 		//char str_fuel[16];
@@ -4083,40 +2716,48 @@ void draw_dashboard () {
 	}
 
 	//g_sensor2_psi
-	if (info_mode == 2 && info_animation_in_progress == false && !warningbadgeactive) {
+	if (dash->info_mode == 2 && info_animation_in_progress == false && !warningbadgeactive) {
 		draw_medium_string (str_sensor2_psi, 40, 224);
 		draw_medium_string (str_sensor4_psi, 304, 224);
 		draw_medium_string (str_sensor2_temp, 37, 342);
 		draw_medium_string (str_sensor4_temp, 246, 342);
 	}
 
-	if (info_mode == 3 && info_animation_in_progress == false && !warningbadgeactive) {
+	if (dash->info_mode == 3 && info_animation_in_progress == false && !warningbadgeactive) {
 		
 
-		if (nav_active == true) {
-			if (strlen (str_nav_road) > 0) {
+		if (nav->nav_active == true) {
+			// Format nav distance strings from numeric state
+			sprintf(str_nav_yards, "%d", nav->nav_yards);
+			sprintf(str_nav_miles, "%.1f", nav->nav_miles);
+			sprintf(str_nav_metres, "%d", (int)((double)nav->nav_yards / 1.094));
+			sprintf(str_nav_km, "%.1f", nav->nav_miles * 1.609);
+			sprintf(str_nav_dest_miles, "%.1f", nav->nav_dest_distance);
+			sprintf(str_nav_dest_km, "%.1f", nav->nav_dest_distance * 1.609);
+
+			if (strlen (nav->nav_road) > 0) {
 				draw_nav_symbol (NAV_ICON_ONTO, 13, 350);
 			}
 
-			if (strlen (str_nav_road) > 0 && strlen (str_nav_road) <= 14) {
-				draw_nav_large_string (str_nav_road, 69, 347);			
+			if (strlen (nav->nav_road) > 0 && strlen (nav->nav_road) <= 14) {
+				draw_nav_large_string (nav->nav_road, 69, 347);			
 			} else {
-				draw_nav_small_string (str_nav_road, 69, 347);			
+				draw_nav_small_string (nav->nav_road, 69, 347);			
 			}
 			
-			if (strlen (str_nav_towards) > 0) {
+			if (strlen (nav->nav_towards) > 0) {
 				draw_nav_symbol (NAV_ICON_TWRDS, 13, 391);
 			}
 
-			if (strlen (str_nav_towards) > 0 && strlen (str_nav_towards) <= 16) {			
-				draw_nav_large_string (str_nav_towards, 99, 386);
+			if (strlen (nav->nav_towards) > 0 && strlen (nav->nav_towards) <= 16) {			
+				draw_nav_large_string (nav->nav_towards, 99, 386);
 			} else {			
-				draw_nav_small_string (str_nav_towards, 99, 386);
+				draw_nav_small_string (nav->nav_towards, 99, 386);
 			}
 			
 			draw_nav_small_string (sz_arrive_in, 14, 175);
 			
-			if (using_km) {
+			if (dash->using_km) {
 				draw_nav_large_string (str_nav_dest_km, 77, 171);
 				draw_nav_small_string (sz_km, 165, 175);
 			} else {
@@ -4125,9 +2766,9 @@ void draw_dashboard () {
 			}
 			
 
-			if (nav_yards <= 300) {
+			if (nav->nav_yards <= 300) {
 				//draw_nav_numbers (87, 16, 191);				
-				if (using_km) {
+				if (dash->using_km) {
 					draw_nav_digits (str_nav_metres, 16, 211);
 					draw_nav_symbol (NAV_ICON_METRE, 22, 308);
 				} else {
@@ -4135,7 +2776,7 @@ void draw_dashboard () {
 					draw_nav_symbol (NAV_ICON_YARD, 22, 308);
 				}				
 			} else {
-				if (using_km) {
+				if (dash->using_km) {
 					draw_nav_digits (str_nav_km, 16, 211);
 					draw_nav_symbol (NAV_ICON_KM, 22, 308);
 				} else {
@@ -4144,15 +2785,15 @@ void draw_dashboard () {
 				}				
 			}
 			
-			const nav_symbol_entry *nav = lookup_nav_symbol(str_nav_symbol);
-			if (nav) {
-				if (nav->icon_lhd != NAV_ICON_NONE) {
-					nav_icon icon = (nav->icon_rhd != NAV_ICON_NONE && !driving_left) ? nav->icon_rhd : nav->icon_lhd;
-					draw_nav_symbol(icon, nav->x, nav->y);
+			const nav_symbol_entry *nav_entry = lookup_nav_symbol(nav->nav_symbol);
+			if (nav_entry) {
+				if (nav_entry->icon_lhd != NAV_ICON_NONE) {
+					nav_icon icon = (nav_entry->icon_rhd != NAV_ICON_NONE && !nav->driving_left) ? nav_entry->icon_rhd : nav_entry->icon_lhd;
+					draw_nav_symbol(icon, nav_entry->x, nav_entry->y);
 				}
-				if (strcmp(nav->code, "MEX") == 0) draw_nav_large_string(str_nav_exit, 344, 275);
-				if (strcmp(nav->code, "PRK") == 0) draw_nav_large_string(sz_find_parking, 99, 386);
-				if (strcmp(nav->code, "FRY") == 0) draw_nav_large_string(sz_take_ferry, 99, 386);
+				if (strcmp(nav_entry->code, "MEX") == 0) draw_nav_large_string(nav->nav_exit, 344, 275);
+				if (strcmp(nav_entry->code, "PRK") == 0) draw_nav_large_string(sz_find_parking, 99, 386);
+				if (strcmp(nav_entry->code, "FRY") == 0) draw_nav_large_string(sz_take_ferry, 99, 386);
 			}
 		} else {
 			draw_nav_large_string (sz_no_nav_data, 40, 265);
@@ -4163,13 +2804,13 @@ void draw_dashboard () {
 
 	}
 
-	if (indicate_left && !warningbadgeactive) {		
-		if (info_mode == 0 || info_mode == 1) {
+	if (dash->indicate_left && !warningbadgeactive) {		
+		if (dash->info_mode == 0 || dash->info_mode == 1) {
 			render_texture (tex("Indicateleftfar.bmp"), 2, 186, 250, 98);
 		}		
 	}
 
-	if (indicate_right && !warningbadgeactive) {		
+	if (dash->indicate_right && !warningbadgeactive) {		
 		render_texture (tex("Indicaterightfar.bmp"), 802, 192, 209, 84);
 	}
 	
@@ -4180,7 +2821,7 @@ void draw_dashboard () {
 	draw_small_blue_string (str_trip2, 246, 509);
 	draw_small_grey_string (str_odo, 223, 560);
 
-	if (oil_pressure_available) {
+	if (dash->oil_pressure_available) {
 		draw_medium_string(str_oil_press, 163, 32);
 		draw_medium_string(str_oil_temp, 163, 89);		
 	}
@@ -4234,12 +2875,14 @@ int main(int argc, char* args[]) {
 	//std::thread t1(thread_worker, "hello");
 	SDL_HideCursor();
 	
+	sensor_feed *feed = sensor_feed_create(NULL);
+	sensor_feed_start(feed);
+	dash = sensor_feed_dashboard(feed);
+	menu = sensor_feed_menu(feed);
+	nav = sensor_feed_nav(feed);
+	printf("\n Thread created successfully\n");
+
 	int err;
-	err = pthread_create(&(tid[0]), nullptr, &pollInterface, nullptr);
-    if (err != 0)
-        printf("\ncan't create thread :[%s]", strerror(err));
-    else
-        printf("\n Thread created successfully\n");
 
 	if (tpms_model == STANDARDTPMS) {
 		err = pthread_create(&(tpms_tid[0]), nullptr, &pollTPMSInterface, nullptr);
@@ -4298,7 +2941,7 @@ int main(int argc, char* args[]) {
 		}
 	}
 	fprintf(stderr, "Loaded %d assets across %d themes\n", total_assets, THEME_COUNT);
-	g_current_theme = theme_name_from_id(theme);
+	g_current_theme = theme_name_from_id(dash->theme);
 
 	init_rects();
 
@@ -4308,6 +2951,10 @@ int main(int argc, char* args[]) {
 	SDL_Event e;
 
 	while (!quit) {
+		// Refresh state pointers from sensor feed each frame
+		dash = sensor_feed_dashboard(feed);
+		menu = sensor_feed_menu(feed);
+		nav = sensor_feed_nav(feed);
 
 		while (SDL_PollEvent(&e)) {
 			if (e.type == SDL_EVENT_QUIT) {
@@ -4321,14 +2968,6 @@ int main(int argc, char* args[]) {
 				//fprintf (stderr, "choice");
 				//spin_angle--;
 				//fprintf (stderr, "Key: %d", e.key.scancode);
-
-				if (e.key.scancode == 229) {
-					choice();
-				}
-
-				if (e.key.scancode == 40) {
-					select();
-				}
 
 				if (e.key.scancode == 41) {
 					quit = true;
@@ -4358,15 +2997,15 @@ int main(int argc, char* args[]) {
 
 		//run_partial_test();
 
-		if (theme != currenttheme) {
-			currenttheme = theme;
-			g_current_theme = theme_name_from_id(theme);
+		if (dash->theme != currenttheme) {
+			currenttheme = dash->theme;
+			g_current_theme = theme_name_from_id(dash->theme);
 		}
 
-		//odo = spin_angle;
-		//odo = get_fuel_reveal(fuel_percent);
+		//dash->odo = spin_angle;
+		//dash->odo = get_fuel_reveal(fuel_percent);
 
-		if (choice_state == 0) {
+		if (dash->choice_state == 0) {
 			//draw_dashboard();
 			if (startup_done == false) {
 				dashboard_startup();
@@ -4384,34 +3023,34 @@ int main(int argc, char* args[]) {
 
 		}
 		else {
-			if (choice_state > 0) {
-				draw_menu(choice_state);
+			if (dash->choice_state > 0) {
+				draw_menu(dash->choice_state);
 			}
 		}
 
 
 
 		// Thresholds for triggering warnings
-		if (get_num_fuel_bars(fuel_float) <= 2) { // 2 bars remaining - 4.5 litres left
+		if (get_num_fuel_bars(dash->fuel_float) <= 2) { // 2 bars remaining - 4.5 litres left
 			fuelwarning = true;
 		} else {
 			fuelwarning = false;
 		}
 
-		if (coolant_temp >= 120) {
+		if (dash->coolant_temp >= 120) {
 			overheatwarning = true;
 		}
 
-		if (coolant_temp < 120) {
+		if (dash->coolant_temp < 120) {
 			overheatwarning = false;
 		}
 
 		// Quick check on the RPM to set a flag if the engine is running - used for triggering warning badges
-		if (rpm > 2000) {
+		if (dash->rpm > 2000) {
 			enginerunning = true;
 		} 
 
-		if (rpm < 1000) {
+		if (dash->rpm < 1000) {
 			enginerunning = false;
 		}
 

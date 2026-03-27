@@ -45,13 +45,20 @@
 
 ## Display-side refactoring opportunities
 
-### Next: eliminate global state via extraction
-The ~100 globals aren't a categorisation problem — they're an ownership problem. Rather than grouping globals into structs (organised mess is still mess), extract subsystems as modules that take explicit parameters. The struct shapes emerge from what each module actually needs:
+### Sensor feed extraction
+- Extracted serial connection, byte framing, and message parsing into `sensor_feed.h/c`
+- Opaque `sensor_feed` struct — consumers get `const` pointers, can't write state
+- Replaced ~50 global variables with `dash->`, `menu->`, `nav->` struct field access
+- Deleted ~1400 lines from testsdl.cpp: `connect_interface()`, `pollInterface()`, `unpack_message()`, `unpack_menu_message()`, `unpack_nav_message()`, `choice()`, `select()`, test scenario functions
+- 9 integration tests via named pipes in `test_sensor_feed.c`
+- testsdl.cpp reduced from ~4400 to ~3070 lines
 
-1. **Extract the serial thread** — `poll_interface` gets its own module, owns a read buffer, writes into a struct passed by the caller. That struct *is* the bike state, defined by use not taxonomy.
-2. **Extract the menu system** — `draw_menu()` (576 lines of nested ifs) takes explicit input/output. Defines its own state contract.
-3. **Extract TPMS** — small, self-contained, same pattern.
-4. **What remains in testsdl.cpp** is `main()`, the render loop, and drawing helpers that take explicit state — a thin orchestrator.
+### Next: further extractions
+The same pattern can be applied to:
+
+1. **Extract the menu system** — `draw_menu()` (~500 lines of nested ifs) takes explicit input/output.
+2. **Extract TPMS** — small, self-contained, same pattern.
+3. **What remains in testsdl.cpp** is `main()`, the render loop, and drawing helpers — a thin orchestrator.
 
 ### Smaller wins (do whenever convenient)
 

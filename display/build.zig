@@ -32,7 +32,7 @@ pub fn build(b: *std.Build) void {
     });
 
     testsdl.root_module.addCSourceFiles(.{
-        .files = &.{ "src/parser.c", "src/assets.c" },
+        .files = &.{ "src/parser.c", "src/assets.c", "src/sensor_feed.c" },
         .flags = &.{"-std=c23"},
     });
 

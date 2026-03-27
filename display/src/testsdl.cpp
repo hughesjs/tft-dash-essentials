@@ -88,11 +88,13 @@ NAV TO DO
 #include "assets.h"
 #include "sensor_feed.h"
 #include "menu.h"
+#include "tpms_feed.h"
 
 // Read-only pointers to current state — refreshed each frame from sensor_feed
 static const dashboard_state *dash = nullptr;
 static const menu_state *menu = nullptr;
 static const nav_state *nav = nullptr;
+static const tpms_state *tpms = nullptr;
 
 asset_store* g_assets = nullptr;
 const char*  g_current_theme = "default";
@@ -115,18 +117,8 @@ static inline SDL_Texture* tex_from(const char* theme, const char* name) {
 	return asset_store_get_texture(g_assets, theme, name);
 }
 
-#define STANDARDTPMS 100
-#define EBAYTPMS 200
-
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 600
-
-#define NORMAL			0
-#define FASTLEAK 		1
-#define HIGHPRESSURE 	2
-#define LOWPRESSURE 	3
-#define HIGHTEMP 		4
-#define LOWBATTERY 		5
 
 typedef enum {
 	NAV_ICON_MUT = 0,    // U-turn (left-hand drive)
@@ -376,59 +368,19 @@ SDL_FRect spd_digit_three;
 int spin_angle = 0; // revline reveal
 int test_counter = 0; // Number to use for test scenarios
 
-int tpms_model = EBAYTPMS; // Standard version I recommend or EBAYTPMS
-
 // Display-side derived state
 double coolant_temp_f = 0;
 int fuel_percent = 47;
 double litres_remaining = 0;
 double tempf = 0;
 
-
-bool front_tyre_warning_triggered = false;
-bool rear_tyre_warning_triggered = false;
-bool front_sensor_read = false;
-bool rear_sensor_read = false;
-
-bool tpms_connected = false;
-bool tpms_signal = false;
-int tpms_signal_count = 0;
-
-int tpms_serial_port;
-pthread_t tpms_tid[2];
-
-double g_sensor1_bar = 0.0;
-double g_sensor2_bar = 0.0;
-double g_sensor3_bar = 0.0;
-double g_sensor4_bar = 0.0;
-
-double g_sensor1_psi = 0.0;
-double g_sensor2_psi = -99;
-double g_sensor3_psi = 0.0;
-double g_sensor4_psi = -99;
-
-int g_sensor1_temp = 0;
-int g_sensor2_temp = -99;
-int g_sensor3_temp = 0;
-int g_sensor4_temp = -99;
-double g_sensor2_temp_f = 0;
-double g_sensor4_temp_f = 0;
-
-int g_sensor1_state = 0;
-int g_sensor2_state = 0;
-int g_sensor3_state = 0;
-int g_sensor4_state = 0;
-
-// TPMS display strings (formatted from sensor_feed state)
+// TPMS display strings (formatted each frame from tpms_state)
 char str_front_sensor_id[16];
 char str_rear_sensor_id[16];
 char str_front_pressure_low[16];
 char str_rear_pressure_low[16];
-
-
 char str_sensor2_psi[16];
 char str_sensor4_psi[16];
-
 char str_sensor2_temp[16];
 char str_sensor4_temp[16];
 
@@ -1074,355 +1026,6 @@ void thread_worker(char* msg) {
 	}
 }*/
 
-int connect_tpms_interface ()
-{
-// Open the serial port. Change device path as needed (currently set to an standard FTDI USB-UART cable type device)
-
-	if (file_exists("/dev/cu.usbserial-D3077502")) {
-		tpms_serial_port = open("/dev/cu.usbserial-D3077502", O_RDWR); // Nano board connected!
-		//cu.usbserial-D3077502
-		fprintf(stderr, "TPMS interface connected!"); 
-		tpms_connected= true;
-	} else {
-		if (file_exists("/dev/ttyUSB0")) {		
-			fprintf(stderr, "TPMS interface connected!"); 
-			tpms_serial_port = open("/dev/ttyUSB0", O_RDWR);
-			tpms_connected= true;
-		} else {
-
-			if (file_exists("/dev/ttyUSB1")) {
-				fprintf(stderr, "TPMS interface connected!"); 
-				tpms_serial_port = open("/dev/ttyUSB1", O_RDWR);
-				tpms_connected= true;
-			} else {
-
-				if (file_exists("/dev/cu.usbserial-210")) {
-					fprintf(stderr, "Attempt 210 connect....");
-					tpms_serial_port = open("/dev/cu.usbserial-210", O_RDWR);
-					//tty.usbserial-1420
-					fprintf(stderr, "TPMS interface connected!"); 
-					tpms_connected= true;
-				} else {
-					if (!tpms_connected) // Only log on first failure
-						fprintf(stderr, "TPMS interface NOT connected\n");
-					tpms_connected= false;
-					return 0;
-				}
-			}
-		}		
-	}
-
-	// Create new termios struc, we call it 'tty' for convention
-	struct termios tty;
-	memset(&tty, 0, sizeof(tty));
-
-	// Read in existing settings, and handle any error
-	if(tcgetattr(tpms_serial_port, &tty) != 0) {
-	    //printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
-	}
-
-	tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
-	tty.c_cflag &= ~CSTOPB; // Clear stop field, only one stop bit used in communication (most common)
-	tty.c_cflag |= CS8; // 8 bits per byte (most common)
-	tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
-	tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
-
-	tty.c_lflag &= ~ICANON;
-	tty.c_lflag &= ~ECHO; // Disable echo
-	tty.c_lflag &= ~ECHOE; // Disable erasure
-	tty.c_lflag &= ~ECHONL; // Disable new-line echo
-	tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
-	tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
-	tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
-
-	tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
-	tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
-	// tty.c_oflag &= ~OXTABS; // Prevent conversion of tabs to spaces (NOT PRESENT ON LINUX)
-	// tty.c_oflag &= ~ONOEOT; // Prevent removal of C-d chars (0x004) in output (NOT PRESENT ON LINUX)
-
-	tty.c_cc[VTIME] = 10;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
-	tty.c_cc[VMIN] = 0;
-
-	// Set in/out baud rate to be 115200
-	if (tpms_model == STANDARDTPMS) {
-		cfsetispeed(&tty, B9600);
-		cfsetospeed(&tty, B9600);
-	}
-
-	if (tpms_model == EBAYTPMS) {
-		cfsetispeed(&tty, B19200);
-		cfsetospeed(&tty, B19200);
-	}
-
-
-
-	// Save tty settings, also checking for error
-	if (tcsetattr(tpms_serial_port, TCSANOW, &tty) != 0) {
-	    printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
-	}
-
-	return 0;
-}
-
-void* pollTPMSInterface2 (void *arg) // Poll the interface of the cheaper eBay TPMS Interface
-{
-
-	char appendbuf [256];
-	
-	char read_buf [256];
-	bool quit = false;
-	int appendpointer = 0;
-
-	connect_tpms_interface();
-
-	while (quit == false) {		
-		memset(&read_buf, '\0', sizeof(read_buf));
-		int num_bytes = read(tpms_serial_port, &read_buf, sizeof(read_buf));
-
-		// n is the number of bytes read. n may be 0 if no bytes were received, and can also be -1 to signal an error.
-		if (num_bytes < 0) {
-		    //printf("Error reading: %s\n", strerror(errno));
-		    close (tpms_serial_port);
-		    sleep(2);
-		    connect_tpms_interface();
-		} else {
-			//fprintf(stderr, "Num bytes: %i\n", num_bytes);
-		}
-
-
-		for (int r=0;r<num_bytes;r++) {
-
-			if (read_buf[r] == 85) {
-				if (r < (num_bytes-1)) {
-					if ((unsigned char)read_buf[r+1] == 0xAA) {
-						//fprintf(stderr, "\n");
-						
-						appendpointer = 0;
-						memset (appendbuf, 0, 256);
-						appendbuf[appendpointer] = read_buf[r];
-						appendpointer++;				
-					}
-				}
-				
-			} else {
-				if (appendpointer < 256) {
-					appendbuf[appendpointer] = read_buf[r];
-					appendpointer++;
-				}
-			}
-
-			//fprintf(stderr, "%i ", read_buf[r]);
-		}
-
-
-
-		if (appendbuf[0] == 85 && appendpointer > 5 && (unsigned char)appendbuf[1] == 0xAA) {
-			
-
-			int sensor_num = -1;
-			//int sensor_num = appendbuf[3];
-			// Sensor Number. 0 = Left Front, 1 = Right Front, 16 = Back Left, 17 = Back Right
-
-			if (appendbuf[3] == 0) {sensor_num = 1;}
-			if (appendbuf[3] == 1) {sensor_num = 2;}
-			if (appendbuf[3] == 16) {sensor_num = 3;}
-			if (appendbuf[3] == 17) {sensor_num = 4;}			
-
-			int tp_byte1 = appendbuf[4];			
-			int temp_byte = appendbuf[5];
-			int state_byte = appendbuf[6];
-			int sensor_state = 0;
-
-			double psi = (double) (((tp_byte1 & 255) * 3.44));
-			double bar = psi / 14.5;
-
-			//double d = (double) (frame[4] & 255); tires_state.AirPressure = (int) (d * 3.44d);
-
-			//double psi = bar * 14.5;
-			
-			int celsius = (temp_byte & 255) - 50;
-			sensor_state = NORMAL;
-
-			if (sensor_num == 1) {
-				g_sensor1_bar = bar;
-				g_sensor1_psi = psi;
-				g_sensor1_temp = celsius;
-				g_sensor1_state = sensor_state;
-			}
-
-			if (sensor_num == dash->front_sensor_id) {
-				g_sensor2_bar = bar;
-				g_sensor2_psi = psi;
-				g_sensor2_temp = celsius;
-				g_sensor2_state = sensor_state;
-				tpms_signal = true;
-				tpms_signal_count = 0;
-				front_sensor_read = true;
-			}
-
-			if (sensor_num == 3) {
-				g_sensor3_bar = bar;
-				g_sensor3_psi = psi;
-				g_sensor3_temp = celsius;
-				g_sensor3_state = sensor_state;
-			}
-
-			if (sensor_num == dash->rear_sensor_id) {
-				g_sensor4_bar = bar;
-				g_sensor4_psi = psi;
-				g_sensor4_temp = celsius;
-				g_sensor4_state = sensor_state;
-				tpms_signal = true;
-				tpms_signal_count = 0;
-				rear_sensor_read = true;
-			}
-			
-
-			//fprintf (stderr, "\n_psi: S1: %f, S2: %f, S3: %f, S4: %f\n", g_sensor1_psi, g_sensor2_psi, g_sensor3_psi, g_sensor4_psi);
-			//fprintf (stderr, "TMP: S1: %i, S2: %i, S3: %i, S4: %i\n", g_sensor1_temp, g_sensor2_temp, g_sensor3_temp, g_sensor4_temp);
-			//fprintf (stderr, "STATE: S1: %s, S2: %s, S3: %s, S4: %s\n", string_sensor_state(g_sensor1_state), string_sensor_state(g_sensor2_state), string_sensor_state(g_sensor3_state), string_sensor_state(g_sensor4_state));
-			
-			appendpointer = 0;
-			memset (appendbuf, 0, 256);
-		}		
-		
-	}	
-
-	close(tpms_serial_port);
-
-	return 0;
-}
-
-void* pollTPMSInterface(void *arg)
-{
-
-	char appendbuf [256];
-	
-	char read_buf [256];
-	bool quit = false;
-	int appendpointer = 0;
-
-	connect_tpms_interface();
-
-	while (quit == false) {
-		memset(&read_buf, '\0', sizeof(read_buf));
-		int num_bytes = read(tpms_serial_port, &read_buf, sizeof(read_buf));
-
-		// n is the number of bytes read. n may be 0 if no bytes were received, and can also be -1 to signal an error.
-		if (num_bytes < 0) {
-		    printf("Error reading: %s\n", strerror(errno));
-		    close (tpms_serial_port);
-		    sleep(2);
-		    connect_tpms_interface();
-		} else {
-			//fprintf(stderr, "Num bytes: %i\n", num_bytes);
-		}
-
-
-		for (int r=0;r<num_bytes;r++) {
-			
-			if ((unsigned char)read_buf[r] == 0xAA) {
-				if (r < (num_bytes-1)) {
-					if ((unsigned char)read_buf[r+1] == 0xA1) {
-						//fprintf(stderr, "\n");
-						
-						appendpointer = 0;
-						memset (appendbuf, 0, 256);
-						appendbuf[appendpointer] = read_buf[r];
-						appendpointer++;				
-					}
-				}
-				
-			} else {
-				if (appendpointer < 256) {
-					appendbuf[appendpointer] = read_buf[r];
-					appendpointer++;
-				}
-			}
-
-			//fprintf(stderr, "%i ", read_buf[r]);
-		}
-
-
-
-		if ((unsigned char)appendbuf[0] == 0xAA && appendpointer > 13 && (unsigned char)appendbuf[1] == 0xA1) {
-			
-			int sensor_num = appendbuf[5];
-			int tp_byte1 = appendbuf[9];
-			int tpbyte2 = appendbuf[10];
-			int temp_byte = appendbuf[11];
-			int state_byte = appendbuf[12];
-			int sensor_state = 0;
-
-			double bar = 0.025 * ((double) (((tp_byte1 & 3) * 256) + (tpbyte2 & 255)));
-			double psi = bar * 14.5;
-			int celsius = (temp_byte & 255) - 50;
-
-			if ((state_byte & 3) == 1) {
-				sensor_state = FASTLEAK;
-			} else if ((state_byte & 16) == 16) {
-				sensor_state = HIGHPRESSURE;
-			} else if ((state_byte & 8) == 8) {
-				sensor_state = LOWPRESSURE;
-			} else if ((state_byte & 4) == 4) {
-				sensor_state = HIGHTEMP;
-			} else if ((state_byte & -128) == 128) {
-				sensor_state = LOWBATTERY;
-			} else {
-				sensor_state = NORMAL;
-			}
-
-
-			if (sensor_num == 1) {
-				g_sensor1_bar = bar;
-				g_sensor1_psi = psi;
-				g_sensor1_temp = celsius;
-				g_sensor1_state = sensor_state;
-			}
-
-			if (sensor_num == dash->front_sensor_id) {
-				g_sensor2_bar = bar;
-				g_sensor2_psi = psi;
-				g_sensor2_temp = celsius;
-				g_sensor2_state = sensor_state;
-				tpms_signal = true;
-				tpms_signal_count = 0;
-				front_sensor_read = true;
-			}
-
-			if (sensor_num == 3) {
-				g_sensor3_bar = bar;
-				g_sensor3_psi = psi;
-				g_sensor3_temp = celsius;
-				g_sensor3_state = sensor_state;
-			}
-
-			if (sensor_num == dash->rear_sensor_id) {
-				g_sensor4_bar = bar;
-				g_sensor4_psi = psi;
-				g_sensor4_temp = celsius;
-				g_sensor4_state = sensor_state;
-				tpms_signal = true;
-				tpms_signal_count = 0;
-				rear_sensor_read = true;
-			}
-			
-
-			//fprintf (stderr, "\n_psi: S1: %f, S2: %f, S3: %f, S4: %f\n", g_sensor1_psi, g_sensor2_psi, g_sensor3_psi, g_sensor4_psi);
-			//fprintf (stderr, "TMP: S1: %i, S2: %i, S3: %i, S4: %i\n", g_sensor1_temp, g_sensor2_temp, g_sensor3_temp, g_sensor4_temp);
-			//fprintf (stderr, "STATE: S1: %s, S2: %s, S3: %s, S4: %s\n", string_sensor_state(g_sensor1_state), string_sensor_state(g_sensor2_state), string_sensor_state(g_sensor3_state), string_sensor_state(g_sensor4_state));
-			
-			appendpointer = 0;
-			memset (appendbuf, 0, 256);
-		}		
-		
-	}
-	
-
-	close(tpms_serial_port);
-
-	return 0;
-}
 
 bool render_texture (SDL_Texture* tex, int x, int y, int w, int h)
 {
@@ -2085,29 +1688,16 @@ void draw_dashboard () {
 	*/
 
 
-	if (tpms_connected == true) {
-
-		if (front_sensor_read) {
-			if (g_sensor2_psi <= dash->front_pressure_low) {
-				front_tyre_warning_triggered = true;
-			}
-		}
-
-		if (rear_sensor_read) {
-			if (g_sensor4_psi <= dash->rear_pressure_low) {
-				rear_tyre_warning_triggered = true;
-			}	
-		}
-			
-	}
+	bool front_tyre_low = tpms->connected && tpms->front.received && tpms->front.psi <= dash->front_pressure_low;
+	bool rear_tyre_low  = tpms->connected && tpms->rear.received  && tpms->rear.psi  <= dash->rear_pressure_low;
 
 	// Warning badges — checked in priority order (highest first)
 	struct warning_badge { bool active; const char *badge_bmp; const char *flash_bmp; int fx, fy, fw, fh; };
 
 	auto resolve_warning = [&]() -> warning_badge {
-		if (front_tyre_warning_triggered || rear_tyre_warning_triggered) {
-			const char *detail = front_tyre_warning_triggered && rear_tyre_warning_triggered ? "Frontrearlow.bmp"
-			                   : front_tyre_warning_triggered ? "Fronttyrelow.bmp" : "Reartyrelow.bmp";
+		if (front_tyre_low || rear_tyre_low) {
+			const char *detail = front_tyre_low && rear_tyre_low ? "Frontrearlow.bmp"
+			                   : front_tyre_low ? "Fronttyrelow.bmp" : "Reartyrelow.bmp";
 			return { true, "Lowtyrebadge.bmp", detail, 168, 244, 257, 76 };
 		}
 		if (dash->oil_warning && enginerunning)
@@ -2197,48 +1787,26 @@ void draw_dashboard () {
 		sprintf(str_oil_temp, "%d", (int)get_precise_temp(dash->oil_temp_ohms));	
 	}
 
-	if (g_sensor2_psi != -99) {
-		if (dash->using_bar) {
-			sprintf (str_sensor2_psi, "%.1f", g_sensor2_bar);
-		} else {
-			sprintf (str_sensor2_psi, "%.1f", g_sensor2_psi);
-		}
-		
+	if (tpms->front.received) {
+		sprintf(str_sensor2_psi, "%.1f", dash->using_bar ? tpms->front.bar : tpms->front.psi);
+		if (dash->using_fh)
+			sprintf(str_sensor2_temp, "%df", (int)((double)tpms->front.temp_celsius * 1.8 + 32));
+		else
+			sprintf(str_sensor2_temp, "%dc", tpms->front.temp_celsius);
 	} else {
-		strcpy (str_sensor2_psi, "..");
+		strcpy(str_sensor2_psi, "..");
+		strcpy(str_sensor2_temp, "..");
 	}
 
-	if (g_sensor4_psi != -99) {
-		if (dash->using_bar) {
-			sprintf (str_sensor4_psi, "%.1f", g_sensor4_bar);	
-		} else {
-			sprintf (str_sensor4_psi, "%.1f", g_sensor4_psi);
-		}
-		
+	if (tpms->rear.received) {
+		sprintf(str_sensor4_psi, "%.1f", dash->using_bar ? tpms->rear.bar : tpms->rear.psi);
+		if (dash->using_fh)
+			sprintf(str_sensor4_temp, "%df", (int)((double)tpms->rear.temp_celsius * 1.8 + 32));
+		else
+			sprintf(str_sensor4_temp, "%dc", tpms->rear.temp_celsius);
 	} else {
-		strcpy (str_sensor4_psi, "..");
-	}
-	
-	if (g_sensor2_temp != -99) {
-		if (dash->using_fh) {
-			g_sensor2_temp_f = ((double)g_sensor2_temp*1.8) + 32;
-			sprintf (str_sensor2_temp, "%df", (int)g_sensor2_temp_f);	
-		} else {
-			sprintf (str_sensor2_temp, "%dc", g_sensor2_temp);	
-		}		
-	} else {
-		strcpy (str_sensor2_temp, "..");
-	}
-	
-	if (g_sensor4_temp != -99) {
-		if (dash->using_fh) {
-			g_sensor4_temp_f = ((double)g_sensor4_temp*1.8) + 32;
-			sprintf (str_sensor4_temp, "%df", (int)g_sensor4_temp_f);
-		} else {
-			sprintf (str_sensor4_temp, "%dc", g_sensor4_temp);
-		}		
-	} else {
-		strcpy (str_sensor4_temp, "..");
+		strcpy(str_sensor4_psi, "..");
+		strcpy(str_sensor4_temp, "..");
 	}
 	
 
@@ -2392,13 +1960,12 @@ void draw_dashboard () {
 		draw_medium_string(str_oil_temp, 163, 89);		
 	}
 
-	if (tpms_connected) {
-		render_texture (tex("tyreicon.bmp"), 630, 553, 22, 45);
+	if (tpms->connected) {
+		render_texture(tex("tyreicon.bmp"), 630, 553, 22, 45);
 	}
 
-	if (tpms_connected && tpms_signal && tpms_signal_count < 300) {
-		render_texture (tex("tyresignal.bmp"), 653, 559, 33, 34);
-		tpms_signal_count++;
+	if (tpms->connected && tpms->signal_active) {
+		render_texture(tex("tyresignal.bmp"), 653, 559, 33, 34);
 	}
 
 	SDL_RenderPresent(renderer);
@@ -2448,20 +2015,10 @@ int main(int argc, char* args[]) {
 	nav = sensor_feed_nav(feed);
 	printf("\n Thread created successfully\n");
 
-	int err;
-
-	if (tpms_model == STANDARDTPMS) {
-		err = pthread_create(&(tpms_tid[0]), nullptr, &pollTPMSInterface, nullptr);
-	}		
-
-	if (tpms_model == EBAYTPMS) {
-		err = pthread_create(&(tpms_tid[0]), nullptr, &pollTPMSInterface2, nullptr);
-	}
-	
-    if (err != 0)
-        printf("\ncan't create TPMS thread :[%s]", strerror(err));
-    else
-        printf("\n TPMS Thread created successfully\n");
+	tpms_feed *tpms_fd = tpms_feed_create(TPMS_MODEL_EBAY, 2, 4, nullptr);
+	tpms_feed_start(tpms_fd);
+	tpms = tpms_feed_state(tpms_fd);
+	printf("\n TPMS Thread created successfully\n");
 
 
 	if (!SDL_Init(SDL_INIT_VIDEO)) {

@@ -74,57 +74,57 @@ void test_screen_backgrounds() {
 
     bg = menu_screen_background(MENU_SCREEN_MAIN);
     ASSERT_NOT_NULL(bg);
-    ASSERT_STR_EQ(bg->texture, "Menuoptionsex.bmp");
+    ASSERT_STR_EQ(bg->texture, "Menuoptionsex.png");
     ASSERT_TRUE(bg->theme_specific);
 
     bg = menu_screen_background(MENU_SCREEN_SET_TIME);
     ASSERT_NOT_NULL(bg);
-    ASSERT_STR_EQ(bg->texture, "Settime.bmp");
+    ASSERT_STR_EQ(bg->texture, "Settime.png");
     ASSERT_TRUE(bg->theme_specific);
 
     bg = menu_screen_background(MENU_SCREEN_SPEED_CORRECTION);
     ASSERT_NOT_NULL(bg);
-    ASSERT_STR_EQ(bg->texture, "Speedcorrection.bmp");
+    ASSERT_STR_EQ(bg->texture, "Speedcorrection.png");
     ASSERT_TRUE(bg->theme_specific);
 
     bg = menu_screen_background(MENU_SCREEN_THEME);
     ASSERT_NOT_NULL(bg);
-    ASSERT_STR_EQ(bg->texture, "Themeoptions.bmp");
+    ASSERT_STR_EQ(bg->texture, "Themeoptions.png");
     ASSERT_FALSE(bg->theme_specific);
 
     bg = menu_screen_background(MENU_SCREEN_SET_ODOMETER);
     ASSERT_NOT_NULL(bg);
-    ASSERT_STR_EQ(bg->texture, "Setodometer.bmp");
+    ASSERT_STR_EQ(bg->texture, "Setodometer.png");
     ASSERT_FALSE(bg->theme_specific);
 
     bg = menu_screen_background(MENU_SCREEN_SPROCKET);
     ASSERT_NOT_NULL(bg);
-    ASSERT_STR_EQ(bg->texture, "Sprocketsetup.bmp");
+    ASSERT_STR_EQ(bg->texture, "Sprocketsetup.png");
     ASSERT_TRUE(bg->theme_specific);
 
     bg = menu_screen_background(MENU_SCREEN_COOLANT_FAN);
     ASSERT_NOT_NULL(bg);
-    ASSERT_STR_EQ(bg->texture, "Coolantfantemp.bmp");
+    ASSERT_STR_EQ(bg->texture, "Coolantfantemp.png");
     ASSERT_TRUE(bg->theme_specific);
 
     bg = menu_screen_background(MENU_SCREEN_SET_UNITS);
     ASSERT_NOT_NULL(bg);
-    ASSERT_STR_EQ(bg->texture, "Setunits.bmp");
+    ASSERT_STR_EQ(bg->texture, "Setunits.png");
     ASSERT_TRUE(bg->theme_specific);
 
     bg = menu_screen_background(MENU_SCREEN_TPMS);
     ASSERT_NOT_NULL(bg);
-    ASSERT_STR_EQ(bg->texture, "TPMSsetup.bmp");
+    ASSERT_STR_EQ(bg->texture, "TPMSsetup.png");
     ASSERT_TRUE(bg->theme_specific);
 
     bg = menu_screen_background(MENU_SCREEN_CONTROL);
     ASSERT_NOT_NULL(bg);
-    ASSERT_STR_EQ(bg->texture, "Controloptions.bmp");
+    ASSERT_STR_EQ(bg->texture, "Controloptions.png");
     ASSERT_TRUE(bg->theme_specific);
 
     bg = menu_screen_background(MENU_SCREEN_LIGHT);
     ASSERT_NOT_NULL(bg);
-    ASSERT_STR_EQ(bg->texture, "Lightoptions.bmp");
+    ASSERT_STR_EQ(bg->texture, "Lightoptions.png");
     ASSERT_TRUE(bg->theme_specific);
 }
 
@@ -134,11 +134,11 @@ void test_cursor_positions() {
 
     /* Coolant fan */
     ASSERT_TRUE(menu_cursor_for_state(500, &c));
-    ASSERT_STR_EQ(c.texture, "Uparrowsmall.bmp");
+    ASSERT_STR_EQ(c.texture, "Uparrowsmall.png");
     ASSERT_EQ(c.x, 115); ASSERT_EQ(c.y, 185); ASSERT_EQ(c.w, 60); ASSERT_EQ(c.h, 62);
 
     ASSERT_TRUE(menu_cursor_for_state(530, &c));
-    ASSERT_STR_EQ(c.texture, "Leftmenuarrowex.bmp");
+    ASSERT_STR_EQ(c.texture, "Leftmenuarrowex.png");
     ASSERT_EQ(c.x, 667); ASSERT_EQ(c.y, 300);
 
     /* Sprocket */
@@ -147,7 +147,7 @@ void test_cursor_positions() {
 
     /* Set odometer */
     ASSERT_TRUE(menu_cursor_for_state(300, &c));
-    ASSERT_STR_EQ(c.texture, "Uparrow.bmp");
+    ASSERT_STR_EQ(c.texture, "Uparrow.png");
     ASSERT_EQ(c.x, 175); ASSERT_EQ(c.y, 279); ASSERT_EQ(c.w, 104); ASSERT_EQ(c.h, 107);
 
     ASSERT_TRUE(menu_cursor_for_state(360, &c));
@@ -197,8 +197,8 @@ void test_main_menu_arrows() {
 
     /* State 1: Reset trip 1 */
     ASSERT_TRUE(menu_main_item_arrows(1, &left, &right));
-    ASSERT_STR_EQ(left.texture, "Leftmenuarrowex.bmp");
-    ASSERT_STR_EQ(right.texture, "Rightmenuarrowex.bmp");
+    ASSERT_STR_EQ(left.texture, "Leftmenuarrowex.png");
+    ASSERT_STR_EQ(right.texture, "Rightmenuarrowex.png");
     ASSERT_EQ(left.x, 77);   ASSERT_EQ(left.y, 94);
     ASSERT_EQ(right.x, 465); ASSERT_EQ(right.y, 94);
     ASSERT_EQ(left.w, 56);   ASSERT_EQ(left.h, 50);
@@ -266,47 +266,47 @@ void test_theme_thumbnails() {
     t = menu_theme_thumb(0);
     ASSERT_NOT_NULL(t);
     ASSERT_STR_EQ(t->theme_name, "default");
-    ASSERT_STR_EQ(t->thumb_file, "whitethumb.bmp");
+    ASSERT_STR_EQ(t->thumb_file, "whitethumb.png");
 
     t = menu_theme_thumb(1);
     ASSERT_NOT_NULL(t);
     ASSERT_STR_EQ(t->theme_name, "green");
-    ASSERT_STR_EQ(t->thumb_file, "greenthumb.bmp");
+    ASSERT_STR_EQ(t->thumb_file, "greenthumb.png");
 
     t = menu_theme_thumb(2);
     ASSERT_NOT_NULL(t);
     ASSERT_STR_EQ(t->theme_name, "red");
-    ASSERT_STR_EQ(t->thumb_file, "redthumb.bmp");
+    ASSERT_STR_EQ(t->thumb_file, "redthumb.png");
 
     t = menu_theme_thumb(3);
     ASSERT_NOT_NULL(t);
     ASSERT_STR_EQ(t->theme_name, "blue");
-    ASSERT_STR_EQ(t->thumb_file, "bluethumb.bmp");
+    ASSERT_STR_EQ(t->thumb_file, "bluethumb.png");
 
     t = menu_theme_thumb(4);
     ASSERT_NOT_NULL(t);
     ASSERT_STR_EQ(t->theme_name, "orange");
-    ASSERT_STR_EQ(t->thumb_file, "orangethumb.bmp");
+    ASSERT_STR_EQ(t->thumb_file, "orangethumb.png");
 
     t = menu_theme_thumb(5);
     ASSERT_NOT_NULL(t);
     ASSERT_STR_EQ(t->theme_name, "yellow");
-    ASSERT_STR_EQ(t->thumb_file, "yellowthumb.bmp");
+    ASSERT_STR_EQ(t->thumb_file, "yellowthumb.png");
 
     t = menu_theme_thumb(6);
     ASSERT_NOT_NULL(t);
     ASSERT_STR_EQ(t->theme_name, "night");
-    ASSERT_STR_EQ(t->thumb_file, "nightthumb.bmp");
+    ASSERT_STR_EQ(t->thumb_file, "nightthumb.png");
 
     t = menu_theme_thumb(7);
     ASSERT_NOT_NULL(t);
     ASSERT_STR_EQ(t->theme_name, "bright");
-    ASSERT_STR_EQ(t->thumb_file, "brightthumb.bmp");
+    ASSERT_STR_EQ(t->thumb_file, "brightthumb.png");
 
     t = menu_theme_thumb(8);
     ASSERT_NOT_NULL(t);
     ASSERT_STR_EQ(t->theme_name, "dark");
-    ASSERT_STR_EQ(t->thumb_file, "darkthumb.bmp");
+    ASSERT_STR_EQ(t->thumb_file, "darkthumb.png");
 }
 
 /* Test: theme thumbnail bounds — invalid IDs return NULL */

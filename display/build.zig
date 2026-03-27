@@ -15,6 +15,10 @@ pub fn build(b: *std.Build) void {
     });
     const sdl_lib = sdl.artifact("SDL3");
 
+    // stb_image — PNG loading
+    const stb_dep = b.dependency("stb_image", .{ .target = target, .optimize = optimize });
+    const stb_lib = stb_dep.artifact("stb_image");
+
     // --- Main dashboard executable ---
     const dashboard = b.addExecutable(.{
         .name = "dashboard",
@@ -32,6 +36,7 @@ pub fn build(b: *std.Build) void {
 
     dashboard.root_module.addIncludePath(b.path("src"));
     dashboard.linkLibrary(sdl_lib);
+    dashboard.linkLibrary(stb_lib);
     dashboard.root_module.linkSystemLibrary("pthread", .{});
 
     b.installArtifact(dashboard);
@@ -92,6 +97,7 @@ pub fn build(b: *std.Build) void {
 
         test_assets.root_module.addIncludePath(b.path("src"));
         test_assets.linkLibrary(sdl_lib);
+        test_assets.linkLibrary(stb_lib);
 
         b.installArtifact(test_assets);
 

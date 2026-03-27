@@ -1,7 +1,7 @@
 /*
  * assets.h - Asset management for TFT Dash
  *
- * Two-key lookup system for themed BMP assets.
+ * Two-key lookup system for themed PNG assets.
  * Loads theme directories and retrieves textures by (theme, asset_name) pair.
  * Pure data container — the caller decides which theme to use.
  */
@@ -15,7 +15,7 @@ typedef struct asset_store asset_store;
 
 /*
  * Create a new asset store bound to the given renderer.
- * The renderer is used to create textures from loaded BMP surfaces.
+ * The renderer is used to create textures from loaded PNG images.
  * Returns NULL on allocation failure.
  */
 asset_store* asset_store_create(SDL_Renderer* renderer);
@@ -27,8 +27,8 @@ asset_store* asset_store_create(SDL_Renderer* renderer);
 void asset_store_destroy(asset_store* store);
 
 /*
- * Scan dir_path for *.bmp files, load each as a surface, convert to texture.
- * Assets are keyed by (theme, filename) where filename includes the .bmp extension.
+ * Scan dir_path for *.png files, load each via stb_image, convert to texture.
+ * Assets are keyed by (theme, filename) where filename includes the .png extension.
  *
  * Returns: number of assets loaded, or -1 on error.
  */

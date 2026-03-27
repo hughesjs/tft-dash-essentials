@@ -2,7 +2,7 @@
  * assets.c - Asset management for TFT Dash
  *
  * Open-addressing hash map with FNV-1a hashing for (theme, name) lookups.
- * Loads BMP files from theme directories via opendir/readdir.
+ * Loads PNG files from theme directories via opendir/readdir.
  */
 
 #include "assets.h"
@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <stb_image.h>
 
 #define INITIAL_CAPACITY 64
 #define LOAD_FACTOR_PERCENT 70
@@ -123,10 +124,10 @@ static bool resize_map(asset_store* store) {
     return true;
 }
 
-static bool has_bmp_suffix(const char* name) {
+static bool has_png_suffix(const char* name) {
     size_t len = strlen(name);
     if (len < 4) return false;
-    return strcasecmp(name + len - 4, ".bmp") == 0;
+    return strcasecmp(name + len - 4, ".png") == 0;
 }
 
 asset_store* asset_store_create(SDL_Renderer* renderer) {
@@ -173,7 +174,7 @@ int asset_store_load_theme(asset_store* store, const char* theme, const char* di
     struct dirent* ent;
 
     while ((ent = readdir(dir)) != NULL) {
-        if (!has_bmp_suffix(ent->d_name)) continue;
+        if (!has_png_suffix(ent->d_name)) continue;
 
         /* Build full path */
         size_t path_len = strlen(dir_path) + 1 + strlen(ent->d_name) + 1;
@@ -181,9 +182,15 @@ int asset_store_load_theme(asset_store* store, const char* theme, const char* di
         if (!path) continue;
         snprintf(path, path_len, "%s/%s", dir_path, ent->d_name);
 
-        SDL_Surface* surface = SDL_LoadBMP(path);
+        int w, h, channels;
+        unsigned char* data = stbi_load(path, &w, &h, &channels, 4);
         free(path);
-        if (!surface) continue;
+        if (!data) continue;
+
+        SDL_Surface* surface = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
+        if (!surface) { stbi_image_free(data); continue; }
+        memcpy(surface->pixels, data, (size_t)w * h * 4);
+        stbi_image_free(data);
 
         SDL_Texture* texture = SDL_CreateTextureFromSurface(store->renderer, surface);
         if (!texture) {

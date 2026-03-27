@@ -2,7 +2,7 @@
 #
 # tftdash — motorcycle dashboard display application
 #
-# This package installs a pre-built aarch64-linux-gnu binary and BMP assets.
+# This package installs a pre-built aarch64-linux-gnu binary and PNG assets.
 # The binary should be cross-compiled beforehand with:
 #   cd display && zig build -Dtarget=aarch64-linux-gnu -Doptimize=ReleaseSafe
 #
@@ -24,7 +24,7 @@ define TFTDASH_INSTALL_TARGET_CMDS
 	for theme_dir in $(TFTDASH_SITE)/assets/themes/*/; do \
 		theme=$$(basename $$theme_dir); \
 		mkdir -p $(TFTDASH_INSTALL_DIR)/assets/themes/$$theme; \
-		cp $$theme_dir/*.bmp $(TFTDASH_INSTALL_DIR)/assets/themes/$$theme/ 2>/dev/null || true; \
+		cp $$theme_dir/*.png $(TFTDASH_INSTALL_DIR)/assets/themes/$$theme/ 2>/dev/null || true; \
 	done
 
 	# Install boot image

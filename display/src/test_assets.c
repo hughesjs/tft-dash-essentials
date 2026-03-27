@@ -71,7 +71,7 @@ int main(void) {
         asset_store* store = asset_store_create(renderer);
         int loaded = asset_store_load_theme(store, "default", "assets/themes/default");
         if (loaded > 0) {
-            SDL_Texture* tex = asset_store_get_texture(store, "default", "Coolant.bmp");
+            SDL_Texture* tex = asset_store_get_texture(store, "default", "Coolant.png");
             if (tex) {
                 PASS();
             } else {
@@ -88,7 +88,7 @@ int main(void) {
     {
         asset_store* store = asset_store_create(renderer);
         asset_store_load_theme(store, "default", "assets/themes/default");
-        SDL_Texture* tex = asset_store_get_texture(store, "default", "nonexistent.bmp");
+        SDL_Texture* tex = asset_store_get_texture(store, "default", "nonexistent.png");
         if (tex == NULL) {
             PASS();
         } else {
@@ -102,7 +102,7 @@ int main(void) {
     {
         asset_store* store = asset_store_create(renderer);
         asset_store_load_theme(store, "default", "assets/themes/default");
-        SDL_Texture* tex = asset_store_get_texture(store, "blue", "Coolant.bmp");
+        SDL_Texture* tex = asset_store_get_texture(store, "blue", "Coolant.png");
         if (tex == NULL) {
             PASS();
         } else {
@@ -118,8 +118,8 @@ int main(void) {
         int loaded_default = asset_store_load_theme(store, "default", "assets/themes/default");
         int loaded_blue = asset_store_load_theme(store, "blue", "assets/themes/blue");
         if (loaded_default > 0 && loaded_blue > 0) {
-            SDL_Texture* tex_default = asset_store_get_texture(store, "default", "Coolant.bmp");
-            SDL_Texture* tex_blue = asset_store_get_texture(store, "blue", "Coolant.bmp");
+            SDL_Texture* tex_default = asset_store_get_texture(store, "default", "Coolant.png");
+            SDL_Texture* tex_blue = asset_store_get_texture(store, "blue", "Coolant.png");
             if (tex_default && tex_blue && tex_default != tex_blue) {
                 PASS();
             } else if (!tex_default || !tex_blue) {
@@ -138,7 +138,7 @@ int main(void) {
     {
         asset_store* store = asset_store_create(renderer);
         asset_store_load_theme(store, "default", "assets/themes/default");
-        SDL_Texture* tex = asset_store_get_texture(store, "default", "coolant.bmp");
+        SDL_Texture* tex = asset_store_get_texture(store, "default", "coolant.png");
         if (tex == NULL) {
             PASS();
         } else {
@@ -152,9 +152,9 @@ int main(void) {
     {
         /* None of these should crash */
         asset_store_destroy(NULL);
-        SDL_Texture* t1 = asset_store_get_texture(NULL, "default", "Coolant.bmp");
+        SDL_Texture* t1 = asset_store_get_texture(NULL, "default", "Coolant.png");
         asset_store* store = asset_store_create(renderer);
-        SDL_Texture* t2 = asset_store_get_texture(store, NULL, "Coolant.bmp");
+        SDL_Texture* t2 = asset_store_get_texture(store, NULL, "Coolant.png");
         SDL_Texture* t3 = asset_store_get_texture(store, "default", NULL);
         int r1 = asset_store_load_theme(store, NULL, "assets/themes/default");
         int r2 = asset_store_load_theme(store, "default", NULL);

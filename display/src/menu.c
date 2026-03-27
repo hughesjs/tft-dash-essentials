@@ -42,17 +42,17 @@ menu_screen menu_screen_for_state(int state) {
 
 static const menu_bg backgrounds[] = {
     [MENU_SCREEN_NONE]             = { NULL, false },
-    [MENU_SCREEN_MAIN]             = { "Menuoptionsex.bmp",    true  },
-    [MENU_SCREEN_SET_TIME]         = { "Settime.bmp",          true  },
-    [MENU_SCREEN_SPEED_CORRECTION] = { "Speedcorrection.bmp",  true  },
-    [MENU_SCREEN_THEME]            = { "Themeoptions.bmp",     false },
-    [MENU_SCREEN_SET_ODOMETER]     = { "Setodometer.bmp",      false },
-    [MENU_SCREEN_SPROCKET]         = { "Sprocketsetup.bmp",    true  },
-    [MENU_SCREEN_COOLANT_FAN]      = { "Coolantfantemp.bmp",   true  },
-    [MENU_SCREEN_SET_UNITS]        = { "Setunits.bmp",         true  },
-    [MENU_SCREEN_TPMS]             = { "TPMSsetup.bmp",        true  },
-    [MENU_SCREEN_CONTROL]          = { "Controloptions.bmp",   true  },
-    [MENU_SCREEN_LIGHT]            = { "Lightoptions.bmp",     true  },
+    [MENU_SCREEN_MAIN]             = { "Menuoptionsex.png",    true  },
+    [MENU_SCREEN_SET_TIME]         = { "Settime.png",          true  },
+    [MENU_SCREEN_SPEED_CORRECTION] = { "Speedcorrection.png",  true  },
+    [MENU_SCREEN_THEME]            = { "Themeoptions.png",     false },
+    [MENU_SCREEN_SET_ODOMETER]     = { "Setodometer.png",      false },
+    [MENU_SCREEN_SPROCKET]         = { "Sprocketsetup.png",    true  },
+    [MENU_SCREEN_COOLANT_FAN]      = { "Coolantfantemp.png",   true  },
+    [MENU_SCREEN_SET_UNITS]        = { "Setunits.png",         true  },
+    [MENU_SCREEN_TPMS]             = { "TPMSsetup.png",        true  },
+    [MENU_SCREEN_CONTROL]          = { "Controloptions.png",   true  },
+    [MENU_SCREEN_LIGHT]            = { "Lightoptions.png",     true  },
 };
 
 #define BG_COUNT (sizeof(backgrounds) / sizeof(backgrounds[0]))
@@ -73,93 +73,93 @@ typedef struct {
 
 static const cursor_entry cursor_table[] = {
     /* Coolant fan (500-570) */
-    { 500, "Uparrowsmall.bmp",     115, 185,  60,  62 },
-    { 510, "Uparrowsmall.bmp",     341, 173,  60,  62 },
-    { 520, "Uparrowsmall.bmp",     625, 173,  60,  62 },
-    { 530, "Leftmenuarrowex.bmp",  667, 300,  56,  50 },
-    { 540, "Leftmenuarrowex.bmp",  667, 378,  56,  50 },
-    { 550, "Leftmenuarrowex.bmp",  667, 454,  56,  50 },
-    { 560, "Leftmenuarrowex.bmp",  667, 532,  56,  50 },
-    { 570, "Uparrowsmall.bmp",     884, 534,  60,  62 },
+    { 500, "Uparrowsmall.png",     115, 185,  60,  62 },
+    { 510, "Uparrowsmall.png",     341, 173,  60,  62 },
+    { 520, "Uparrowsmall.png",     625, 173,  60,  62 },
+    { 530, "Leftmenuarrowex.png",  667, 300,  56,  50 },
+    { 540, "Leftmenuarrowex.png",  667, 378,  56,  50 },
+    { 550, "Leftmenuarrowex.png",  667, 454,  56,  50 },
+    { 560, "Leftmenuarrowex.png",  667, 532,  56,  50 },
+    { 570, "Uparrowsmall.png",     884, 534,  60,  62 },
 
     /* Sprocket (400-470) */
-    { 400, "Uparrowsmall.bmp",     113, 296,  60,  62 },
-    { 410, "Uparrowsmall.bmp",     286, 300,  60,  62 },
-    { 420, "Uparrowsmall.bmp",     373, 300,  60,  62 },
-    { 430, "Uparrowsmall.bmp",     590, 300,  60,  62 },
-    { 440, "Uparrowsmall.bmp",     678, 300,  60,  62 },
-    { 450, "Uparrowsmall.bmp",     594, 485,  60,  62 },
-    { 460, "Uparrowsmall.bmp",     861, 485,  60,  62 },
-    { 470, "Uparrowsmall.bmp",     848, 300,  60,  62 },
+    { 400, "Uparrowsmall.png",     113, 296,  60,  62 },
+    { 410, "Uparrowsmall.png",     286, 300,  60,  62 },
+    { 420, "Uparrowsmall.png",     373, 300,  60,  62 },
+    { 430, "Uparrowsmall.png",     590, 300,  60,  62 },
+    { 440, "Uparrowsmall.png",     678, 300,  60,  62 },
+    { 450, "Uparrowsmall.png",     594, 485,  60,  62 },
+    { 460, "Uparrowsmall.png",     861, 485,  60,  62 },
+    { 470, "Uparrowsmall.png",     848, 300,  60,  62 },
 
     /* Set odometer (300-360) */
-    { 300, "Uparrow.bmp",          175, 279, 104, 107 },
-    { 305, "Uparrow.bmp",          286, 279, 104, 107 },
-    { 310, "Uparrow.bmp",          399, 279, 104, 107 },
-    { 315, "Uparrow.bmp",          510, 279, 104, 107 },
-    { 320, "Uparrow.bmp",          620, 279, 104, 107 },
-    { 325, "Uparrow.bmp",          733, 279, 104, 107 },
-    { 330, "Uparrow.bmp",          175, 493, 104, 107 },
-    { 335, "Uparrow.bmp",          286, 493, 104, 107 },
-    { 340, "Uparrow.bmp",          399, 493, 104, 107 },
-    { 345, "Uparrow.bmp",          510, 493, 104, 107 },
-    { 350, "Uparrow.bmp",          620, 493, 104, 107 },
-    { 355, "Uparrow.bmp",          733, 493, 104, 107 },
-    { 360, "Uparrow.bmp",          877, 493, 104, 107 },
+    { 300, "Uparrow.png",          175, 279, 104, 107 },
+    { 305, "Uparrow.png",          286, 279, 104, 107 },
+    { 310, "Uparrow.png",          399, 279, 104, 107 },
+    { 315, "Uparrow.png",          510, 279, 104, 107 },
+    { 320, "Uparrow.png",          620, 279, 104, 107 },
+    { 325, "Uparrow.png",          733, 279, 104, 107 },
+    { 330, "Uparrow.png",          175, 493, 104, 107 },
+    { 335, "Uparrow.png",          286, 493, 104, 107 },
+    { 340, "Uparrow.png",          399, 493, 104, 107 },
+    { 345, "Uparrow.png",          510, 493, 104, 107 },
+    { 350, "Uparrow.png",          620, 493, 104, 107 },
+    { 355, "Uparrow.png",          733, 493, 104, 107 },
+    { 360, "Uparrow.png",          877, 493, 104, 107 },
 
     /* Speed correction (100-150) */
-    { 100, "Uparrow.bmp",           83, 352, 104, 107 },
-    { 110, "Uparrow.bmp",          262, 352, 104, 107 },
-    { 120, "Uparrow.bmp",          372, 352, 104, 107 },
-    { 130, "Uparrow.bmp",          477, 352, 104, 107 },
-    { 140, "Uparrow.bmp",          657, 352, 104, 107 },
-    { 150, "Uparrow.bmp",          824, 352, 104, 107 },
+    { 100, "Uparrow.png",           83, 352, 104, 107 },
+    { 110, "Uparrow.png",          262, 352, 104, 107 },
+    { 120, "Uparrow.png",          372, 352, 104, 107 },
+    { 130, "Uparrow.png",          477, 352, 104, 107 },
+    { 140, "Uparrow.png",          657, 352, 104, 107 },
+    { 150, "Uparrow.png",          824, 352, 104, 107 },
 
     /* TPMS (700-745) */
-    { 700, "Uparrowsmall.bmp",      65, 182,  60,  62 },
-    { 705, "Uparrowsmall.bmp",     420, 220,  60,  62 },
-    { 710, "Uparrowsmall.bmp",     610, 220,  60,  62 },
-    { 715, "Uparrowsmall.bmp",     726, 220,  60,  62 },
-    { 720, "Uparrowsmall.bmp",     917, 220,  60,  62 },
-    { 725, "Uparrowsmall.bmp",     727, 337,  60,  62 },
-    { 730, "Uparrowsmall.bmp",     918, 337,  60,  62 },
-    { 735, "Uparrowsmall.bmp",     728, 456,  60,  62 },
-    { 740, "Uparrowsmall.bmp",     918, 456,  60,  62 },
-    { 745, "Uparrowsmall.bmp",      65, 528,  60,  62 },
+    { 700, "Uparrowsmall.png",      65, 182,  60,  62 },
+    { 705, "Uparrowsmall.png",     420, 220,  60,  62 },
+    { 710, "Uparrowsmall.png",     610, 220,  60,  62 },
+    { 715, "Uparrowsmall.png",     726, 220,  60,  62 },
+    { 720, "Uparrowsmall.png",     917, 220,  60,  62 },
+    { 725, "Uparrowsmall.png",     727, 337,  60,  62 },
+    { 730, "Uparrowsmall.png",     918, 337,  60,  62 },
+    { 735, "Uparrowsmall.png",     728, 456,  60,  62 },
+    { 740, "Uparrowsmall.png",     918, 456,  60,  62 },
+    { 745, "Uparrowsmall.png",      65, 528,  60,  62 },
 
     /* Control (800-815) */
-    { 800, "Uparrowsmall.bmp",      69, 363,  60,  62 },
-    { 805, "Uparrowsmall.bmp",     316, 394,  60,  62 },
-    { 810, "Uparrowsmall.bmp",     648, 394,  60,  62 },
-    { 815, "Uparrowsmall.bmp",     890, 363,  60,  62 },
+    { 800, "Uparrowsmall.png",      69, 363,  60,  62 },
+    { 805, "Uparrowsmall.png",     316, 394,  60,  62 },
+    { 810, "Uparrowsmall.png",     648, 394,  60,  62 },
+    { 815, "Uparrowsmall.png",     890, 363,  60,  62 },
 
     /* Light (900-935) */
-    { 900, "Uparrowsmall.bmp",      66, 207,  60,  62 },
-    { 905, "Uparrowsmall.bmp",     708, 183,  60,  62 },
-    { 910, "Uparrowsmall.bmp",     899, 183,  60,  62 },
-    { 915, "Uparrowsmall.bmp",     708, 302,  60,  62 },
-    { 920, "Uparrowsmall.bmp",     898, 302,  60,  62 },
-    { 925, "Uparrowsmall.bmp",     531, 529,  60,  62 },
-    { 930, "Uparrowsmall.bmp",     722, 529,  60,  62 },
-    { 935, "Uparrowsmall.bmp",     890, 529,  60,  62 },
+    { 900, "Uparrowsmall.png",      66, 207,  60,  62 },
+    { 905, "Uparrowsmall.png",     708, 183,  60,  62 },
+    { 910, "Uparrowsmall.png",     899, 183,  60,  62 },
+    { 915, "Uparrowsmall.png",     708, 302,  60,  62 },
+    { 920, "Uparrowsmall.png",     898, 302,  60,  62 },
+    { 925, "Uparrowsmall.png",     531, 529,  60,  62 },
+    { 930, "Uparrowsmall.png",     722, 529,  60,  62 },
+    { 935, "Uparrowsmall.png",     890, 529,  60,  62 },
 
     /* Set units (600-635) */
-    { 600, "Uparrowsmall.bmp",      34, 197,  60,  62 },
-    { 605, "Uparrowsmall.bmp",     780, 154,  60,  62 },
-    { 610, "Uparrowsmall.bmp",     891, 154,  60,  62 },
-    { 615, "Uparrowsmall.bmp",     780, 314,  60,  62 },
-    { 620, "Uparrowsmall.bmp",     891, 314,  60,  62 },
-    { 625, "Uparrowsmall.bmp",     780, 475,  60,  62 },
-    { 630, "Uparrowsmall.bmp",     891, 475,  60,  62 },
-    { 635, "Uparrowsmall.bmp",      35, 539,  60,  62 },
+    { 600, "Uparrowsmall.png",      34, 197,  60,  62 },
+    { 605, "Uparrowsmall.png",     780, 154,  60,  62 },
+    { 610, "Uparrowsmall.png",     891, 154,  60,  62 },
+    { 615, "Uparrowsmall.png",     780, 314,  60,  62 },
+    { 620, "Uparrowsmall.png",     891, 314,  60,  62 },
+    { 625, "Uparrowsmall.png",     780, 475,  60,  62 },
+    { 630, "Uparrowsmall.png",     891, 475,  60,  62 },
+    { 635, "Uparrowsmall.png",      35, 539,  60,  62 },
 
     /* Set time (20-70) */
-    {  20, "Uparrow.bmp",           92, 355, 104, 107 },
-    {  30, "Uparrow.bmp",          262, 355, 104, 107 },
-    {  40, "Uparrow.bmp",          371, 355, 104, 107 },
-    {  50, "Uparrow.bmp",          545, 355, 104, 107 },
-    {  60, "Uparrow.bmp",          657, 355, 104, 107 },
-    {  70, "Uparrow.bmp",          824, 355, 104, 107 },
+    {  20, "Uparrow.png",           92, 355, 104, 107 },
+    {  30, "Uparrow.png",          262, 355, 104, 107 },
+    {  40, "Uparrow.png",          371, 355, 104, 107 },
+    {  50, "Uparrow.png",          545, 355, 104, 107 },
+    {  60, "Uparrow.png",          657, 355, 104, 107 },
+    {  70, "Uparrow.png",          824, 355, 104, 107 },
 
     /* Theme (200-280) — left/right arrow pairs handled separately */
 };
@@ -211,12 +211,12 @@ bool menu_main_item_arrows(int state, menu_cursor *left, menu_cursor *right) {
     if (!left || !right) return false;
     for (size_t i = 0; i < MAIN_ARROW_COUNT; i++) {
         if (main_arrows[i].state == state) {
-            left->texture  = "Leftmenuarrowex.bmp";
+            left->texture  = "Leftmenuarrowex.png";
             left->x  = main_arrows[i].lx;
             left->y  = main_arrows[i].ly;
             left->w  = 56;
             left->h  = 50;
-            right->texture = "Rightmenuarrowex.bmp";
+            right->texture = "Rightmenuarrowex.png";
             right->x = main_arrows[i].rx;
             right->y = main_arrows[i].ry;
             right->w = 56;
@@ -247,12 +247,12 @@ bool menu_theme_arrows(int state, menu_cursor *left, menu_cursor *right) {
     if (!left || !right) return false;
     for (size_t i = 0; i < THEME_ARROW_COUNT; i++) {
         if (theme_arrows[i].state == state) {
-            left->texture  = "Arrowlefttheme.bmp";
+            left->texture  = "Arrowlefttheme.png";
             left->x  = theme_arrows[i].lx;
             left->y  = theme_arrows[i].ly;
             left->w  = 48;
             left->h  = 159;
-            right->texture = "Arrowrighttheme.bmp";
+            right->texture = "Arrowrighttheme.png";
             right->x = theme_arrows[i].rx;
             right->y = theme_arrows[i].ry;
             right->w = 48;
@@ -266,15 +266,15 @@ bool menu_theme_arrows(int state, menu_cursor *left, menu_cursor *right) {
 /* ---------- Theme thumbnails ---------- */
 
 static const theme_thumb theme_thumbs[] = {
-    { "default", "whitethumb.bmp"  },
-    { "green",   "greenthumb.bmp"  },
-    { "red",     "redthumb.bmp"    },
-    { "blue",    "bluethumb.bmp"   },
-    { "orange",  "orangethumb.bmp" },
-    { "yellow",  "yellowthumb.bmp" },
-    { "night",   "nightthumb.bmp"  },
-    { "bright",  "brightthumb.bmp" },
-    { "dark",    "darkthumb.bmp"   },
+    { "default", "whitethumb.png"  },
+    { "green",   "greenthumb.png"  },
+    { "red",     "redthumb.png"    },
+    { "blue",    "bluethumb.png"   },
+    { "orange",  "orangethumb.png" },
+    { "yellow",  "yellowthumb.png" },
+    { "night",   "nightthumb.png"  },
+    { "bright",  "brightthumb.png" },
+    { "dark",    "darkthumb.png"   },
 };
 
 #define THEME_THUMB_COUNT (sizeof(theme_thumbs) / sizeof(theme_thumbs[0]))

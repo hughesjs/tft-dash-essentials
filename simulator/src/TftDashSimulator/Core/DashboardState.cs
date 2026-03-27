@@ -51,6 +51,19 @@ public class DashboardState : INotifyPropertyChanged
     private int _rearPressureLow;
     private string _nav = string.Empty;
 
+    // Menu-specific backing fields
+    private int _frontSprocket = 15;
+    private int _rearSprocket = 45;
+    private int _coolantFanTemp = 90;
+    private int _controlLayout = 1;
+    private int _dayTheme = 0;
+    private int _nightTheme = 7;
+    private int _currentLightLevel = 128;
+    private int _lightSwitchValue = 64;
+    private int _fanNeutralOption = 0;
+    private int _gearRatioInterval = 100;
+    private int _odoError = 0;
+
     public event PropertyChangedEventHandler? PropertyChanged;
     public event EventHandler? StateChanged;
 
@@ -313,6 +326,73 @@ public class DashboardState : INotifyPropertyChanged
         set { SetField(ref _nav, value ?? string.Empty); }
     }
 
+    // Menu-specific properties
+    public int FrontSprocket
+    {
+        get { lock (_lock) return _frontSprocket; }
+        set { SetField(ref _frontSprocket, value); }
+    }
+
+    public int RearSprocket
+    {
+        get { lock (_lock) return _rearSprocket; }
+        set { SetField(ref _rearSprocket, value); }
+    }
+
+    public int CoolantFanTemp
+    {
+        get { lock (_lock) return _coolantFanTemp; }
+        set { SetField(ref _coolantFanTemp, value); }
+    }
+
+    public int ControlLayout
+    {
+        get { lock (_lock) return _controlLayout; }
+        set { SetField(ref _controlLayout, value); }
+    }
+
+    public int DayTheme
+    {
+        get { lock (_lock) return _dayTheme; }
+        set { SetField(ref _dayTheme, value); }
+    }
+
+    public int NightTheme
+    {
+        get { lock (_lock) return _nightTheme; }
+        set { SetField(ref _nightTheme, value); }
+    }
+
+    public int CurrentLightLevel
+    {
+        get { lock (_lock) return _currentLightLevel; }
+        set { SetField(ref _currentLightLevel, value); }
+    }
+
+    public int LightSwitchValue
+    {
+        get { lock (_lock) return _lightSwitchValue; }
+        set { SetField(ref _lightSwitchValue, value); }
+    }
+
+    public int FanNeutralOption
+    {
+        get { lock (_lock) return _fanNeutralOption; }
+        set { SetField(ref _fanNeutralOption, value); }
+    }
+
+    public int GearRatioInterval
+    {
+        get { lock (_lock) return _gearRatioInterval; }
+        set { SetField(ref _gearRatioInterval, value); }
+    }
+
+    public int OdoError
+    {
+        get { lock (_lock) return _odoError; }
+        set { SetField(ref _odoError, value); }
+    }
+
     /// <summary>
     /// Creates a new DashboardState with default/idle values.
     /// </summary>
@@ -403,7 +483,18 @@ public class DashboardState : INotifyPropertyChanged
                 _rearSensor = _rearSensor,
                 _frontPressureLow = _frontPressureLow,
                 _rearPressureLow = _rearPressureLow,
-                _nav = _nav
+                _nav = _nav,
+                _frontSprocket = _frontSprocket,
+                _rearSprocket = _rearSprocket,
+                _coolantFanTemp = _coolantFanTemp,
+                _controlLayout = _controlLayout,
+                _dayTheme = _dayTheme,
+                _nightTheme = _nightTheme,
+                _currentLightLevel = _currentLightLevel,
+                _lightSwitchValue = _lightSwitchValue,
+                _fanNeutralOption = _fanNeutralOption,
+                _gearRatioInterval = _gearRatioInterval,
+                _odoError = _odoError
             };
         }
     }

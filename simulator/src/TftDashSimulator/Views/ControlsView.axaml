@@ -108,6 +108,86 @@
                                   ValueChanged="OnNumericChanged"/>
                 </StackPanel>
 
+                <!-- Menu -->
+                <TextBlock Text="Menu" FontWeight="SemiBold" Margin="0,10,0,0"/>
+
+                <StackPanel>
+                    <TextBlock Text="Menu State (0=Dashboard)"/>
+                    <NumericUpDown x:Name="MenuStateControl" Minimum="0" Maximum="999"
+                                  Increment="1" FormatString="0"
+                                  ValueChanged="OnMenuNumericChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Front Sprocket"/>
+                    <NumericUpDown x:Name="FrontSprocketControl" Minimum="10" Maximum="25"
+                                  Increment="1" FormatString="0"
+                                  ValueChanged="OnMenuNumericChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Rear Sprocket"/>
+                    <NumericUpDown x:Name="RearSprocketControl" Minimum="30" Maximum="60"
+                                  Increment="1" FormatString="0"
+                                  ValueChanged="OnMenuNumericChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Coolant Fan Temp"/>
+                    <NumericUpDown x:Name="CoolantFanTempControl" Minimum="60" Maximum="120"
+                                  Increment="5" FormatString="0"
+                                  ValueChanged="OnMenuNumericChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Day Theme"/>
+                    <NumericUpDown x:Name="DayThemeControl" Minimum="0" Maximum="8"
+                                  Increment="1" FormatString="0"
+                                  ValueChanged="OnMenuNumericChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Night Theme"/>
+                    <NumericUpDown x:Name="NightThemeControl" Minimum="0" Maximum="8"
+                                  Increment="1" FormatString="0"
+                                  ValueChanged="OnMenuNumericChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Fan Neutral Option"/>
+                    <NumericUpDown x:Name="FanNeutralOptionControl" Minimum="0" Maximum="3"
+                                  Increment="1" FormatString="0"
+                                  ValueChanged="OnMenuNumericChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Control Layout"/>
+                    <NumericUpDown x:Name="ControlLayoutControl" Minimum="0" Maximum="1"
+                                  Increment="1" FormatString="0"
+                                  ValueChanged="OnMenuNumericChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Gear Ratio Interval"/>
+                    <NumericUpDown x:Name="GearRatioIntervalControl" Minimum="50" Maximum="500"
+                                  Increment="50" FormatString="0"
+                                  ValueChanged="OnMenuNumericChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Light Switch Value"/>
+                    <NumericUpDown x:Name="LightSwitchValueControl" Minimum="0" Maximum="255"
+                                  Increment="1" FormatString="0"
+                                  ValueChanged="OnMenuNumericChanged"/>
+                </StackPanel>
+
+                <StackPanel>
+                    <TextBlock Text="Current Light Level"/>
+                    <NumericUpDown x:Name="CurrentLightLevelControl" Minimum="0" Maximum="255"
+                                  Increment="1" FormatString="0"
+                                  ValueChanged="OnMenuNumericChanged"/>
+                </StackPanel>
+
                 <!-- Navigation -->
                 <TextBlock Text="Navigation" FontWeight="SemiBold" Margin="0,10,0,0"/>
 
@@ -188,6 +268,20 @@
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
                 <Button Content="F5: Navigation" Click="OnNavigationClick"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+
+                <TextBlock Text="Menu Presets (F6-F9)" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                <Button Content="F6: Main Menu" Click="OnMainMenuClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="F7: Theme Menu" Click="OnThemeMenuClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="F8: Coolant Fan Menu" Click="OnCoolantFanMenuClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="F9: Sprocket Menu" Click="OnSprocketMenuClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="Set Time Menu" Click="OnSetTimeMenuClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="Set Odo Menu" Click="OnOdometerMenuClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="Units Menu" Click="OnUnitsMenuClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="Speed Correction" Click="OnSpeedCorrectionMenuClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="TPMS Menu" Click="OnTPMSMenuClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="Control Menu" Click="OnControlMenuClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="Light Menu" Click="OnLightMenuClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                <Button Content="Back to Dashboard" Click="OnBackToDashClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
 
                 <Button Content="Exit (Esc)" Click="OnExitClick"
                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"

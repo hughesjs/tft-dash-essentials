@@ -57,6 +57,19 @@ public partial class ControlsView : UserControl
         ThemeControl.Value = _state.Theme;
         UnitsControl.Value = _state.Km;
 
+        // Sync menu controls from model
+        MenuStateControl.Value = _state.MenuState;
+        FrontSprocketControl.Value = _state.FrontSprocket;
+        RearSprocketControl.Value = _state.RearSprocket;
+        CoolantFanTempControl.Value = _state.CoolantFanTemp;
+        DayThemeControl.Value = _state.DayTheme;
+        NightThemeControl.Value = _state.NightTheme;
+        FanNeutralOptionControl.Value = _state.FanNeutralOption;
+        ControlLayoutControl.Value = _state.ControlLayout;
+        GearRatioIntervalControl.Value = _state.GearRatioInterval;
+        LightSwitchValueControl.Value = _state.LightSwitchValue;
+        CurrentLightLevelControl.Value = _state.CurrentLightLevel;
+
         // Sync nav controls from model
         SyncNavControlsFromModel();
 
@@ -79,6 +92,23 @@ public partial class ControlsView : UserControl
         else if (sender == MinuteControl) _state.Minute = (int)e.NewValue.Value;
         else if (sender == ThemeControl) _state.Theme = (int)e.NewValue.Value;
         else if (sender == UnitsControl) _state.Km = (int)e.NewValue.Value;
+    }
+
+    private void OnMenuNumericChanged(object? sender, NumericUpDownValueChangedEventArgs e)
+    {
+        if (_updatingFromModel || _state == null || !e.NewValue.HasValue) return;
+
+        if (sender == MenuStateControl) _state.MenuState = (int)e.NewValue.Value;
+        else if (sender == FrontSprocketControl) _state.FrontSprocket = (int)e.NewValue.Value;
+        else if (sender == RearSprocketControl) _state.RearSprocket = (int)e.NewValue.Value;
+        else if (sender == CoolantFanTempControl) _state.CoolantFanTemp = (int)e.NewValue.Value;
+        else if (sender == DayThemeControl) _state.DayTheme = (int)e.NewValue.Value;
+        else if (sender == NightThemeControl) _state.NightTheme = (int)e.NewValue.Value;
+        else if (sender == FanNeutralOptionControl) _state.FanNeutralOption = (int)e.NewValue.Value;
+        else if (sender == ControlLayoutControl) _state.ControlLayout = (int)e.NewValue.Value;
+        else if (sender == GearRatioIntervalControl) _state.GearRatioInterval = (int)e.NewValue.Value;
+        else if (sender == LightSwitchValueControl) _state.LightSwitchValue = (int)e.NewValue.Value;
+        else if (sender == CurrentLightLevelControl) _state.CurrentLightLevel = (int)e.NewValue.Value;
     }
 
     private void OnCheckChanged(object? sender, RoutedEventArgs e)
@@ -205,6 +235,68 @@ public partial class ControlsView : UserControl
     private void OnNavigationClick(object? sender, RoutedEventArgs e)
     {
         if (_state != null) PresetScenarios.ApplyNavigation(_state);
+    }
+
+    // === Menu Preset Buttons ===
+
+    private void OnMainMenuClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplyMainMenu(_state);
+    }
+
+    private void OnThemeMenuClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplyThemeMenu(_state);
+    }
+
+    private void OnCoolantFanMenuClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplyCoolantFanMenu(_state);
+    }
+
+    private void OnSprocketMenuClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplySprocketMenu(_state);
+    }
+
+    private void OnSetTimeMenuClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplySetTimeMenu(_state);
+    }
+
+    private void OnOdometerMenuClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplyOdometerMenu(_state);
+    }
+
+    private void OnUnitsMenuClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplyUnitsMenu(_state);
+    }
+
+    private void OnSpeedCorrectionMenuClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplySpeedCorrectionMenu(_state);
+    }
+
+    private void OnTPMSMenuClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplyTPMSMenu(_state);
+    }
+
+    private void OnControlMenuClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplyControlMenu(_state);
+    }
+
+    private void OnLightMenuClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplyLightMenu(_state);
+    }
+
+    private void OnBackToDashClick(object? sender, RoutedEventArgs e)
+    {
+        if (_state != null) PresetScenarios.ApplyBackToDash(_state);
     }
 
     private void OnExitClick(object? sender, RoutedEventArgs e)

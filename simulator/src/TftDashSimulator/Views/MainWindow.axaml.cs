@@ -47,6 +47,26 @@ public partial class MainWindow : Window
                 state.Gear = s.Gear;
                 e.Handled = true;
                 break;
+            case Key.F5:
+                PresetScenarios.ApplyNavigation(state);
+                e.Handled = true;
+                break;
+            case Key.F6:
+                PresetScenarios.ApplyMainMenu(state);
+                e.Handled = true;
+                break;
+            case Key.F7:
+                PresetScenarios.ApplyThemeMenu(state);
+                e.Handled = true;
+                break;
+            case Key.F8:
+                PresetScenarios.ApplyCoolantFanMenu(state);
+                e.Handled = true;
+                break;
+            case Key.F9:
+                PresetScenarios.ApplySprocketMenu(state);
+                e.Handled = true;
+                break;
             case Key.Escape:
                 Close();
                 e.Handled = true;

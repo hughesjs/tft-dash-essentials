@@ -77,6 +77,32 @@ public static class PresetScenarios
         state.Nav = "%TNR%A82%Edinburgh%3%350%0.2%1%12.5%";
     }
 
+    // === Menu Presets ===
+
+    public static void ApplyMainMenu(DashboardState state) { state.MenuState = 1; }
+
+    public static void ApplyThemeMenu(DashboardState state) { state.MenuState = 200; }
+
+    public static void ApplyCoolantFanMenu(DashboardState state) { state.MenuState = 500; state.CoolantFanTemp = 90; state.FanNeutralOption = 0; }
+
+    public static void ApplySprocketMenu(DashboardState state) { state.MenuState = 400; state.FrontSprocket = 15; state.RearSprocket = 45; state.GearRatioInterval = 100; }
+
+    public static void ApplySetTimeMenu(DashboardState state) { state.MenuState = 20; }
+
+    public static void ApplyOdometerMenu(DashboardState state) { state.MenuState = 300; }
+
+    public static void ApplyUnitsMenu(DashboardState state) { state.MenuState = 600; }
+
+    public static void ApplySpeedCorrectionMenu(DashboardState state) { state.MenuState = 100; }
+
+    public static void ApplyTPMSMenu(DashboardState state) { state.MenuState = 700; }
+
+    public static void ApplyControlMenu(DashboardState state) { state.MenuState = 800; state.ControlLayout = 1; }
+
+    public static void ApplyLightMenu(DashboardState state) { state.MenuState = 900; state.DayTheme = 0; state.NightTheme = 7; state.LightSwitchValue = 64; state.CurrentLightLevel = 128; }
+
+    public static void ApplyBackToDash(DashboardState state) { state.MenuState = 0; }
+
     /// <summary>
     /// Idle/parked state - engine off, neutral, no warnings.
     /// </summary>

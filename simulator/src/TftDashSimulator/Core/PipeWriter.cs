@@ -153,17 +153,16 @@ public class PipeWriter : IDisposable
                             state = _currentState!.Clone();
                         }
 
-                        string message;
-                        if (state.MenuState == 0)
+                        // Always send the live data message — the display reads
+                        // choice_state (field 13) from it to decide menu vs dashboard.
+                        _writer!.WriteLine(MessageGenerator.GenerateLiveDataMessage(state));
+
+                        // When in a menu, also send the menu data message with field values.
+                        if (state.MenuState != 0)
                         {
-                            message = MessageGenerator.GenerateLiveDataMessage(state);
-                        }
-                        else
-                        {
-                            message = GenerateDefaultMenuMessage(state);
+                            _writer!.WriteLine(GenerateDefaultMenuMessage(state));
                         }
 
-                        _writer!.WriteLine(message);
                         _writer!.Flush();
 
                         Thread.Sleep(100);
@@ -215,12 +214,12 @@ public class PipeWriter : IDisposable
             menuState: state.MenuState,
             odoDigits: odoDigits,
             odo2Digits: odo2Digits,
-            odoError: 0,
+            odoError: state.OdoError,
             setTimeDigits: setTimeDigits,
             spcDigits: spcDigits,
-            frontSprocket: 15,
-            rearSprocket: 45,
-            coolantFanTemp: 90,
+            frontSprocket: state.FrontSprocket,
+            rearSprocket: state.RearSprocket,
+            coolantFanTemp: state.CoolantFanTemp,
             km: state.Km,
             fh: state.Fahrenheit,
             bar: state.Bar,
@@ -228,13 +227,13 @@ public class PipeWriter : IDisposable
             rearSensor: state.RearSensor,
             frontPressureLow: state.FrontPressureLow,
             rearPressureLow: state.RearPressureLow,
-            controlLayout: 1,
-            dayTheme: state.Theme,
-            nightTheme: 7,
-            currentLightLevel: 128,
-            lightSwitchValue: 64,
-            fanNeutralOption: 0,
-            gearRatioInterval: 100
+            controlLayout: state.ControlLayout,
+            dayTheme: state.DayTheme,
+            nightTheme: state.NightTheme,
+            currentLightLevel: state.CurrentLightLevel,
+            lightSwitchValue: state.LightSwitchValue,
+            fanNeutralOption: state.FanNeutralOption,
+            gearRatioInterval: state.GearRatioInterval
         );
     }
 

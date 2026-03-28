@@ -30,7 +30,7 @@ pub fn build(b: *std.Build) void {
     });
 
     dashboard.root_module.addCSourceFiles(.{
-        .files = &.{ "src/main.c", "src/parser.c", "src/assets.c", "src/sensor_feed.c", "src/menu.c", "src/tpms_feed.c" },
+        .files = &.{ "src/main.c", "src/parser.c", "src/assets.c", "src/sensor_feed.c", "src/menu.c", "src/tpms_feed.c", "src/animation.c", "src/dashboard_anims.c" },
         .flags = &.{"-std=c23"},
     });
 

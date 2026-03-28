@@ -90,6 +90,7 @@ NAV TO DO
 #include "sensor_feed.h"
 #include "menu.h"
 #include "tpms_feed.h"
+#include "dashboard_anims.h"
 
 // Read-only pointers to current state — refreshed each frame from sensor_feed
 static const dashboard_state *dash = nullptr;
@@ -431,8 +432,6 @@ int g_down_arrow_x  = 0;
 int g_up_arrow_x  = 0;
 int startup_anim_count = 0;
 bool startup_done = false;
-int flash_count = 0;
-bool flash = false;
 int target_rpm_rotation = 0;
 int current_rpm_rotation = 0;
 
@@ -1548,12 +1547,6 @@ static warning_badge resolve_warning(void) {
 }
 
 void draw_dashboard () {
-	flash_count++;
-	if (flash_count > 50) {
-		flash_count = 0;
-		flash = !flash;
-	}
-
 	if ((dash->info_mode != currentinfomode && warningbadgeactive)) {		
 		warningbadgecancelled = true;
 		warningbadgeactive = false;
@@ -1597,7 +1590,7 @@ void draw_dashboard () {
 
 	// Fuel Gauge
 	if (fuelwarning == true && enginerunning == true) {
-		if (flash) 
+		if (anim_is_reversing(&anim_flash))
 		{
 			render_texture (tex("Fuelgauge.png"), 676, 294, 316, 44);
 			render_texture (tex("Fuelgaugewhite.png"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(dash->fuel_float)), 303, 274, 28);
@@ -1608,12 +1601,12 @@ void draw_dashboard () {
 	}
 	// Coolant Temp
 	if (overheatwarning == true && enginerunning == true) {
-		if (flash) {
+		if (anim_is_reversing(&anim_flash)) {
 			if (dash->using_fh) {
 				render_texture (tex("CoolantF.png"), 808, 196, 209, 80);
 			} else {
-				render_texture (tex("Coolant.png"), 808, 196, 209, 80);	
-			}	
+				render_texture (tex("Coolant.png"), 808, 196, 209, 80);
+			}
 		}
 	} else {
 		if (dash->using_fh) {
@@ -1715,7 +1708,7 @@ void draw_dashboard () {
 		warningbadgeactive = w.active;
 		if (w.active) {
 			render_texture(tex(w.badge_bmp), 0, 163, 444, 249);
-			if (flash && w.flash_bmp) render_texture(tex(w.flash_bmp), w.fx, w.fy, w.fw, w.fh);
+			if (anim_is_reversing(&anim_flash) && w.flash_bmp) render_texture(tex(w.flash_bmp), w.fx, w.fy, w.fw, w.fh);
 		}
 	}
 
@@ -2068,6 +2061,7 @@ int main(int argc, char* args[]) {
 	g_current_theme = theme_name_from_id(dash->theme);
 
 	init_rects();
+	dashboard_anims_init();
 
 	SDL_HideCursor();
 
@@ -2075,6 +2069,8 @@ int main(int argc, char* args[]) {
 	SDL_Event e;
 
 	while (!quit) {
+		anim_tick_all();
+
 		// Refresh state pointers from sensor feed each frame
 		dash = sensor_feed_dashboard(feed);
 		menu = sensor_feed_menu(feed);

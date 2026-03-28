@@ -427,7 +427,13 @@ bool render_oil_light_texture(int x, int y, int w, int h)
 
 /* --- Lifecycle --- */
 
-bool draw_init(void) {
+bool draw_init(const dashboard_state *d, const menu_state *m, const nav_state *n, const tpms_state *t) {
+	dash = d;
+	menu = m;
+	nav = n;
+	tpms = t;
+	g_current_theme = theme_name_from_id(dash->theme);
+
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		fprintf(stderr, "Could not initialise SDL3: %s\n", SDL_GetError());
 		return false;
@@ -477,14 +483,6 @@ void draw_cleanup(void) {
 	if (renderer) SDL_DestroyRenderer(renderer);
 	if (window) SDL_DestroyWindow(window);
 	SDL_Quit();
-}
-
-void draw_set_state(const dashboard_state *d, const menu_state *m, const nav_state *n, const tpms_state *t) {
-	dash = d;
-	menu = m;
-	nav = n;
-	tpms = t;
-	g_current_theme = theme_name_from_id(dash->theme);
 }
 
 void draw_frame(void) {

@@ -25,14 +25,12 @@ static void init_feeds(void) {
 int main(int argc, char *args[]) {
     init_feeds();
 
-    draw_set_state(
+    if (!draw_init(
         sensor_feed_dashboard(feed),
         sensor_feed_menu(feed),
         sensor_feed_nav(feed),
         tpms_feed_state(tpms_fd)
-    );
-
-    if (!draw_init()) return 1;
+    )) return 1;
 
     for (;;) {
         anim_tick_all();

@@ -3,21 +3,12 @@
  */
 
 #include "tpms_feed.h"
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-#include <math.h>
+#include "test_helpers.h"
 
-/* Test helpers */
 #define TEST(name) \
     printf("Running test: %s...", #name); \
     test_##name(); \
     printf(" PASSED\n");
-
-#define ASSERT_EQ(actual, expected) assert((actual) == (expected))
-#define ASSERT_TRUE(condition) assert(condition)
-#define ASSERT_FALSE(condition) assert(!(condition))
-#define ASSERT_FLOAT_EQ(actual, expected) assert(fabs((actual) - (expected)) < 0.1)
 
 /* ── Test: create and destroy without crash ── */
 
@@ -41,8 +32,8 @@ void test_initial_state() {
     ASSERT_FALSE(st->signal_active);
     ASSERT_FALSE(st->front.received);
     ASSERT_FALSE(st->rear.received);
-    ASSERT_FLOAT_EQ(st->front.psi, 0.0);
-    ASSERT_FLOAT_EQ(st->rear.psi, 0.0);
+    ASSERT_FLOAT_NEAR(st->front.psi, 0.0);
+    ASSERT_FLOAT_NEAR(st->rear.psi, 0.0);
     ASSERT_EQ(st->front.temp_celsius, 0);
     ASSERT_EQ(st->rear.temp_celsius, 0);
     ASSERT_EQ(st->front.state, TPMS_STATE_NORMAL);
@@ -97,8 +88,8 @@ void test_decode_standard_frame() {
 
     ASSERT_TRUE(tpms_decode_standard_frame(frame, 14, &sensor_id, &bar, &psi, &temp, &state));
     ASSERT_EQ(sensor_id, 2);
-    ASSERT_FLOAT_EQ(bar, 11.4);
-    ASSERT_FLOAT_EQ(psi, 165.3);
+    ASSERT_FLOAT_NEAR(bar, 11.4);
+    ASSERT_FLOAT_NEAR(psi, 165.3);
     ASSERT_EQ(temp, 70);
     ASSERT_EQ(state, TPMS_STATE_NORMAL);
 }
@@ -165,8 +156,8 @@ void test_decode_ebay_frame() {
 
     ASSERT_TRUE(tpms_decode_ebay_frame(frame, 7, &sensor_id, &psi, &bar, &temp));
     ASSERT_EQ(sensor_id, 1);
-    ASSERT_FLOAT_EQ(psi, 34.4);
-    ASSERT_FLOAT_EQ(bar, 2.37);
+    ASSERT_FLOAT_NEAR(psi, 34.4);
+    ASSERT_FLOAT_NEAR(bar, 2.37);
     ASSERT_EQ(temp, 25);
 }
 

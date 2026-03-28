@@ -1,32 +1,11 @@
 
 #include "menu.h"
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#include "test_helpers.h"
 
-/* Test helpers — same pattern as test_parser.c */
 #define TEST(name) \
     printf("Running test: %s...", #name); \
     test_##name(); \
     printf(" PASSED\n");
-
-#define ASSERT_EQ(actual, expected) \
-    assert((actual) == (expected))
-
-#define ASSERT_STR_EQ(actual, expected) \
-    assert(strcmp((actual), (expected)) == 0)
-
-#define ASSERT_TRUE(condition) \
-    assert(condition)
-
-#define ASSERT_FALSE(condition) \
-    assert(!(condition))
-
-#define ASSERT_NULL(ptr) \
-    assert((ptr) == NULL)
-
-#define ASSERT_NOT_NULL(ptr) \
-    assert((ptr) != NULL)
 
 /* Test: screen routing — representative states from each range */
 void test_screen_routing() {

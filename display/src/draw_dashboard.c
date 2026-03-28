@@ -46,14 +46,8 @@ static char sz_km[] = "km";
 /* --- Helper functions --- */
 
 static int get_diff(int n1, int n2) {
-	if (n1 >= n2) {
-		return n1 - n2;
-	}
-
-	if (n2 > n1) {
-		return n2 - n1;
-	}
-	return 0;
+	if (n1 >= n2) return n1 - n2;
+	return n2 - n1;
 }
 
 double get_precise_bar(int ohms) {
@@ -157,67 +151,67 @@ double get_precise_temp(int ohms) {
 static int get_litres_remaining(int fuelintfloat, double *litres_out) {
 
   if (fuelintfloat >= 0 && fuelintfloat <= 93) {
-    *litres_out = (21000 - (((double)(1000 / 93)) * ((double)fuelintfloat - 0))) / 1000;
+    *litres_out = (21000 - (((1000.0 / 93.0)) * ((double)fuelintfloat - 0))) / 1000;
     return 93;
   }
 
   if (fuelintfloat > 93 && fuelintfloat <= 121) {
-    *litres_out = (20000 - (((double)(1000 / 28)) * ((double)fuelintfloat - 93))) / 1000;
+    *litres_out = (20000 - (((1000.0 / 28.0)) * ((double)fuelintfloat - 93))) / 1000;
     return 28;
   }
 
   if (fuelintfloat > 121 && fuelintfloat <= 148) {
-    *litres_out = (18000 - (((double)(1000 / 27)) * ((double)fuelintfloat - 121))) / 1000;
+    *litres_out = (18000 - (((1000.0 / 27.0)) * ((double)fuelintfloat - 121))) / 1000;
     return 27;
   }
 
   if (fuelintfloat > 148 && fuelintfloat <= 180) {
-    *litres_out = (17000 - (((double)(1000 / 32)) * ((double)fuelintfloat - 148))) / 1000;
+    *litres_out = (17000 - (((1000.0 / 32.0)) * ((double)fuelintfloat - 148))) / 1000;
     return 32;
   }
 
   if (fuelintfloat > 180 && fuelintfloat <= 211) {
-    *litres_out = (15000 - (((double)(1000 / 31)) * ((double)fuelintfloat - 180))) / 1000;
+    *litres_out = (15000 - (((1000.0 / 31.0)) * ((double)fuelintfloat - 180))) / 1000;
     return 31;
   }
 
   if (fuelintfloat > 211 && fuelintfloat <= 241) {
-    *litres_out = (14000 - (((double)(1000 / 30)) * ((double)fuelintfloat - 211))) / 1000;
+    *litres_out = (14000 - (((1000.0 / 30.0)) * ((double)fuelintfloat - 211))) / 1000;
     return 30;
   }
 
   if (fuelintfloat > 241 && fuelintfloat <= 281) {
-    *litres_out = (12000 - (((double)(1000 / 40)) * ((double)fuelintfloat - 241))) / 1000;
+    *litres_out = (12000 - (((1000.0 / 40.0)) * ((double)fuelintfloat - 241))) / 1000;
     return 40;
   }
 
   if (fuelintfloat > 281 && fuelintfloat <= 320) {
-    *litres_out = (10000 - (((double)(1000 / 39)) * ((double)fuelintfloat - 281))) / 1000;
+    *litres_out = (10000 - (((1000.0 / 39.0)) * ((double)fuelintfloat - 281))) / 1000;
     return 39;
   }
 
   if (fuelintfloat > 320 && fuelintfloat <= 367) {
-    *litres_out = (9000 - (((double)(1000 / 47)) * ((double)fuelintfloat - 320))) / 1000;
+    *litres_out = (9000 - (((1000.0 / 47.0)) * ((double)fuelintfloat - 320))) / 1000;
     return 47;
   }
 
   if (fuelintfloat > 367 && fuelintfloat <= 426) {
-    *litres_out = (7000 - (((double)(1000 / 59)) * ((double)fuelintfloat - 367))) / 1000;
+    *litres_out = (7000 - (((1000.0 / 59.0)) * ((double)fuelintfloat - 367))) / 1000;
     return 59;
   }
 
   if (fuelintfloat > 426 && fuelintfloat <= 481) {
-    *litres_out = (6000 - (((double)(1000 / 55)) * ((double)fuelintfloat - 426))) / 1000;
+    *litres_out = (6000 - (((1000.0 / 55.0)) * ((double)fuelintfloat - 426))) / 1000;
     return 55;
   }
 
   if (fuelintfloat > 481 && fuelintfloat <= 506) {
-    *litres_out = (5000 - (((double)(1000 / 25)) * ((double)fuelintfloat - 481))) / 1000;
+    *litres_out = (5000 - (((1000.0 / 25.0)) * ((double)fuelintfloat - 481))) / 1000;
     return 25;
   }
 
   if (fuelintfloat > 506) {
-    *litres_out = (5000 - (((double)(1000 / 25)) * ((double)fuelintfloat - 481))) / 1000;
+    *litres_out = (5000 - (((1000.0 / 25.0)) * ((double)fuelintfloat - 481))) / 1000;
     return 25;
   }
 
@@ -332,9 +326,7 @@ static void render_info_screen(const info_screen *screen, int x_offset, bool usi
 	for (int i = 0; i < INFO_SCREEN_MAX_TEXTURES; i++) {
 		const char *name = (using_km && screen->textures_km[i]) ? screen->textures_km[i] : screen->textures[i];
 		if (!name) break;
-		SDL_FRect r = screen->rects[i];
-		r.x += x_offset;
-		render_texture(tex(name), (int)r.x, (int)r.y, (int)r.w, (int)r.h);
+		render_texture(tex(name), (int)screen->x[i] + x_offset, (int)screen->y[i], (int)screen->w[i], (int)screen->h[i]);
 	}
 }
 
@@ -367,7 +359,7 @@ void dashboard_startup(void) {
 	if (f > 255) {
 		for (int i = 0; i < REV_REVEAL_COUNT; i++) {
 			if (f > REV_REVEAL[i].threshold)
-				SDL_RenderTexture(renderer, tex(REV_REVEAL[i].texture), NULL, &(SDL_FRect){REV_REVEAL[i].rect.x, REV_REVEAL[i].rect.y, REV_REVEAL[i].rect.w, REV_REVEAL[i].rect.h});
+				SDL_RenderTexture(renderer, tex(REV_REVEAL[i].texture), NULL, &(SDL_FRect){REV_REVEAL[i].x, REV_REVEAL[i].y, REV_REVEAL[i].w, REV_REVEAL[i].h});
 		}
 	}
 
@@ -425,7 +417,7 @@ void draw_dashboard(void) {
 	double litres_remaining = 0;
 	double tempf = 0;
 
-	if (dash->info_mode != info_current_mode && warningbadgeactive)
+	if (dash->info_mode != dashboard_anims_info_mode() && warningbadgeactive)
 		warnings_cancel();
 
 	if (dash->theme == 0 || dash->theme == 7) {
@@ -501,21 +493,21 @@ void draw_dashboard(void) {
 
 	/* Middle info section — static display or animated transition */
 	if (!warningbadgeactive) {
-		if (dash->info_mode != info_current_mode) {
+		if (dash->info_mode != dashboard_anims_info_mode()) {
 			if (!anim_is_active(&anim_info))
 				anim_start(&anim_info);
 
 			if (!anim_is_reversing(&anim_info))
-				render_info_screen(&INFO_SCREENS[info_current_mode], -anim_frame(&anim_info), dash->using_km);
+				render_info_screen(&INFO_SCREENS[dashboard_anims_info_mode()], -anim_frame(&anim_info), dash->using_km);
 			else
 				render_info_screen(&INFO_SCREENS[dash->info_mode], -anim_frame(&anim_info), dash->using_km);
 
 			if (anim_is_done(&anim_info)) {
-				info_current_mode = dash->info_mode;
+				dashboard_anims_set_info_mode(dash->info_mode);
 				anim_stop(&anim_info);
 			}
 		} else {
-			render_info_screen(&INFO_SCREENS[info_current_mode], 0, dash->using_km);
+			render_info_screen(&INFO_SCREENS[dashboard_anims_info_mode()], 0, dash->using_km);
 		}
 	}
 
@@ -542,7 +534,7 @@ void draw_dashboard(void) {
 
 	/* Rev counter numbers */
 	for (int i = 0; i < REV_REVEAL_COUNT; i++)
-		SDL_RenderTexture(renderer, tex(REV_REVEAL[i].texture), NULL, &(SDL_FRect){REV_REVEAL[i].rect.x, REV_REVEAL[i].rect.y, REV_REVEAL[i].rect.w, REV_REVEAL[i].rect.h});
+		SDL_RenderTexture(renderer, tex(REV_REVEAL[i].texture), NULL, &(SDL_FRect){REV_REVEAL[i].x, REV_REVEAL[i].y, REV_REVEAL[i].w, REV_REVEAL[i].h});
 
 	snprintf( str_current_speed, sizeof(str_current_speed), "%d", dash->current_speed);
 	snprintf( str_trip1, sizeof(str_trip1), "%.1f", dash->trip1);

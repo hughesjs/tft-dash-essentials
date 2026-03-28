@@ -9,7 +9,7 @@
 #define DASHBOARD_ANIMS_H
 
 #include "animation.h"
-#include <SDL3/SDL.h>
+#include <stddef.h>
 
 /* --- Animation instances --- */
 
@@ -26,21 +26,22 @@ extern animation anim_rpm;
 typedef struct {
     const char *textures[INFO_SCREEN_MAX_TEXTURES];     /* texture names (NULL-terminated) */
     const char *textures_km[INFO_SCREEN_MAX_TEXTURES];  /* km variant (NULL = same as textures) */
-    SDL_FRect rects[INFO_SCREEN_MAX_TEXTURES];           /* destination rects */
+    float x[INFO_SCREEN_MAX_TEXTURES], y[INFO_SCREEN_MAX_TEXTURES], w[INFO_SCREEN_MAX_TEXTURES], h[INFO_SCREEN_MAX_TEXTURES];
 } info_screen;
 
 /* Indexed by info mode (0-3). Describes the textures shown when that mode is active. */
 extern const info_screen INFO_SCREENS[INFO_MODE_COUNT];
 
 /* Current info mode — updated when info transition completes */
-extern int info_current_mode;
+int dashboard_anims_info_mode(void);
+void dashboard_anims_set_info_mode(int mode);
 
 /* --- Startup rev counter reveal table --- */
 
 typedef struct {
     int threshold;          /* frame count at which this number appears */
     const char *texture;    /* texture name */
-    SDL_FRect rect;         /* destination rect */
+    float x, y, w, h;      /* destination rect */
 } rev_reveal_entry;
 
 #define REV_REVEAL_COUNT 13

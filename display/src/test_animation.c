@@ -3,10 +3,7 @@
  */
 
 #include "animation.h"
-
-#include <stdio.h>
-#include <assert.h>
-#include <math.h>
+#include "test_helpers.h"
 
 static int test_count = 0;
 static int pass_count = 0;
@@ -19,11 +16,6 @@ static int pass_count = 0;
     pass_count++; \
     printf("PASS\n"); \
 } while (0)
-
-#define ASSERT_TRUE(cond)  assert(cond)
-#define ASSERT_FALSE(cond) assert(!(cond))
-#define ASSERT_EQ(a, b)    assert((a) == (b))
-#define ASSERT_FLOAT_NEAR(a, b) assert(fabs((double)(a) - (double)(b)) < 0.01)
 
 /* --- Helper to tick via registry for single-animation tests --- */
 
@@ -271,6 +263,39 @@ void test_registry_skips_inactive(void) {
     ASSERT_EQ(anim_frame(&b), 0);
 }
 
+/* --- Edge case tests --- */
+
+void test_chase_target_above_limit(void) {
+    animation a = { .mode = ANIM_CHASE, .speed = 1, .limit = 100 };
+    anim_start(&a);
+    anim_set_target(&a, 200);
+
+    /* Chase should move towards 200, even though limit is 100 */
+    for (int i = 0; i < 200; i++) tick_all_once(&a);
+    ASSERT_EQ(anim_frame(&a), 200);
+}
+
+void test_oneshot_speed_zero(void) {
+    animation a = { .mode = ANIM_ONESHOT, .speed = 0, .limit = 100 };
+    anim_start(&a);
+
+    /* speed=0, frame should stay at 0 forever — no infinite loop */
+    for (int i = 0; i < 100; i++) tick_all_once(&a);
+    ASSERT_EQ(anim_frame(&a), 0);
+    ASSERT_FALSE(anim_is_done(&a));
+}
+
+void test_progress_limit_zero(void) {
+    animation a = { .mode = ANIM_ONESHOT, .speed = 1, .limit = 0 };
+    anim_start(&a);
+
+    /* limit=0: progress should return 0.0, not NaN or crash */
+    ASSERT_FLOAT_NEAR(anim_progress(&a), 0.0f);
+
+    tick_all_once(&a);
+    ASSERT_FLOAT_NEAR(anim_progress(&a), 0.0f);
+}
+
 /* --- Null safety --- */
 
 void test_null_safety(void) {
@@ -307,6 +332,9 @@ int main(void) {
     TEST(inactive_not_ticked);
     TEST(registry_ticks_all);
     TEST(registry_skips_inactive);
+    TEST(chase_target_above_limit);
+    TEST(oneshot_speed_zero);
+    TEST(progress_limit_zero);
     TEST(null_safety);
 
     printf("\n  Results: %d/%d passed\n", pass_count, test_count);

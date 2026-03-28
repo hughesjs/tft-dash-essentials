@@ -1,30 +1,11 @@
 
 #include "parser.h"
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-#include <math.h>
+#include "test_helpers.h"
 
-/* Test helpers */
 #define TEST(name) \
     printf("Running test: %s...", #name); \
     test_##name(); \
     printf(" PASSED\n");
-
-#define ASSERT_EQ(actual, expected) \
-    assert((actual) == (expected))
-
-#define ASSERT_FLOAT_EQ(actual, expected) \
-    assert(fabs((actual) - (expected)) < 0.01)
-
-#define ASSERT_STR_EQ(actual, expected) \
-    assert(strcmp((actual), (expected)) == 0)
-
-#define ASSERT_TRUE(condition) \
-    assert(condition)
-
-#define ASSERT_FALSE(condition) \
-    assert(!(condition))
 
 /* Test: Parse basic live message */
 void test_parse_live_basic() {
@@ -36,7 +17,7 @@ void test_parse_live_basic() {
     ASSERT_EQ(state.current_speed, 68);
     ASSERT_EQ(state.rpm, 1234);
     ASSERT_EQ(state.coolant_temp, 80);
-    ASSERT_FLOAT_EQ(state.batt, 12.5);
+    ASSERT_FLOAT_NEAR(state.batt, 12.5);
     ASSERT_EQ(state.current_hour, 14);
     ASSERT_EQ(state.current_minute, 23);
     ASSERT_EQ(state.fuel_float, 477);
@@ -64,11 +45,11 @@ void test_parse_live_floats() {
 
     ASSERT_TRUE(parse_live_message(msg, &state));
 
-    ASSERT_FLOAT_EQ(state.batt, 13.8);
-    ASSERT_FLOAT_EQ(state.trip1, 123.45);
-    ASSERT_FLOAT_EQ(state.trip2, 678.90);
-    ASSERT_FLOAT_EQ(state.odo, 12345.6);
-    ASSERT_FLOAT_EQ(state.spd_correct, -2.5);
+    ASSERT_FLOAT_NEAR(state.batt, 13.8);
+    ASSERT_FLOAT_NEAR(state.trip1, 123.45);
+    ASSERT_FLOAT_NEAR(state.trip2, 678.90);
+    ASSERT_FLOAT_NEAR(state.odo, 12345.6);
+    ASSERT_FLOAT_NEAR(state.spd_correct, -2.5);
 }
 
 /* Test: Parse navigation string field */
@@ -111,9 +92,9 @@ void test_parse_nav_basic() {
     ASSERT_STR_EQ(state.nav_towards, "Glasgow");
     ASSERT_STR_EQ(state.nav_exit, "J16");
     ASSERT_EQ(state.nav_yards, 350);
-    ASSERT_FLOAT_EQ(state.nav_miles, 0.2);
+    ASSERT_FLOAT_NEAR(state.nav_miles, 0.2);
     ASSERT_EQ(state.driving_left, 1);
-    ASSERT_FLOAT_EQ(state.nav_dest_distance, 12.5);
+    ASSERT_FLOAT_NEAR(state.nav_dest_distance, 12.5);
     ASSERT_TRUE(state.nav_active);
 }
 
@@ -125,9 +106,9 @@ void test_parse_nav_units() {
     const char* msg = "%TNR%M6%Manchester%14%500%1.4%0%25.0%";
     ASSERT_TRUE(parse_nav_message(msg, &state));
     ASSERT_EQ(state.nav_yards, 500);
-    ASSERT_FLOAT_EQ(state.nav_miles, 1.4);
+    ASSERT_FLOAT_NEAR(state.nav_miles, 1.4);
     ASSERT_EQ(state.driving_left, 0);
-    ASSERT_FLOAT_EQ(state.nav_dest_distance, 25.0);
+    ASSERT_FLOAT_NEAR(state.nav_dest_distance, 25.0);
 }
 
 /* Test: Empty navigation should not be active */
@@ -137,6 +118,24 @@ void test_parse_nav_empty() {
 
     ASSERT_TRUE(parse_nav_message(msg, &state));
     ASSERT_FALSE(state.nav_active);
+}
+
+/* Test: Long nav_string close to 255-char limit */
+void test_parse_live_long_nav_string() {
+    dashboard_state state = {0};
+
+    /* Build a message with a nav_string of 253 chars (just under the 255-char buffer) */
+    char long_nav[254];
+    memset(long_nav, 'A', 253);
+    long_nav[253] = '\0';
+
+    char msg[512];
+    snprintf(msg, sizeof(msg), ",0,0,0,0.0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,%s,", long_nav);
+
+    ASSERT_TRUE(parse_live_message(msg, &state));
+    /* nav_string should be truncated to fit within the 255-char buffer */
+    ASSERT_TRUE(strlen(state.nav_string) <= 254);
+    ASSERT_TRUE(strlen(state.nav_string) > 0);
 }
 
 /* Test: Null pointer safety */
@@ -164,7 +163,7 @@ void test_real_world_message() {
     ASSERT_EQ(state.current_speed, 79);
     ASSERT_EQ(state.rpm, 12500);
     ASSERT_EQ(state.coolant_temp, 100);
-    ASSERT_FLOAT_EQ(state.batt, 12.5);
+    ASSERT_FLOAT_NEAR(state.batt, 12.5);
     ASSERT_EQ(state.current_hour, 14);
     ASSERT_EQ(state.current_minute, 23);
     ASSERT_EQ(state.fuel_float, 477);
@@ -184,6 +183,7 @@ int main(void) {
     TEST(parse_nav_basic);
     TEST(parse_nav_units);
     TEST(parse_nav_empty);
+    TEST(parse_live_long_nav_string);
     TEST(null_safety);
     TEST(real_world_message);
 

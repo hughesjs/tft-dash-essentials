@@ -5,10 +5,7 @@
 #include "warnings.h"
 #include "parser.h"
 #include "tpms_feed.h"
-
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>
+#include "test_helpers.h"
 
 static int test_count = 0;
 static int pass_count = 0;
@@ -20,12 +17,6 @@ static int pass_count = 0;
     pass_count++; \
     printf("PASS\n"); \
 } while (0)
-
-#define ASSERT_TRUE(cond)  assert(cond)
-#define ASSERT_FALSE(cond) assert(!(cond))
-#define ASSERT_NULL(p)     assert((p) == NULL)
-#define ASSERT_NOT_NULL(p) assert((p) != NULL)
-#define ASSERT_STR_EQ(a, b) assert(strcmp((a), (b)) == 0)
 
 /* Helper: create a zeroed dashboard state */
 static dashboard_state make_dash(void) {

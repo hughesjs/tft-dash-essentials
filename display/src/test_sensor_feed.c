@@ -8,12 +8,9 @@
 #define _GNU_SOURCE
 #include "sensor_feed.h"
 #include "parser.h"
+#include "test_helpers.h"
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <math.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -31,15 +28,6 @@ static int pass_count = 0;
     pass_count++; \
     printf("PASS\n"); \
 } while (0)
-
-#define ASSERT_TRUE(cond)  assert(cond)
-#define ASSERT_FALSE(cond) assert(!(cond))
-#define ASSERT_EQ(a, b)    assert((a) == (b))
-#define ASSERT_NEQ(a, b)   assert((a) != (b))
-#define ASSERT_NULL(p)     assert((p) == NULL)
-#define ASSERT_NOT_NULL(p) assert((p) != NULL)
-#define ASSERT_FLOAT_EQ(a, b) assert(fabs((double)(a) - (double)(b)) < 0.01)
-#define ASSERT_STR_EQ(a, b) assert(strcmp((a), (b)) == 0)
 
 /* Create a named pipe for testing. Returns the path (caller must free and unlink). */
 static char *make_test_pipe(void) {
@@ -163,7 +151,7 @@ void test_live_message(void) {
     ASSERT_EQ(dash->current_speed, 68);
     ASSERT_EQ(dash->rpm, 1234);
     ASSERT_EQ(dash->coolant_temp, 80);
-    ASSERT_FLOAT_EQ(dash->batt, 12.5);
+    ASSERT_FLOAT_NEAR(dash->batt, 12.5);
     ASSERT_EQ(dash->current_hour, 14);
     ASSERT_EQ(dash->current_minute, 23);
     ASSERT_EQ(dash->fuel_float, 477);
@@ -323,6 +311,78 @@ void test_staleness_tracking(void) {
     free(path);
 }
 
+/* --- Boundary length tests --- */
+
+void test_boundary_length_90(void) {
+    /* A { message where frame_pos == 90 should NOT parse (process_frame requires len > 90) */
+    char *path = make_test_pipe();
+    ASSERT_NOT_NULL(path);
+
+    sensor_feed *feed = sensor_feed_create(path);
+    sensor_feed_start(feed);
+
+    int wfd = open_pipe_writer(path);
+    wait_for_processing();
+
+    /* Build a {-framed message that is exactly 90 bytes in the frame buffer.
+       frame_buf[0] = '{', then 89 commas = 90 total. */
+    char msg[91];
+    msg[0] = '{';
+    memset(msg + 1, ',', 89);
+    msg[90] = '\0';
+    ASSERT_EQ(strlen(msg), 90);
+
+    pipe_write(wfd, msg);
+    wait_for_processing();
+
+    /* Should NOT have parsed — rejected by length check (len must be > 90) */
+    ASSERT_EQ(sensor_feed_dashboard(feed)->current_speed, 0);
+
+    close(wfd);
+    sensor_feed_destroy(feed);
+    unlink(path);
+    free(path);
+}
+
+void test_boundary_length_91(void) {
+    /* A valid { message where frame_pos == 91 meets the > 90 threshold and should parse.
+       We construct a valid live data payload that is exactly 91 bytes in the frame buffer. */
+    char *path = make_test_pipe();
+    ASSERT_NOT_NULL(path);
+
+    sensor_feed *feed = sensor_feed_create(path);
+    sensor_feed_start(feed);
+
+    int wfd = open_pipe_writer(path);
+    wait_for_processing();
+
+    /* Valid payload (after the {): 36 comma-separated fields */
+    const char *payload = ",042,1000,70,12.0,8,0,300,0,0,0,0,0,200,0,1.2,3.4,23456.7,0,0.5,2,21,3,45,120,85,1,30,0,100,200,0,0,1,2,28,30,";
+    size_t payload_len = strlen(payload);
+
+    /* Build frame: '{' + payload + padding to make total exactly 91 */
+    char msg[256];
+    msg[0] = '{';
+    memcpy(msg + 1, payload, payload_len);
+    size_t pos = 1 + payload_len;
+
+    /* Pad with trailing chars (commas) to reach exactly 91 */
+    while (pos < 91) msg[pos++] = ',';
+    msg[91] = '\0';
+    ASSERT_EQ(strlen(msg), 91);
+
+    pipe_write(wfd, msg);
+    wait_for_processing();
+
+    /* The 91-byte frame passes the > 90 length check; parser should extract speed=42 */
+    ASSERT_EQ(sensor_feed_dashboard(feed)->current_speed, 42);
+
+    close(wfd);
+    sensor_feed_destroy(feed);
+    unlink(path);
+    free(path);
+}
+
 /* --- Main --- */
 
 int main(void) {
@@ -341,6 +401,8 @@ int main(void) {
     TEST(message_framing);
     TEST(multiple_messages);
     TEST(staleness_tracking);
+    TEST(boundary_length_90);
+    TEST(boundary_length_91);
 
     printf("\n  Results: %d/%d passed\n", pass_count, test_count);
     return (pass_count == test_count) ? 0 : 1;

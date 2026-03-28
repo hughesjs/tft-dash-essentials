@@ -22,7 +22,7 @@ static void init_feeds(void) {
     tpms_feed_start(tpms_fd);
 }
 
-int main(int argc, char *args[]) {
+int main(void) {
     init_feeds();
 
     if (!draw_init(

@@ -21,7 +21,8 @@ void draw_cleanup(void);
 /* Pump events, render the current frame (dashboard or menu), delay. */
 void draw_frame(void);
 
-/* --- Internal interface (used by draw_dashboard.c, draw_menu.c) --- */
+/* --- Internal interface (used by draw_dashboard.c and draw_menu.c only) ---
+ * Code outside the draw module should not access these directly. */
 
 #include <SDL3/SDL.h>
 #include "assets.h"

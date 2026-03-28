@@ -10,7 +10,7 @@ This is the display application for the TFT Dash motorcycle dashboard. It runs o
 # Build everything
 zig build
 
-# Build and run all tests (45 tests across 5 suites)
+# Build and run all tests (62 tests across 6 suites)
 zig build test
 
 # Build and run the dashboard
@@ -39,11 +39,15 @@ display/
 │   ├── sensor_feed.h/c     Bike sensor data feed (serial/pipe connection + background thread)
 │   ├── menu.h/c            Menu system data tables (screen routing, cursors, thumbnails)
 │   ├── tpms_feed.h/c       TPMS data feed (Standard + eBay hardware, binary protocol decoding)
+│   ├── animation.h/c       Data-driven animation system (oneshot, ping-pong, loop, chase modes) with registry
+│   ├── dashboard_anims.h/c Animation instances (startup, flash, info transition, RPM) and data tables
+│   ├── draw.h              Shared rendering state and drawing primitives (in progress — being extracted from main.c)
 │   ├── test_parser.c       Parser test suite (10 tests)
 │   ├── test_assets.c       Asset manager test suite (7 tests)
 │   ├── test_sensor_feed.c  Sensor feed integration tests (9 tests)
 │   ├── test_menu.c         Menu data table tests (8 tests)
 │   ├── test_tpms_feed.c    TPMS frame decoding tests (9 tests)
+│   ├── test_animation.c    Animation test suite (17 tests)
 │   └── TPMSTest.cpp        Legacy standalone TPMS test utility
 ├── assets/themes/           PNG files organised by theme
 ├── build.zig                Zig build system configuration
@@ -63,6 +67,9 @@ display/
 | `sensor_feed` | Own serial/pipe connection, background thread, expose const state | None |
 | `menu` | Data tables for menu screens (backgrounds, cursors, thumbnails) | None |
 | `tpms_feed` | Own TPMS serial connection, binary protocol decoding, background thread | None |
+| `animation` | Data-driven animation engine (oneshot, ping-pong, loop, chase modes) with global registry | None |
+| `dashboard_anims` | Concrete animation instances (startup, flash, info transition, RPM) and data tables (info screen textures, rev counter reveal thresholds) | None |
+| `draw` | Shared rendering state and drawing primitives (in progress — being extracted from main.c) | Yes (SDL_Texture) |
 | `main` | SDL init, render loop, drawing helpers | Yes |
 
 ### Main Application (`main.c`)
@@ -86,11 +93,13 @@ These are refreshed each frame from `sensor_feed` and `tpms_feed`. The main file
 ### Threading Model
 
 Three threads, deliberately no mutex synchronisation:
-1. **Main thread**: SDL event loop + rendering (reads const pointers)
+1. **Main thread**: SDL event loop + rendering (reads const pointers) + animation ticking
 2. **`sensor_feed` thread**: Reads firmware serial data, writes internal state
 3. **`tpms_feed` thread**: Reads TPMS serial data, writes internal state
 
 Each feed has exactly one writer thread and one reader (the render loop). All shared fields are naturally-aligned 32-bit int/float values, which are atomic on ARM. The worst case is a single render frame showing a mix of two consecutive serial updates — imperceptible at 60 fps. A mutex would add lock contention every frame for no visible benefit.
+
+The animation system runs single-threaded on the main thread. `anim_tick_all()` is called once per frame to advance all registered animations based on elapsed time.
 
 ### Serial Protocol
 
@@ -117,7 +126,7 @@ Parsing is handled by the `parser` module using data-driven field descriptor tab
 
 9 themes: default/white, green, red, blue, orange, yellow, night, bright (high-contrast), dark.
 
-Each theme has its own directory under `assets/themes/`. All 9 themes are loaded into the asset store at startup. Textures are retrieved via `tex("Name.bmp")` for the current theme or `tex_from("theme", "Name.bmp")` for a specific theme.
+Each theme has its own directory under `assets/themes/`. All 9 themes are loaded into the asset store at startup. Textures are retrieved via `tex("Name.png")` for the current theme or `tex_from("theme", "Name.png")` for a specific theme.
 
 ## Key Constants
 
@@ -129,7 +138,9 @@ Each theme has its own directory under `assets/themes/`. All 9 themes are loaded
 ## Guidelines
 
 - All source is C23 — no C++ features
-- All rendering uses SDL3 textures created from PNG surfaces — no TTF fonts
+- All rendering uses SDL3 textures created from PNG surfaces (loaded via stb_image) — no TTF fonts
+- All assets are PNG — the BMP-to-PNG migration is complete
+- The `sensor_feed` module tracks data staleness; the display shows a NO COMMS badge when data is stale
 - When adding new visual elements, follow the existing sprite-sheet pattern with themed variants
 - Test serial data parsing changes carefully — the message format must match the firmware exactly
 - New subsystems should follow the established pattern: opaque struct, const accessors, integration tests

@@ -1,104 +1,98 @@
 # TFT Dash
 
-A motorcycle dashboard replacement system comprising Arduino-based sensor firmware and a Raspberry Pi display application.
+A motorcycle dashboard replacement system. An Arduino-based interface board reads sensor signals from the bike — speed, RPM, coolant temperature, fuel level, battery voltage, indicators, and more — and streams data over USB serial to a Raspberry Pi, which renders a real-time graphical dashboard using SDL3.
 
-The firmware reads signals from the bike (speed, RPM, coolant temperature, fuel level, battery voltage, indicators, neutral, oil, high beam, and more) via a dedicated interface board, and streams the data over USB serial. The display application renders a real-time graphical dashboard using SDL3.
+## System Architecture
+
+```
+Phone App (BLE) ──> Arduino Firmware ──> USB Serial ──> Raspberry Pi Display
+                    (ATMega32u4)          115200 bps     (SDL3, 1024x600)
+                                                               |
+                                                    TPMS Sensors (USB Serial)
+```
+
+The firmware outputs comma-delimited messages at 115200 bps. The display application deserialises these into dashboard state and renders at 60 fps. A separate TPMS receiver provides tyre pressure data via a second serial connection.
+
+## Display Software Architecture
+
+```
+main.c (init, event loop, rendering)
+  ├── draw.h          shared rendering state and drawing primitives (in progress)
+  ├── dashboard_anims.h/c   animation instances and data tables
+  │   └── animation.h/c     generic data-driven animation engine
+  ├── sensor_feed.h/c       firmware serial data + comms staleness tracking
+  ├── tpms_feed.h/c         tyre pressure serial data
+  ├── parser.h/c             serial message deserialisation
+  ├── assets.h/c             PNG texture management (stb_image)
+  └── menu.h/c               menu screen data tables
+```
+
+Pure C23 codebase. Three threads: main (render + animation ticking), sensor feed (firmware serial), and TPMS feed (tyre pressure serial). 62 tests across 6 suites.
 
 ## Repository Structure
 
 | Directory | Description |
 |---|---|
-| `display/` | Display software (C++/SDL3) for Raspberry Pi |
+| `display/` | Display application (C23/SDL3) for Raspberry Pi |
 | `firmware/` | Arduino firmware for the sensor interface board (ATMega32u4) |
-| `hardware/` | EAGLE schematic and board files for the Gen 4 (SMD, ATMega32u4) PCB |
-| `hardware/3DModels/` | STL files for 3D printing the enclosure |
+| `hardware/` | EAGLE schematic/board files for Gen4 PCB + 3D-printable enclosure STLs |
+| `simulator/` | .NET/Avalonia desktop simulator for development without hardware |
 | `buildroot-tftdash/` | Buildroot external tree for building the Pi SD card image |
-| `simulator/` | Simulator for development without hardware |
-| `docs/` | Documentation (serial protocol, signal reverse engineering, etc.) |
+| `docs/` | Protocol specs, signal reverse engineering notes, update system design |
 
-## Prerequisites
-
-### Display Software
-- Raspberry Pi (or any Linux system for development)
-- Zig 0.15+ (build system and cross-compilation)
-
-### Firmware
-- [Arduino IDE](https://www.arduino.cc/en/software) or `arduino-cli`
-- Eeprom24C32_64 and RTClib Arduino libraries
-- ATMega32u4 (Arduino Leonardo compatible) Gen4 board
-
-### Hardware Design
-- [Autodesk EAGLE](https://www.autodesk.com/products/eagle/overview) for `.brd` and `.sch` files
-
-## Building
-
-### Display Software
-
-On Raspberry Pi / Linux:
+## Quick Start
 
 ```bash
-cd display
-zig build
+# Build the display application (requires Zig 0.15+)
+make display
+
+# Run all tests
+make test
+
+# Build the firmware (requires arduino-cli)
+make firmware
+
+# Build the simulator (requires .NET 10)
+make simulator
+
+# Full SD card image (firmware + display cross-compile + Buildroot)
+make
+
+# See all targets
+make help
 ```
 
-On macOS:
+### Bike Model Selection
 
-```bash
-cd display
-zig build
-```
+Uncomment one define at the top of `firmware/firmware.ino`:
 
-The compiled binary must be run from the `display/` directory, as BMP assets need to be accessible from the working directory.
+- `#define BIKE_FZS1000` — Yamaha FZS1000 Fazer
+- `#define BIKE_FZS600` — Yamaha FZS600 Fazer
 
-### Firmware
+This controls gear ratios, primary drive ratio, wheel diameter, and RPM calibration.
 
-```bash
-# Compile via arduino-cli
-firmware/build.sh build
+## Features
 
-# Or open firmware/firmware.ino in the Arduino IDE and upload
-```
-
-Select the bike model at the top of `firmware.ino` by uncommenting the appropriate define:
-- `#define BIKE_FZS1000` for Yamaha FZS1000 Fazer
-- `#define BIKE_FZS600` for Yamaha FZS600 Fazer
-
-## How It Works
-
-The system operates as two components connected via USB serial at 115200 baud:
-
-1. **Firmware** reads analogue and digital sensor inputs from the bike, processes them (averaging, calibration, unit conversion), and continuously outputs comma-delimited data strings over USB serial.
-
-2. **Display** runs on the Raspberry Pi, receives serial data on a background thread, deserialises it into dashboard state, and renders the GUI on the main thread at 1024x600 resolution.
-
-### Serial Data Format
-
-The firmware outputs two message types:
-
-- **Live data**: `{,speed,rpm,coolant,battery,hour,minute,fuel,neutral,oil,highbeam,left,right,...,}` - real-time sensor readings
-- **Menu data**: `[,menustate,odo1,...,settings,...,]` - menu navigation state and configuration values
-
-### Features
-
-- Real-time speed, RPM, coolant temperature, battery voltage, and fuel level display
-- Turn indicator, high beam, neutral, and oil warning lights
-- Trip computer with two independent trip meters
-- Odometer
+- Real-time speed, RPM, coolant temperature, battery voltage, and fuel level
 - Gear position indicator (calculated from sprocket ratios)
-- Coolant fan temperature control
-- TPMS (Tyre Pressure Monitoring System) support with two hardware variants
+- Turn indicator, high beam, neutral, and oil warning lights
+- TPMS (tyre pressure monitoring) with two hardware variants
 - Navigation overlay with turn-by-turn directions
-- Multiple colour themes (white, green, red, blue, orange, yellow, night, high contrast)
-- Automatic day/night theme switching via ambient light sensor
-- On-screen menu system for configuration (units, time, speed correction, sprocket sizes, etc.)
-- KM/H and MPH unit support, Celsius and Fahrenheit, PSI and Bar
+- 9 colour themes with automatic day/night switching
+- On-screen menu system for configuration
+- NO COMMS warning when serial data goes stale
+- Data-driven animation system (startup sequence, RPM effects, transitions)
+- A/B rootfs update system for atomic SD card updates
 
-## Contact
+## Documentation
 
-- ddraper.cedesoft@gmail.com
-- support@tftdashproject.co.uk
-- http://www.tftdashproject.co.uk
+See `docs/` for detailed documentation:
+
+- **`SERIAL-PROTOCOL.md`** — Complete serial protocol specification
+- **`signal-reverse-engineering.md`** — Electrical signal details and calibration constants
+- **`ab-update-plan.md`** — A/B rootfs update system design
+- **`ota-update-plan.md`** — Over-the-air WiFi update architecture (planned)
 
 ## Licence
 
-2018-2024 TFTDashProject / Danny Draper.
+2018-2025 TFTDashProject / Danny Draper.

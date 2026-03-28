@@ -31,7 +31,7 @@ make setup         # First-time Arduino board support + libraries
 ### Display Software
 ```bash
 cd display && zig build           # Build natively (requires zig 0.15+)
-cd display && zig build test      # Run all tests (45 tests across 5 suites)
+cd display && zig build test      # Run all tests (62 tests across 6 suites)
 cd display && zig build -Dtarget=aarch64-linux-gnu -Doptimize=ReleaseSafe  # Cross-compile for Pi
 ```
 
@@ -84,22 +84,25 @@ The display's `sensor_feed` thread reads serial data byte-by-byte, frames messag
 Pure C23 codebase. The main file (~2200 lines) contains the render loop and drawing helpers. Subsystems are extracted into modules:
 
 - **`parser.h/c`** — Serial message deserialisation with data-driven field descriptor tables
-- **`assets.h/c`** — Themed PNG texture loading with two-key hash map lookup
-- **`sensor_feed.h/c`** — Owns serial/pipe connection and background thread for firmware data
+- **`assets.h/c`** — Themed PNG texture loading (via stb_image) with two-key hash map lookup
+- **`sensor_feed.h/c`** — Owns serial/pipe connection, background thread for firmware data, and comms staleness tracking
 - **`menu.h/c`** — Menu screen routing, cursor positions, and theme thumbnail lookup tables
 - **`tpms_feed.h/c`** — TPMS serial connection and binary protocol decoding (Standard + eBay)
+- **`animation.h/c`** — Data-driven animation engine (oneshot, ping-pong, loop, chase modes) with global registry
+- **`dashboard_anims.h/c`** — Concrete animation instances (startup, flash, info transition, RPM) and data tables
+- **`draw.h`** — Shared rendering state and drawing primitives (in progress — being extracted from main.c)
 
 ### Threading Model
 Three pthreads:
-1. **Main thread**: SDL event loop + rendering (reads const pointers)
+1. **Main thread**: SDL event loop + rendering (reads const pointers) + animation ticking (`anim_tick_all()` each frame)
 2. **`sensor_feed` thread**: Reads firmware serial data, writes internal state
 3. **`tpms_feed` thread**: Reads TPMS serial data, writes internal state
 
 ### Theming
-9 colour themes (default/white, green, red, blue, orange, yellow, night, bright, dark). Each theme has its own directory under `assets/themes/`. All themes loaded into the asset store at startup. Textures retrieved via `tex("Name.bmp")` or `tex_from("theme", "Name.bmp")`.
+9 colour themes (default/white, green, red, blue, orange, yellow, night, bright, dark). Each theme has its own directory under `assets/themes/`. All themes loaded into the asset store at startup. Textures retrieved via `tex("Name.png")` or `tex_from("theme", "Name.png")`.
 
 ### PNG Assets
-All graphical assets are PNG files in `assets/themes/<theme>/`. Loaded at startup via `asset_store_load_theme()` into a hash map.
+All graphical assets are PNG files in `assets/themes/<theme>/`. Loaded at startup via stb_image through `asset_store_load_theme()` into a hash map.
 
 ## Key Constants
 - Screen resolution: 1024x600

@@ -41,7 +41,7 @@ SDL_FRect spd_digit_two;
 SDL_FRect spd_digit_three;
 
 /* Navigation icon sprite atlas — indexed by nav_icon enum */
-int g_nav_icons_src_tex_loc[4][NAV_ICON_COUNT] = {
+const int g_nav_icons_src_tex_loc[4][NAV_ICON_COUNT] = {
 	{21,   169,    317,   449,  628, 809, 1002,17,   163,  312,  460, 598, 771, 937, 1092,6,  174,333,491,642, 823, 983, 11,  106,215,280,  404, 456  }, // X pos
 	{12,   11,     12,    20,   19,  22,  22,  184,  216,  217,  217, 214, 217, 216, 216, 383,385,384,394,387, 364, 385, 549, 550,550,549,  556, 557  }, // Y pos
 	{112,  112,    112,   157,  147, 158, 176, 115,  134,  114,  110, 131, 131, 131, 131, 141,150,131,112,138, 116, 108, 81,  87,  42,105,  45,  76   }, // Width
@@ -77,11 +77,11 @@ const nav_symbol_entry *lookup_nav_symbol(const char *code) {
 }
 
 /* Letter reference arrays */
-char g_nav_large_upper_letter_ref[40] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9',',','.','(',')'};
-char g_nav_large_lower_letter_ref[40] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9',',','.','(',')'};
+const char g_nav_large_upper_letter_ref[40] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9',',','.','(',')'};
+const char g_nav_large_lower_letter_ref[40] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9',',','.','(',')'};
 
 /* Navigation letter sprite atlas — large */
-int g_nav_letters_large_src_tex_loc[4][40] = {
+const int g_nav_letters_large_src_tex_loc[4][40] = {
 // 	A,  B,  C,  D,  E,  F,  G,  H,  I,  J,  K,  L,  M,  N,  O,  P,  Q,  R,  S,  T,  U,  V,  W,  X,  Y,  Z,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  COM, STP,  (,  )
    {15, 46, 75, 106,137,165,190,222,253,268,295,325,351,386,416,449,476,509,537,565,593,622,649,686,714,743,771,797,821,846,871,896,921,946,970,996,1022,1039,1055,1079 },
    {602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602,602, 602, 602, 602  },
@@ -90,7 +90,7 @@ int g_nav_letters_large_src_tex_loc[4][40] = {
 };
 
 /* Navigation letter sprite atlas — small */
-int g_nav_letters_small_src_tex_loc[4][40] = {
+const int g_nav_letters_small_src_tex_loc[4][40] = {
 
 // 	A,  B,  C,  D,  E,  F,  G,  H,  I,  J,  K,  L,  M,  N,  O,  P,  Q,  R,  S,  T,  U,  V,  W,  X,  Y,  Z,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  COM, STP,  (,  )
    {17, 42, 65, 90, 114,137,157,182,207,219,241,265,286,314,337,364,386,412,435,457,479,502,524,553,576,599,622,643,662,681,701,721,742,762,781,802,822, 836, 849, 861 },
@@ -101,8 +101,8 @@ int g_nav_letters_small_src_tex_loc[4][40] = {
 };
 
 /* Navigation number reference and sprite atlas */
-int g_nav_numbers_ref[11] = {'0','1','2','3','4','5','6','7','8','9','.'};
-int g_nav_numbers_src_tex_loc[4][11] = {
+const int g_nav_numbers_ref[11] = {'0','1','2','3','4','5','6','7','8','9','.'};
+const int g_nav_numbers_src_tex_loc[4][11] = {
 
 //   0,  1,  2,  3,  4,  5,  6,  7,  8,  9,     .
 	{10, 115,209,310,409,509,611,711,809,910, 447},
@@ -112,7 +112,7 @@ int g_nav_numbers_src_tex_loc[4][11] = {
 };
 
 /* Large speedometer numbers — texture mapping */
-int g_speed_src_tex_loc[4][10] = {
+const int g_speed_src_tex_loc[4][10] = {
 //    0    1    2    3    4    5    6    7    8     9		// The digit in the bitmap
 	{ 0  , 143, 255, 396, 530, 669, 808, 939, 1080, 1211 }, // X position from Top Left
 	{ 1  , 1  , 1  , 1  , 1  , 1  , 1  , 1  , 1   , 1 },    // Y position from Top Left
@@ -121,7 +121,7 @@ int g_speed_src_tex_loc[4][10] = {
 };
 
 /* Medium sized numbers — clock & temp displays */
-int g_med_numbers_src_tex_loc[4][16] = {
+const int g_med_numbers_src_tex_loc[4][16] = {
 //    0    1    2    3    4    5    6    7    8     9	  :   +   -     .   oC.   oF	// The digit in the bitmap
 	{ 314, 2,  32,  68,  104, 139, 175, 209, 243, 279,   5,   32,  73, 102, 138, 183},	// X position
 	{ 6,   6,   6,   6,  6,   6,   6,   6,   6,    6,    50,  52,  51, 47,  50,  50},  // Y position
@@ -130,7 +130,7 @@ int g_med_numbers_src_tex_loc[4][16] = {
 };
 
 /* Small blue numbers — mileage and trip displays */
-int g_small_blue_src_tex_loc[4][11] = {
+const int g_small_blue_src_tex_loc[4][11] = {
 //    0    1    2    3    4    5    6    7    8     9     .	  // The digit in the bitmap
 	{ 546, 355, 372, 394, 416, 438, 460, 483, 503, 525, 354 }, // X position
 	{ 19,  19,  19,  19,  19,  19,  19,  19,  19,  19, 37 },  // Y position
@@ -139,7 +139,7 @@ int g_small_blue_src_tex_loc[4][11] = {
 };
 
 /* Small grey numbers — odometer */
-int g_small_grey_src_tex_loc[4][11] = {
+const int g_small_grey_src_tex_loc[4][11] = {
 	//    0    1    2    3    4    5    6    7    8     9    .	  // The digit in the bitmap
 	{ 546, 355, 372, 394, 416, 438, 460, 483, 503, 525, 354 }, // X position
 	{ 52,  52,  52,  52,  52,  52,  52,  52,  52,  52, 37 },  // Y position
@@ -148,7 +148,7 @@ int g_small_grey_src_tex_loc[4][11] = {
 };
 
 /* Large numbers — gear indicator */
-int g_large_numbers_src_tex_loc[4][10] = {
+const int g_large_numbers_src_tex_loc[4][10] = {
 	// 1    2    3    4    5    6    7    8    9     0    	  // The digit in the bitmap
 	{ 0,   66, 166, 264, 367, 468, 571, 667, 766, 865 }, // X position
 	{ 91,  91,  91,  91,  91,  91,  91,  91,  91,  91 },  // Y position
@@ -157,7 +157,7 @@ int g_large_numbers_src_tex_loc[4][10] = {
 };
 
 /* RPM lookup table — converting RPM values into rotation value to reveal rev line */
-int g_rpm_lookup[53][2] = {
+const int g_rpm_lookup[53][2] = {
 	{ 0,     6 },
 	{ 250,   8 },
 	{ 500,   10 },
@@ -214,9 +214,9 @@ int g_rpm_lookup[53][2] = {
 };
 
 /* Character reference tables */
-char g_num_ref[16] = { '0','1','2','3','4','5','6','7','8','9',':','+','-','.','c','f'};
-char g_small_num_ref[11] = { '0','1','2','3','4','5','6','7','8','9','.'};
-char g_large_num_ref[10] = { '1','2','3','4','5','6','7','8','9','0'};
+const char g_num_ref[16] = { '0','1','2','3','4','5','6','7','8','9',':','+','-','.','c','f'};
+const char g_small_num_ref[11] = { '0','1','2','3','4','5','6','7','8','9','.'};
+const char g_large_num_ref[10] = { '1','2','3','4','5','6','7','8','9','0'};
 
 /* --- Glyph font descriptor — parameterises all the draw_*_string() variants --- */
 

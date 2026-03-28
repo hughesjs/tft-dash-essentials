@@ -86,7 +86,7 @@ typedef struct {
 const nav_symbol_entry *lookup_nav_symbol(const char *code);
 
 /* RPM lookup table */
-extern int g_rpm_lookup[53][2];
+extern const int g_rpm_lookup[53][2];
 
 /* Speed digit rendering */
 void draw_speed_digit(char digit, int position);

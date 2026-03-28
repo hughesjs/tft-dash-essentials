@@ -21,49 +21,9 @@ SDL_FRect grevline;
 SDL_FRect grrevwhite;
 SDL_FPoint gwhitepoint;
 
-/* Bike specific values */
-int spin_angle = 0;
-
-/* Display-side derived state */
-double coolant_temp_f = 0;
-int fuel_percent = 47;
-double litres_remaining = 0;
-double tempf = 0;
-
-/* TPMS display strings (formatted each frame from tpms_state) */
-char str_front_sensor_id[16];
-char str_rear_sensor_id[16];
-char str_front_pressure_low[16];
-char str_rear_pressure_low[16];
-char str_sensor2_psi[16];
-char str_sensor4_psi[16];
-char str_sensor2_temp[16];
-char str_sensor4_temp[16];
-
-/* Display format buffers (sprintf'd each frame from struct data) */
-char str_coolant_temp[16];
-char str_current_speed[16];
-char str_trip1[16];
-char str_trip2[16];
-char str_odo[16];
-char str_time[16];
-char str_mpg[16];
-char str_rpm[16];
-char str_fuel[16];
-char str_range[16];
-char str_max_speed[16];
+/* Display format buffers — initialised in main(), written each frame in draw_dashboard */
 char str_trip_time[16];
-char str_ambient_temp[16];
-char str_batt[16];
-char str_spd_correct[16];
-char str_oil_press[16];
-char str_oil_temp[16];
-char str_nav_yards[16];
-char str_nav_miles[16];
-char str_nav_metres[16];
-char str_nav_km[16];
-char str_nav_dest_miles[16];
-char str_nav_dest_km[16];
+char str_time[16];
 
 /* Warning flags */
 static bool warningbadgeactive = false;
@@ -194,70 +154,70 @@ double get_precise_temp(int ohms) {
 	return 0.0;
 }
 
-int get_litres_remaining(int fuelintfloat) {
+static int get_litres_remaining(int fuelintfloat, double *litres_out) {
 
   if (fuelintfloat >= 0 && fuelintfloat <= 93) {
-    litres_remaining = (21000 - (((double)(1000 / 93)) * ((double)fuelintfloat - 0))) / 1000;
+    *litres_out = (21000 - (((double)(1000 / 93)) * ((double)fuelintfloat - 0))) / 1000;
     return 93;
   }
 
   if (fuelintfloat > 93 && fuelintfloat <= 121) {
-    litres_remaining = (20000 - (((double)(1000 / 28)) * ((double)fuelintfloat - 93))) / 1000;
+    *litres_out = (20000 - (((double)(1000 / 28)) * ((double)fuelintfloat - 93))) / 1000;
     return 28;
   }
 
   if (fuelintfloat > 121 && fuelintfloat <= 148) {
-    litres_remaining = (18000 - (((double)(1000 / 27)) * ((double)fuelintfloat - 121))) / 1000;
+    *litres_out = (18000 - (((double)(1000 / 27)) * ((double)fuelintfloat - 121))) / 1000;
     return 27;
   }
 
   if (fuelintfloat > 148 && fuelintfloat <= 180) {
-    litres_remaining = (17000 - (((double)(1000 / 32)) * ((double)fuelintfloat - 148))) / 1000;
+    *litres_out = (17000 - (((double)(1000 / 32)) * ((double)fuelintfloat - 148))) / 1000;
     return 32;
   }
 
   if (fuelintfloat > 180 && fuelintfloat <= 211) {
-    litres_remaining = (15000 - (((double)(1000 / 31)) * ((double)fuelintfloat - 180))) / 1000;
+    *litres_out = (15000 - (((double)(1000 / 31)) * ((double)fuelintfloat - 180))) / 1000;
     return 31;
   }
 
   if (fuelintfloat > 211 && fuelintfloat <= 241) {
-    litres_remaining = (14000 - (((double)(1000 / 30)) * ((double)fuelintfloat - 211))) / 1000;
+    *litres_out = (14000 - (((double)(1000 / 30)) * ((double)fuelintfloat - 211))) / 1000;
     return 30;
   }
 
   if (fuelintfloat > 241 && fuelintfloat <= 281) {
-    litres_remaining = (12000 - (((double)(1000 / 40)) * ((double)fuelintfloat - 241))) / 1000;
+    *litres_out = (12000 - (((double)(1000 / 40)) * ((double)fuelintfloat - 241))) / 1000;
     return 40;
   }
 
   if (fuelintfloat > 281 && fuelintfloat <= 320) {
-    litres_remaining = (10000 - (((double)(1000 / 39)) * ((double)fuelintfloat - 281))) / 1000;
+    *litres_out = (10000 - (((double)(1000 / 39)) * ((double)fuelintfloat - 281))) / 1000;
     return 39;
   }
 
   if (fuelintfloat > 320 && fuelintfloat <= 367) {
-    litres_remaining = (9000 - (((double)(1000 / 47)) * ((double)fuelintfloat - 320))) / 1000;
+    *litres_out = (9000 - (((double)(1000 / 47)) * ((double)fuelintfloat - 320))) / 1000;
     return 47;
   }
 
   if (fuelintfloat > 367 && fuelintfloat <= 426) {
-    litres_remaining = (7000 - (((double)(1000 / 59)) * ((double)fuelintfloat - 367))) / 1000;
+    *litres_out = (7000 - (((double)(1000 / 59)) * ((double)fuelintfloat - 367))) / 1000;
     return 59;
   }
 
   if (fuelintfloat > 426 && fuelintfloat <= 481) {
-    litres_remaining = (6000 - (((double)(1000 / 55)) * ((double)fuelintfloat - 426))) / 1000;
+    *litres_out = (6000 - (((double)(1000 / 55)) * ((double)fuelintfloat - 426))) / 1000;
     return 55;
   }
 
   if (fuelintfloat > 481 && fuelintfloat <= 506) {
-    litres_remaining = (5000 - (((double)(1000 / 25)) * ((double)fuelintfloat - 481))) / 1000;
+    *litres_out = (5000 - (((double)(1000 / 25)) * ((double)fuelintfloat - 481))) / 1000;
     return 25;
   }
 
   if (fuelintfloat > 506) {
-    litres_remaining = (5000 - (((double)(1000 / 25)) * ((double)fuelintfloat - 481))) / 1000;
+    *litres_out = (5000 - (((double)(1000 / 25)) * ((double)fuelintfloat - 481))) / 1000;
     return 25;
   }
 
@@ -426,6 +386,7 @@ static void render_info_screen(const info_screen *screen, int x_offset, bool usi
 /* --- Startup animation --- */
 
 void dashboard_startup(void) {
+	static int spin_angle = 0;
 	int f = anim_frame(&anim_startup);
 
 	/* Phase 1: Background fade from black to white (all themes — invisible on dark ones) */
@@ -472,6 +433,42 @@ void dashboard_startup(void) {
 /* --- Main dashboard rendering --- */
 
 void draw_dashboard(void) {
+	/* Format buffers — written each frame */
+	char str_coolant_temp[16];
+	char str_current_speed[16];
+	char str_trip1[16];
+	char str_trip2[16];
+	char str_odo[16];
+	char str_mpg[16];
+	char str_rpm[16];
+	char str_fuel[16];
+	char str_range[16];
+	char str_max_speed[16];
+	char str_ambient_temp[16];
+	char str_batt[16];
+	char str_spd_correct[16];
+	char str_oil_press[16];
+	char str_oil_temp[16];
+	char str_front_sensor_id[16];
+	char str_rear_sensor_id[16];
+	char str_front_pressure_low[16];
+	char str_rear_pressure_low[16];
+	char str_sensor2_psi[16];
+	char str_sensor4_psi[16];
+	char str_sensor2_temp[16];
+	char str_sensor4_temp[16];
+	char str_nav_yards[16];
+	char str_nav_miles[16];
+	char str_nav_metres[16];
+	char str_nav_km[16];
+	char str_nav_dest_miles[16];
+	char str_nav_dest_km[16];
+
+	/* Derived values */
+	double coolant_temp_f = 0;
+	double litres_remaining = 0;
+	double tempf = 0;
+
 	if (dash->info_mode != info_current_mode && warningbadgeactive)
 		warnings_cancel();
 
@@ -658,7 +655,7 @@ void draw_dashboard(void) {
 	}
 
 
-	if (get_litres_remaining(dash->fuel_float) != 0) {
+	if (get_litres_remaining(dash->fuel_float, &litres_remaining) != 0) {
 		snprintf(str_fuel, sizeof(str_fuel), "%.1f", litres_remaining);
 	} else {
 		strcpy (str_fuel, "..");

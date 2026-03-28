@@ -43,6 +43,18 @@ static char sz_arrive_in[] = "arv";
 static char sz_mls[] = "mls";
 static char sz_km[] = "km";
 
+/* --- Formatted string struct --- */
+
+typedef struct {
+	char speed[16], trip1[16], trip2[16], odo[16];
+	char ambient_temp[16], coolant_temp[16], mpg[16], rpm[16];
+	char fuel[16], range[16], max_speed[16], batt[16], spd_correct[16];
+	char oil_press[16], oil_temp[16];
+	char front_psi[16], front_temp[16], rear_psi[16], rear_temp[16];
+	char nav_yards[16], nav_miles[16], nav_metres[16], nav_km[16];
+	char nav_dest_miles[16], nav_dest_km[16];
+} dash_strings;
+
 /* --- Helper functions --- */
 
 static int get_diff(int n1, int n2) {
@@ -378,278 +390,232 @@ void dashboard_startup(void) {
 	SDL_RenderPresent(renderer);
 }
 
-/* --- Main dashboard rendering --- */
+/* --- Dashboard predicates --- */
 
-void draw_dashboard(void) {
-	/* Format buffers — written each frame */
-	char str_coolant_temp[16];
-	char str_current_speed[16];
-	char str_trip1[16];
-	char str_trip2[16];
-	char str_odo[16];
-	char str_mpg[16];
-	char str_rpm[16];
-	char str_fuel[16];
-	char str_range[16];
-	char str_max_speed[16];
-	char str_ambient_temp[16];
-	char str_batt[16];
-	char str_spd_correct[16];
-	char str_oil_press[16];
-	char str_oil_temp[16];
-	char str_front_sensor_id[16];
-	char str_rear_sensor_id[16];
-	char str_front_pressure_low[16];
-	char str_rear_pressure_low[16];
-	char str_sensor2_psi[16];
-	char str_sensor4_psi[16];
-	char str_sensor2_temp[16];
-	char str_sensor4_temp[16];
-	char str_nav_yards[16];
-	char str_nav_miles[16];
-	char str_nav_metres[16];
-	char str_nav_km[16];
-	char str_nav_dest_miles[16];
-	char str_nav_dest_km[16];
+static bool is_light_theme(void) {
+	return dash->theme == 0 || dash->theme == 7;
+}
 
-	/* Derived values */
+static bool is_fuel_low(void) {
+	return get_num_fuel_bars(dash->fuel_float) <= 2 && warnings_engine_running();
+}
+
+static bool is_coolant_overheating(void) {
+	return dash->coolant_temp >= 120 && warnings_engine_running();
+}
+
+static bool info_transition_idle(void) {
+	return !anim_is_active(&anim_info) || anim_is_done(&anim_info);
+}
+
+/* --- Dashboard sub-functions --- */
+
+static void format_dashboard_strings(dash_strings *s) {
 	double coolant_temp_f = 0;
 	double litres_remaining = 0;
 	double tempf = 0;
 
-	if (dash->info_mode != dashboard_anims_info_mode() && warningbadgeactive)
-		warnings_cancel();
-
-	if (dash->theme == 0 || dash->theme == 7) {
-		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
-	} else {
-		SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
-	}
-
-	SDL_RenderClear(renderer);
-
-
-	/* Rev counter rev line texture */
-	SDL_RenderTexture(renderer, tex("Revline.png"), NULL, &grevline);
-
-	anim_set_target(&anim_rpm, get_rpm_rotation(dash->rpm));
-
-	/* White rev counter cover to reveal the rev line */
-	SDL_RenderTextureRotated(renderer, tex("Whitesq.png"), NULL, &grrevwhite, anim_frame(&anim_rpm), &gwhitepoint, SDL_FLIP_NONE);
-
-	/* Top grey icons */
-	render_top_icon_grey_texture (0, 0, 627, 138);
-	render_texture (tex("Topiconedge1.png"), 625, 0, 98, 75);
-	render_texture (tex("Topiconedge2.png"), 721, 0, 84, 24);
-
-	/* Trip 1 and 2 and Odometer, Ambient Temp and Time section */
-	render_texture (tex("Mileinfo.png"), 0, 434, 435, 169);
-
-	/* Fuel Gauge — flash when low fuel and engine running */
-	bool fuel_flash = get_num_fuel_bars(dash->fuel_float) <= 2 && warnings_engine_running();
-	if (!fuel_flash || anim_is_reversing(&anim_flash)) {
-		render_texture(tex("Fuelgauge.png"), 676, 294, 316, 44);
-		render_texture(tex("Fuelgaugewhite.png"), 714 + get_fuel_reveal_from_bars(get_num_fuel_bars(dash->fuel_float)), 303, 274, 28);
-	}
-	/* Coolant Temp — flash when overheating and engine running */
-	bool coolant_flash = dash->coolant_temp >= 120 && warnings_engine_running();
-	if (!coolant_flash || anim_is_reversing(&anim_flash)) {
-		const char *coolant_tex = dash->using_fh ? "CoolantF.png" : "Coolant.png";
-		render_texture(tex(coolant_tex), 808, 196, 209, 80);
-	}
-
-	render_texture (tex("Coolanticon.png"), 772, 221, 41, 39);
-
-	/* Top light icons (Neutral, Oil, Indicator, High beam) */
-
-	if (dash->neutral) {
-		render_texture (tex("Neutrallight.png"), 0, 0, 130, 136);
-	}
-
-	if (!dash->neutral && dash->current_gear != 0) {
-		render_texture (tex("Gear.png"), 0, 0, 131, 136);
-		draw_large_num (dash->current_gear, 30, 22);
-	}
-
-	if (dash->oil_warning) {
-		render_oil_light_texture (131, 0, 135, 138);
-	}
-
-	if (dash->indicate_right && !dash->indicate_left) {
-		render_texture (tex("Indicateright.png"), 267, 0, 135, 136);
-	}
-
-	if (dash->indicate_left && !dash->indicate_right) {
-		render_texture (tex("Indicateleft.png"), 267, 0, 135, 136);
-	}
-
-	if (dash->indicate_left && dash->indicate_right) {
-		render_texture (tex("Indicateboth.png"), 267, 0, 135, 136);
-	}
-
-	if (dash->high_beam) {
-		render_texture (tex("Highbeamlight.png"), 404, 0, 133, 136);
-	}
-
-	/* Middle info section — static display or animated transition */
-	if (!warningbadgeactive) {
-		if (dash->info_mode != dashboard_anims_info_mode()) {
-			if (!anim_is_active(&anim_info))
-				anim_start(&anim_info);
-
-			if (!anim_is_reversing(&anim_info))
-				render_info_screen(&INFO_SCREENS[dashboard_anims_info_mode()], -anim_frame(&anim_info), dash->using_km);
-			else
-				render_info_screen(&INFO_SCREENS[dash->info_mode], -anim_frame(&anim_info), dash->using_km);
-
-			if (anim_is_done(&anim_info)) {
-				dashboard_anims_set_info_mode(dash->info_mode);
-				anim_stop(&anim_info);
-			}
-		} else {
-			render_info_screen(&INFO_SCREENS[dashboard_anims_info_mode()], 0, dash->using_km);
-		}
-	}
-
-	/* Warning badges */
-	const warning_def *w = warnings_active();
-	warningbadgeactive = (w != NULL);
-	if (w) {
-		render_texture(tex(w->badge), 0, 163, 444, 249);
-		if (anim_is_reversing(&anim_flash) && w->flash) {
-			const char *ft = w->flash(dash, tpms);
-			if (ft) render_texture(tex(ft), w->flash_x, w->flash_y, w->flash_w, w->flash_h);
-		}
-	}
-
-	/* Units - either MPH or KM */
-	if (dash->using_km == 1) {
-		render_texture (tex("kph.png"), 844, 553, 179, 44);
-		render_texture (tex("km.png"), 350, 448, 57, 18);
-	} else {
-		render_texture (tex("mph.png"), 844, 553, 142, 45);
-		render_texture (tex("Miles.png"), 350, 448, 57, 18);
-	}
-
-
-	/* Rev counter numbers */
-	for (int i = 0; i < REV_REVEAL_COUNT; i++)
-		SDL_RenderTexture(renderer, tex(REV_REVEAL[i].texture), NULL, &(SDL_FRect){REV_REVEAL[i].x, REV_REVEAL[i].y, REV_REVEAL[i].w, REV_REVEAL[i].h});
-
-	snprintf( str_current_speed, sizeof(str_current_speed), "%d", dash->current_speed);
-	snprintf( str_trip1, sizeof(str_trip1), "%.1f", dash->trip1);
-	snprintf( str_trip2, sizeof(str_trip2), "%.1f", dash->trip2);
-	snprintf( str_odo, sizeof(str_odo), "%.0f", dash->odo);
+	snprintf(s->speed, sizeof(s->speed), "%d", dash->current_speed);
+	snprintf(s->trip1, sizeof(s->trip1), "%.1f", dash->trip1);
+	snprintf(s->trip2, sizeof(s->trip2), "%.1f", dash->trip2);
+	snprintf(s->odo, sizeof(s->odo), "%.0f", dash->odo);
 
 	if (dash->using_fh) {
 		tempf = ((double)dash->ambient_temp*1.8) + 32;
-		snprintf(str_ambient_temp, sizeof(str_ambient_temp), "%df", (int)tempf);
+		snprintf(s->ambient_temp, sizeof(s->ambient_temp), "%df", (int)tempf);
 	} else {
-		snprintf(str_ambient_temp, sizeof(str_ambient_temp), "%dc", dash->ambient_temp);
+		snprintf(s->ambient_temp, sizeof(s->ambient_temp), "%dc", dash->ambient_temp);
 	}
 
 	if (dash->using_fh) {
 		coolant_temp_f = ((double)dash->coolant_temp*1.8) + 32;
-		snprintf(str_coolant_temp, sizeof(str_coolant_temp), "%d", (int)coolant_temp_f);
+		snprintf(s->coolant_temp, sizeof(s->coolant_temp), "%d", (int)coolant_temp_f);
 	} else {
-		snprintf(str_coolant_temp, sizeof(str_coolant_temp), "%d", dash->coolant_temp);
+		snprintf(s->coolant_temp, sizeof(s->coolant_temp), "%d", dash->coolant_temp);
 	}
 
 	if (dash->using_km) {
 		if (dash->mpg > 0) {
-			snprintf(str_mpg, sizeof(str_mpg), "%d", (int)((double)282.481 / (double)dash->mpg));
+			snprintf(s->mpg, sizeof(s->mpg), "%d", (int)((double)282.481 / (double)dash->mpg));
 		} else {
-			snprintf(str_mpg, sizeof(str_mpg), "%d", dash->mpg);
+			snprintf(s->mpg, sizeof(s->mpg), "%d", dash->mpg);
 		}
 
 	} else {
-		snprintf(str_mpg, sizeof(str_mpg), "%d", dash->mpg);
+		snprintf(s->mpg, sizeof(s->mpg), "%d", dash->mpg);
 	}
 
 	if (dash->using_km) {
-		snprintf(str_range, sizeof(str_range), "%d", (int)((double)dash->range * 1.609));
+		snprintf(s->range, sizeof(s->range), "%d", (int)((double)dash->range * 1.609));
 	} else {
-		snprintf(str_range, sizeof(str_range), "%d", dash->range);
+		snprintf(s->range, sizeof(s->range), "%d", dash->range);
 	}
 
-	snprintf(str_max_speed, sizeof(str_max_speed), "%d", dash->max_speed);
-	snprintf(str_rpm, sizeof(str_rpm), "%d", dash->rpm);
+	snprintf(s->max_speed, sizeof(s->max_speed), "%d", dash->max_speed);
+	snprintf(s->rpm, sizeof(s->rpm), "%d", dash->rpm);
 
 	if (dash->oil_pressure_available) {
-		snprintf(str_oil_press, sizeof(str_oil_press), "%.1f", get_precise_bar(dash->oil_pressure_ohms));
-		snprintf(str_oil_temp, sizeof(str_oil_temp), "%d", (int)get_precise_temp(dash->oil_temp_ohms));
+		snprintf(s->oil_press, sizeof(s->oil_press), "%.1f", get_precise_bar(dash->oil_pressure_ohms));
+		snprintf(s->oil_temp, sizeof(s->oil_temp), "%d", (int)get_precise_temp(dash->oil_temp_ohms));
 	}
 
 	if (tpms->front.received) {
-		snprintf(str_sensor2_psi, sizeof(str_sensor2_psi), "%.1f", dash->using_bar ? tpms->front.bar : tpms->front.psi);
+		snprintf(s->front_psi, sizeof(s->front_psi), "%.1f", dash->using_bar ? tpms->front.bar : tpms->front.psi);
 		if (dash->using_fh)
-			snprintf(str_sensor2_temp, sizeof(str_sensor2_temp), "%df", (int)((double)tpms->front.temp_celsius * 1.8 + 32));
+			snprintf(s->front_temp, sizeof(s->front_temp), "%df", (int)((double)tpms->front.temp_celsius * 1.8 + 32));
 		else
-			snprintf(str_sensor2_temp, sizeof(str_sensor2_temp), "%dc", tpms->front.temp_celsius);
+			snprintf(s->front_temp, sizeof(s->front_temp), "%dc", tpms->front.temp_celsius);
 	} else {
-		strcpy(str_sensor2_psi, "..");
-		strcpy(str_sensor2_temp, "..");
+		strcpy(s->front_psi, "..");
+		strcpy(s->front_temp, "..");
 	}
 
 	if (tpms->rear.received) {
-		snprintf(str_sensor4_psi, sizeof(str_sensor4_psi), "%.1f", dash->using_bar ? tpms->rear.bar : tpms->rear.psi);
+		snprintf(s->rear_psi, sizeof(s->rear_psi), "%.1f", dash->using_bar ? tpms->rear.bar : tpms->rear.psi);
 		if (dash->using_fh)
-			snprintf(str_sensor4_temp, sizeof(str_sensor4_temp), "%df", (int)((double)tpms->rear.temp_celsius * 1.8 + 32));
+			snprintf(s->rear_temp, sizeof(s->rear_temp), "%df", (int)((double)tpms->rear.temp_celsius * 1.8 + 32));
 		else
-			snprintf(str_sensor4_temp, sizeof(str_sensor4_temp), "%dc", tpms->rear.temp_celsius);
+			snprintf(s->rear_temp, sizeof(s->rear_temp), "%dc", tpms->rear.temp_celsius);
 	} else {
-		strcpy(str_sensor4_psi, "..");
-		strcpy(str_sensor4_temp, "..");
+		strcpy(s->rear_psi, "..");
+		strcpy(s->rear_temp, "..");
 	}
-
 
 	if (get_litres_remaining(dash->fuel_float, &litres_remaining) != 0) {
-		snprintf(str_fuel, sizeof(str_fuel), "%.1f", litres_remaining);
+		snprintf(s->fuel, sizeof(s->fuel), "%.1f", litres_remaining);
 	} else {
-		strcpy (str_fuel, "..");
+		strcpy(s->fuel, "..");
 	}
 
-	snprintf(str_batt, sizeof(str_batt), "%.1f", dash->batt);
-	snprintf(str_spd_correct, sizeof(str_spd_correct), "%.1f", dash->spd_correct);
+	snprintf(s->batt, sizeof(s->batt), "%.1f", dash->batt);
+	snprintf(s->spd_correct, sizeof(s->spd_correct), "%.1f", dash->spd_correct);
+}
 
+static void clear_background(void) {
+	if (is_light_theme()) {
+		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
+	} else {
+		SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+	}
+	SDL_RenderClear(renderer);
+}
 
-	/* Draw the current speed */
-	draw_speed(str_current_speed);
+static void draw_rev_counter(void) {
+	SDL_RenderTexture(renderer, tex("Revline.png"), NULL, &grevline);
+	anim_set_target(&anim_rpm, get_rpm_rotation(dash->rpm));
+	SDL_RenderTextureRotated(renderer, tex("Whitesq.png"), NULL, &grrevwhite, anim_frame(&anim_rpm), &gwhitepoint, SDL_FLIP_NONE);
 
-	/* Draw some numbers */
-	draw_medium_string (str_ambient_temp, 18, 461);
-	draw_medium_string (str_coolant_temp, 873, 224);
+	for (int i = 0; i < REV_REVEAL_COUNT; i++)
+		SDL_RenderTexture(renderer, tex(REV_REVEAL[i].texture), NULL, &(SDL_FRect){REV_REVEAL[i].x, REV_REVEAL[i].y, REV_REVEAL[i].w, REV_REVEAL[i].h});
+}
 
-	/* Middle Info */
-	if (dash->info_mode == 0 && (!anim_is_active(&anim_info) || anim_is_done(&anim_info)) && !warningbadgeactive) {
-		draw_medium_string (str_mpg, 60, 224);
-		draw_medium_string (str_range, 292, 224);
-		draw_medium_string (str_trip_time, 17, 332);
-		draw_medium_string (str_max_speed, 246, 332);
+static void draw_top_bar(void) {
+	render_top_icon_grey_texture(0, 0, 627, 138);
+	render_texture(tex("Topiconedge1.png"), 625, 0, 98, 75);
+	render_texture(tex("Topiconedge2.png"), 721, 0, 84, 24);
+	render_texture(tex("Mileinfo.png"), 0, 434, 435, 169);
+}
+
+static void draw_gauges(void) {
+	if (!is_fuel_low() || anim_is_reversing(&anim_flash)) {
+		render_texture(tex("Fuelgauge.png"), 676, 294, 316, 44);
+		render_texture(tex("Fuelgaugewhite.png"), 714 + get_fuel_reveal_from_bars(get_num_fuel_bars(dash->fuel_float)), 303, 274, 28);
 	}
 
-	if (dash->info_mode == 1 && (!anim_is_active(&anim_info) || anim_is_done(&anim_info)) && !warningbadgeactive) {
-		draw_medium_string(str_rpm, 60, 224);
-		draw_medium_string(str_fuel, 292, 224);
-		draw_medium_string (str_batt, 17, 332);
-		if (strlen (str_spd_correct) > 4) {
-			draw_medium_string (str_spd_correct, 216, 332);
+	if (!is_coolant_overheating() || anim_is_reversing(&anim_flash)) {
+		const char *coolant_tex = dash->using_fh ? "CoolantF.png" : "Coolant.png";
+		render_texture(tex(coolant_tex), 808, 196, 209, 80);
+	}
+
+	render_texture(tex("Coolanticon.png"), 772, 221, 41, 39);
+}
+
+static void draw_status_icons(void) {
+	if (dash->neutral) {
+		render_texture(tex("Neutrallight.png"), 0, 0, 130, 136);
+	}
+
+	if (!dash->neutral && dash->current_gear != 0) {
+		render_texture(tex("Gear.png"), 0, 0, 131, 136);
+		draw_large_num(dash->current_gear, 30, 22);
+	}
+
+	if (dash->oil_warning) {
+		render_oil_light_texture(131, 0, 135, 138);
+	}
+
+	if (dash->indicate_right && !dash->indicate_left) {
+		render_texture(tex("Indicateright.png"), 267, 0, 135, 136);
+	}
+
+	if (dash->indicate_left && !dash->indicate_right) {
+		render_texture(tex("Indicateleft.png"), 267, 0, 135, 136);
+	}
+
+	if (dash->indicate_left && dash->indicate_right) {
+		render_texture(tex("Indicateboth.png"), 267, 0, 135, 136);
+	}
+
+	if (dash->high_beam) {
+		render_texture(tex("Highbeamlight.png"), 404, 0, 133, 136);
+	}
+}
+
+static void draw_info_transition(void) {
+	if (warningbadgeactive) return;
+
+	if (dash->info_mode != dashboard_anims_info_mode()) {
+		if (!anim_is_active(&anim_info))
+			anim_start(&anim_info);
+
+		if (!anim_is_reversing(&anim_info))
+			render_info_screen(&INFO_SCREENS[dashboard_anims_info_mode()], -anim_frame(&anim_info), dash->using_km);
+		else
+			render_info_screen(&INFO_SCREENS[dash->info_mode], -anim_frame(&anim_info), dash->using_km);
+
+		if (anim_is_done(&anim_info)) {
+			dashboard_anims_set_info_mode(dash->info_mode);
+			anim_stop(&anim_info);
+		}
+	} else {
+		render_info_screen(&INFO_SCREENS[dashboard_anims_info_mode()], 0, dash->using_km);
+	}
+}
+
+static void draw_info_content(const dash_strings *s) {
+	if (!info_transition_idle() || warningbadgeactive) return;
+
+	if (dash->info_mode == 0) {
+		draw_medium_string(s->mpg, 60, 224);
+		draw_medium_string(s->range, 292, 224);
+		draw_medium_string(str_trip_time, 17, 332);
+		draw_medium_string(s->max_speed, 246, 332);
+	}
+
+	if (dash->info_mode == 1) {
+		draw_medium_string(s->rpm, 60, 224);
+		draw_medium_string(s->fuel, 292, 224);
+		draw_medium_string(s->batt, 17, 332);
+		if (strlen(s->spd_correct) > 4) {
+			draw_medium_string(s->spd_correct, 216, 332);
 		} else {
-			draw_medium_string (str_spd_correct, 236, 332);
+			draw_medium_string(s->spd_correct, 236, 332);
 		}
 	}
 
-	if (dash->info_mode == 2 && (!anim_is_active(&anim_info) || anim_is_done(&anim_info)) && !warningbadgeactive) {
-		draw_medium_string (str_sensor2_psi, 40, 224);
-		draw_medium_string (str_sensor4_psi, 304, 224);
-		draw_medium_string (str_sensor2_temp, 37, 342);
-		draw_medium_string (str_sensor4_temp, 246, 342);
+	if (dash->info_mode == 2) {
+		draw_medium_string(s->front_psi, 40, 224);
+		draw_medium_string(s->rear_psi, 304, 224);
+		draw_medium_string(s->front_temp, 37, 342);
+		draw_medium_string(s->rear_temp, 246, 342);
 	}
 
-	if (dash->info_mode == 3 && (!anim_is_active(&anim_info) || anim_is_done(&anim_info)) && !warningbadgeactive) {
-
-
+	if (dash->info_mode == 3) {
 		if (nav->nav_active == true) {
+			/* Nav strings are formatted on demand since they're only needed in mode 3 */
+			char str_nav_yards[16], str_nav_miles[16], str_nav_metres[16], str_nav_km[16];
+			char str_nav_dest_miles[16], str_nav_dest_km[16];
+
 			snprintf(str_nav_yards, sizeof(str_nav_yards), "%d", nav->nav_yards);
 			snprintf(str_nav_miles, sizeof(str_nav_miles), "%.1f", nav->nav_miles);
 			snprintf(str_nav_metres, sizeof(str_nav_metres), "%d", (int)((double)nav->nav_yards / 1.094));
@@ -657,52 +623,51 @@ void draw_dashboard(void) {
 			snprintf(str_nav_dest_miles, sizeof(str_nav_dest_miles), "%.1f", nav->nav_dest_distance);
 			snprintf(str_nav_dest_km, sizeof(str_nav_dest_km), "%.1f", nav->nav_dest_distance * 1.609);
 
-			if (strlen (nav->nav_road) > 0) {
-				draw_nav_symbol (NAV_ICON_ONTO, 13, 350);
+			if (strlen(nav->nav_road) > 0) {
+				draw_nav_symbol(NAV_ICON_ONTO, 13, 350);
 			}
 
-			if (strlen (nav->nav_road) > 0 && strlen (nav->nav_road) <= 14) {
-				draw_nav_large_string (nav->nav_road, 69, 347);
+			if (strlen(nav->nav_road) > 0 && strlen(nav->nav_road) <= 14) {
+				draw_nav_large_string(nav->nav_road, 69, 347);
 			} else {
-				draw_nav_small_string (nav->nav_road, 69, 347);
+				draw_nav_small_string(nav->nav_road, 69, 347);
 			}
 
-			if (strlen (nav->nav_towards) > 0) {
-				draw_nav_symbol (NAV_ICON_TWRDS, 13, 391);
+			if (strlen(nav->nav_towards) > 0) {
+				draw_nav_symbol(NAV_ICON_TWRDS, 13, 391);
 			}
 
-			if (strlen (nav->nav_towards) > 0 && strlen (nav->nav_towards) <= 16) {
-				draw_nav_large_string (nav->nav_towards, 99, 386);
+			if (strlen(nav->nav_towards) > 0 && strlen(nav->nav_towards) <= 16) {
+				draw_nav_large_string(nav->nav_towards, 99, 386);
 			} else {
-				draw_nav_small_string (nav->nav_towards, 99, 386);
+				draw_nav_small_string(nav->nav_towards, 99, 386);
 			}
 
-			draw_nav_small_string (sz_arrive_in, 14, 175);
+			draw_nav_small_string(sz_arrive_in, 14, 175);
 
 			if (dash->using_km) {
-				draw_nav_large_string (str_nav_dest_km, 77, 171);
-				draw_nav_small_string (sz_km, 165, 175);
+				draw_nav_large_string(str_nav_dest_km, 77, 171);
+				draw_nav_small_string(sz_km, 165, 175);
 			} else {
-				draw_nav_large_string (str_nav_dest_miles, 77, 171);
-				draw_nav_small_string (sz_mls, 165, 175);
+				draw_nav_large_string(str_nav_dest_miles, 77, 171);
+				draw_nav_small_string(sz_mls, 165, 175);
 			}
-
 
 			if (nav->nav_yards <= 300) {
 				if (dash->using_km) {
-					draw_nav_digits (str_nav_metres, 16, 211);
-					draw_nav_symbol (NAV_ICON_METRE, 22, 308);
+					draw_nav_digits(str_nav_metres, 16, 211);
+					draw_nav_symbol(NAV_ICON_METRE, 22, 308);
 				} else {
-					draw_nav_digits (str_nav_yards, 16, 211);
-					draw_nav_symbol (NAV_ICON_YARD, 22, 308);
+					draw_nav_digits(str_nav_yards, 16, 211);
+					draw_nav_symbol(NAV_ICON_YARD, 22, 308);
 				}
 			} else {
 				if (dash->using_km) {
-					draw_nav_digits (str_nav_km, 16, 211);
-					draw_nav_symbol (NAV_ICON_KM, 22, 308);
+					draw_nav_digits(str_nav_km, 16, 211);
+					draw_nav_symbol(NAV_ICON_KM, 22, 308);
 				} else {
-					draw_nav_digits (str_nav_miles, 16, 211);
-					draw_nav_symbol (NAV_ICON_MILE, 22, 308);
+					draw_nav_digits(str_nav_miles, 16, 211);
+					draw_nav_symbol(NAV_ICON_MILE, 22, 308);
 				}
 			}
 
@@ -717,34 +682,48 @@ void draw_dashboard(void) {
 				if (strcmp(nav_entry->code, "FRY") == 0) draw_nav_large_string(sz_take_ferry, 99, 386);
 			}
 		} else {
-			draw_nav_large_string (sz_no_nav_data, 40, 265);
-			draw_nav_small_string (sz_smartphone_app, 40, 350);
-			draw_nav_small_string (sz_set_destination, 56, 380);
-		}
-
-
-	}
-
-	if (dash->indicate_left && !warningbadgeactive) {
-		if (dash->info_mode == 0 || dash->info_mode == 1) {
-			render_texture (tex("Indicateleftfar.png"), 2, 186, 250, 98);
+			draw_nav_large_string(sz_no_nav_data, 40, 265);
+			draw_nav_small_string(sz_smartphone_app, 40, 350);
+			draw_nav_small_string(sz_set_destination, 56, 380);
 		}
 	}
+}
 
-	if (dash->indicate_right && !warningbadgeactive) {
-		render_texture (tex("Indicaterightfar.png"), 802, 192, 209, 84);
+static void draw_warning_badges(void) {
+	const warning_def *w = warnings_active();
+	warningbadgeactive = (w != NULL);
+	if (w) {
+		render_texture(tex(w->badge), 0, 163, 444, 249);
+		if (anim_is_reversing(&anim_flash) && w->flash) {
+			const char *ft = w->flash(dash, tpms);
+			if (ft) render_texture(tex(ft), w->flash_x, w->flash_y, w->flash_w, w->flash_h);
+		}
 	}
+}
 
+static void draw_units(void) {
+	if (dash->using_km == 1) {
+		render_texture(tex("kph.png"), 844, 553, 179, 44);
+		render_texture(tex("km.png"), 350, 448, 57, 18);
+	} else {
+		render_texture(tex("mph.png"), 844, 553, 142, 45);
+		render_texture(tex("Miles.png"), 350, 448, 57, 18);
+	}
+}
 
-	/* Essential info */
+static void draw_essential_info(const dash_strings *s) {
+	draw_speed(s->speed);
+	draw_medium_string(s->ambient_temp, 18, 461);
+	draw_medium_string(s->coolant_temp, 873, 224);
+
 	draw_medium_string(str_time, 14, 543);
-	draw_small_blue_string (str_trip1, 252, 460);
-	draw_small_blue_string (str_trip2, 246, 509);
-	draw_small_grey_string (str_odo, 223, 560);
+	draw_small_blue_string(s->trip1, 252, 460);
+	draw_small_blue_string(s->trip2, 246, 509);
+	draw_small_grey_string(s->odo, 223, 560);
 
 	if (dash->oil_pressure_available) {
-		draw_medium_string(str_oil_press, 163, 32);
-		draw_medium_string(str_oil_temp, 163, 89);
+		draw_medium_string(s->oil_press, 163, 32);
+		draw_medium_string(s->oil_temp, 163, 89);
 	}
 
 	if (tpms->connected) {
@@ -754,6 +733,38 @@ void draw_dashboard(void) {
 	if (tpms->connected && tpms->signal_active) {
 		render_texture(tex("tyresignal.png"), 653, 559, 33, 34);
 	}
+}
 
+static void draw_far_indicators(void) {
+	if (dash->indicate_left && !warningbadgeactive) {
+		if (dash->info_mode == 0 || dash->info_mode == 1) {
+			render_texture(tex("Indicateleftfar.png"), 2, 186, 250, 98);
+		}
+	}
+
+	if (dash->indicate_right && !warningbadgeactive) {
+		render_texture(tex("Indicaterightfar.png"), 802, 192, 209, 84);
+	}
+}
+
+/* --- Main dashboard rendering --- */
+
+void draw_dashboard(void) {
+	if (dash->info_mode != dashboard_anims_info_mode() && warningbadgeactive)
+		warnings_cancel();
+
+	dash_strings s;
+	format_dashboard_strings(&s);
+	clear_background();
+	draw_rev_counter();
+	draw_top_bar();
+	draw_gauges();
+	draw_status_icons();
+	draw_info_transition();
+	draw_info_content(&s);
+	draw_warning_badges();
+	draw_units();
+	draw_essential_info(&s);
+	draw_far_indicators();
 	SDL_RenderPresent(renderer);
 }

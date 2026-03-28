@@ -203,6 +203,30 @@ pub fn build(b: *std.Build) void {
 
         b.installArtifact(test_animation);
 
+        // --- Warnings tests ---
+        const test_warnings = b.addExecutable(.{
+            .name = "test_warnings",
+            .root_module = b.createModule(.{
+                .target = target,
+                .optimize = optimize,
+                .link_libc = true,
+            }),
+        });
+
+        test_warnings.root_module.addCSourceFiles(.{
+            .files = &.{
+                "src/test_warnings.c",
+                "src/warnings.c",
+            },
+            .flags = &.{
+                "-std=c23",
+            },
+        });
+
+        test_warnings.root_module.addIncludePath(b.path("src"));
+
+        b.installArtifact(test_warnings);
+
         // 'zig build test' step - builds and runs all tests
         const run_parser_tests = b.addRunArtifact(test_parser);
         const run_asset_tests = b.addRunArtifact(test_assets);
@@ -211,6 +235,7 @@ pub fn build(b: *std.Build) void {
         const run_menu_tests = b.addRunArtifact(test_menu);
         const run_tpms_feed_tests = b.addRunArtifact(test_tpms_feed);
         const run_animation_tests = b.addRunArtifact(test_animation);
+        const run_warnings_tests = b.addRunArtifact(test_warnings);
         const test_step = b.step("test", "Run all tests");
         test_step.dependOn(&run_parser_tests.step);
         test_step.dependOn(&run_asset_tests.step);
@@ -218,6 +243,7 @@ pub fn build(b: *std.Build) void {
         test_step.dependOn(&run_menu_tests.step);
         test_step.dependOn(&run_tpms_feed_tests.step);
         test_step.dependOn(&run_animation_tests.step);
+        test_step.dependOn(&run_warnings_tests.step);
 
         // 'zig build run' step - builds and runs the dashboard
         const run_dash = b.addRunArtifact(dashboard);

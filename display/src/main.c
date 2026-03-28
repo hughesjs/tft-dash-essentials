@@ -432,8 +432,6 @@ int g_down_arrow_x  = 0;
 int g_up_arrow_x  = 0;
 int startup_anim_count = 0;
 bool startup_done = false;
-int target_rpm_rotation = 0;
-int current_rpm_rotation = 0;
 
 // Info mode animation
 bool info_animation_in_progress = false;
@@ -1564,21 +1562,10 @@ void draw_dashboard () {
 	// Rev counter rev line texture
 	SDL_RenderTexture(renderer, tex("Revline.png"), nullptr, &grevline);
 
-	target_rpm_rotation = get_rpm_rotation (dash->rpm);
-	if (target_rpm_rotation > current_rpm_rotation) {
-		if (current_rpm_rotation < 100) {
-			current_rpm_rotation++;
-		}
-	}
-
-	if (target_rpm_rotation < current_rpm_rotation) {
-		if (current_rpm_rotation > 0) {
-			current_rpm_rotation--;
-		}
-	}
+	anim_set_target(&anim_rpm, get_rpm_rotation(dash->rpm));
 
 	// White rev counter cover to reveal the rev line
-	SDL_RenderTextureRotated(renderer, tex("Whitesq.png"), nullptr, &grrevwhite, current_rpm_rotation , &gwhitepoint, SDL_FLIP_NONE);
+	SDL_RenderTextureRotated(renderer, tex("Whitesq.png"), nullptr, &grrevwhite, anim_frame(&anim_rpm), &gwhitepoint, SDL_FLIP_NONE);
 
 	// Top grey icons
 	render_top_icon_grey_texture (0, 0, 627, 138);

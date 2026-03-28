@@ -5,15 +5,11 @@
  * the main loop. No SDL dependency — all rendering is owned by draw.h.
  */
 
-#include <stdio.h>
-#include <string.h>
-
 #include "sensor_feed.h"
 #include "tpms_feed.h"
 #include "animation.h"
 #include "warnings.h"
 #include "draw.h"
-#include "draw_dashboard.h"
 
 static sensor_feed *feed = NULL;
 static tpms_feed *tpms_fd = NULL;
@@ -27,9 +23,6 @@ static void init_feeds(void) {
 }
 
 int main(int argc, char *args[]) {
-    strcpy(str_trip_time, "00:00");
-    strcpy(str_time, "14:35");
-
     init_feeds();
 
     if (!draw_init()) return 1;

@@ -48,9 +48,8 @@ SDL_Texture *tex_from(const char *theme, const char *name) {
 }
 
 /* Speedometer digit rects */
-SDL_FRect spd_digit_one;
-SDL_FRect spd_digit_two;
-SDL_FRect spd_digit_three;
+static const float SPD_DIGIT_X[] = { 0, 614, 735, 875 };  /* indexed by position 1-3 */
+static const float SPD_DIGIT_Y = 363;
 
 /* Navigation icon sprite atlas — indexed by nav_icon enum */
 const int g_nav_icons_src_tex_loc[4][NAV_ICON_COUNT] = {
@@ -356,31 +355,14 @@ void draw_large_num(int singledigit, int xpos, int ypos) {
 void draw_speed_digit(char digit, int position)
 {
 
+	if (position < 1 || position > 3) return;
+
 	for (int d = 0; d <= 9; d++) {
 		if (digit == g_num_ref[d]) {
-			SDL_FRect g_src_rect;
-			g_src_rect.x = g_speed_src_tex_loc[0][d];
-			g_src_rect.y = g_speed_src_tex_loc[1][d];
-			g_src_rect.w = g_speed_src_tex_loc[2][d];
-			g_src_rect.h = g_speed_src_tex_loc[3][d];
-
-			if (position == 3) {
-				spd_digit_three.w = g_speed_src_tex_loc[2][d];
-				spd_digit_three.h = g_speed_src_tex_loc[3][d];
-				SDL_RenderTexture(renderer, tex("Speednumbers.png"), &g_src_rect, &spd_digit_three);
-			}
-
-			if (position == 2) {
-				spd_digit_two.w = g_speed_src_tex_loc[2][d];
-				spd_digit_two.h = g_speed_src_tex_loc[3][d];
-				SDL_RenderTexture(renderer, tex("Speednumbers.png"), &g_src_rect, &spd_digit_two);
-			}
-
-			if (position == 1) {
-				spd_digit_one.w = g_speed_src_tex_loc[2][d];
-				spd_digit_one.h = g_speed_src_tex_loc[3][d];
-				SDL_RenderTexture(renderer, tex("Speednumbers.png"), &g_src_rect, &spd_digit_one);
-			}
+			SDL_FRect src = { g_speed_src_tex_loc[0][d], g_speed_src_tex_loc[1][d], g_speed_src_tex_loc[2][d], g_speed_src_tex_loc[3][d] };
+			SDL_FRect dst = { SPD_DIGIT_X[position], SPD_DIGIT_Y, src.w, src.h };
+			SDL_RenderTexture(renderer, tex("Speednumbers.png"), &src, &dst);
+			break;
 		}
 	}
 }
@@ -485,7 +467,6 @@ bool draw_init(void) {
 	}
 	fprintf(stderr, "Loaded %d assets across %d themes\n", total, THEME_COUNT);
 
-	draw_dashboard_init_rects();
 	dashboard_anims_init();
 
 	return true;

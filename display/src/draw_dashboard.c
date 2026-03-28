@@ -17,21 +17,21 @@
 #include <stdbool.h>
 
 /* Rev counter rects */
-SDL_FRect grevline;
-SDL_FRect grrevwhite;
-SDL_FPoint gwhitepoint;
+static const SDL_FRect grevline = { 430, 23, 594, 577 };
+static const SDL_FRect grrevwhite = { 382, 0, 642, 623 };
+static const SDL_FPoint gwhitepoint = { 594, 577 };
 
-/* Display format buffers — initialised in main(), written each frame in draw_dashboard */
-char str_trip_time[16];
-char str_time[16];
+/* Display format buffers */
+char str_trip_time[16] = "00:00";
+char str_time[16] = "14:35";
 
 /* Warning flags */
 static bool warningbadgeactive = false;
 
 /* Oil pressure lookup tables */
-int barohms[11];
-int tempnum[6];
-int tempohms[6];
+static const int barohms[11] = { 6, 23, 39, 54, 69, 89, 106, 121, 140, 150, 160 };
+static const int tempnum[6] = { 50, 70, 80, 95, 120, 150 };
+static const int tempohms[6] = { 680, 310, 230, 140, 75, 40 };
 
 /* Navigation display strings */
 static char sz_find_parking[] = "FIND PARKING";
@@ -325,50 +325,6 @@ int get_rpm_rotation(int rpm) {
 	return g_rpm_lookup[closest][1];
 }
 
-/* --- Rect initialisation --- */
-
-void draw_dashboard_init_rects(void) {
-	grevline.x = 430; grevline.y = 23; grevline.w = 594; grevline.h = 577;
-	grrevwhite.x = 382; grrevwhite.y = 0; grrevwhite.w = 642; grrevwhite.h = 623;
-	gwhitepoint.x = 594; gwhitepoint.y = 577;
-
-	spd_digit_one.x = 614;
-	spd_digit_one.y = 363;
-
-	spd_digit_two.x = 735;
-	spd_digit_two.y = 363;
-
-	spd_digit_three.x = 875;
-	spd_digit_three.y = 363;
-
-	/* Oil pressure lookup tables */
-	barohms[0] = 6;
-	barohms[1] = 23;
-	barohms[2] = 39;
-	barohms[3] = 54;
-	barohms[4] = 69;
-	barohms[5] = 89;
-	barohms[6] = 106;
-	barohms[7] = 121;
-	barohms[8] = 140;
-	barohms[9] = 150;
-	barohms[10] = 160;
-
-	/* Oil temperature lookup tables */
-	tempnum[0] = 50;
-	tempnum[1] = 70;
-	tempnum[2] = 80;
-	tempnum[3] = 95;
-	tempnum[4] = 120;
-	tempnum[5] = 150;
-
-	tempohms[0] = 680;
-	tempohms[1] = 310;
-	tempohms[2] = 230;
-	tempohms[3] = 140;
-	tempohms[4] = 75;
-	tempohms[5] = 40;
-}
 
 /* --- Info screen rendering --- */
 

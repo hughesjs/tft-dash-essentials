@@ -8,15 +8,10 @@
 #ifndef DRAW_DASHBOARD_H
 #define DRAW_DASHBOARD_H
 
-void draw_dashboard_init_rects(void);
 void dashboard_startup(void);
 void draw_dashboard(void);
 
 /* Fuel bar count — used by the warnings module for threshold checks */
 int get_num_fuel_bars(int value);
-
-/* Display format buffers — initialised in main(), written each frame in draw_dashboard */
-extern char str_trip_time[16];
-extern char str_time[16];
 
 #endif /* DRAW_DASHBOARD_H */

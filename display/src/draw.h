@@ -101,8 +101,4 @@ extern const int g_rpm_lookup[53][2];
 void draw_speed_digit(char digit, int position);
 void draw_speed(const char *speed);
 
-extern SDL_FRect spd_digit_one;
-extern SDL_FRect spd_digit_two;
-extern SDL_FRect spd_digit_three;
-
 #endif /* DRAW_H */

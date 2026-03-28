@@ -1,10 +1,19 @@
 /*
- * draw.c — Shared rendering state and drawing primitives for TFT Dash
+ * draw.c — Rendering system for TFT Dash
+ *
+ * Owns SDL initialisation, asset loading, event pumping, and all
+ * drawing primitives. Main.c has no SDL dependency.
  */
 
 #include "draw.h"
+#include "draw_dashboard.h"
+#include "draw_menu.h"
+#include "animation.h"
+#include "dashboard_anims.h"
+#include "warnings.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /* Shared state */
 SDL_Renderer *renderer = NULL;
@@ -15,6 +24,9 @@ const dashboard_state *dash = NULL;
 const menu_state *menu = NULL;
 const nav_state *nav = NULL;
 const tpms_state *tpms = NULL;
+
+static SDL_Window *window = NULL;
+static int currenttheme = 0;
 
 /* Theme names and lookup */
 const char *THEME_NAMES[] = {
@@ -429,4 +441,97 @@ bool render_oil_light_texture(int x, int y, int w, int h)
 	} else {
 		return SDL_RenderTexture(renderer, tex("Oillight.png"), NULL, &dst_rect);
 	}
+}
+
+/* --- Lifecycle --- */
+
+bool draw_init(void) {
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+		fprintf(stderr, "Could not initialise SDL3: %s\n", SDL_GetError());
+		return false;
+	}
+
+	Uint64 window_flags = 0;
+	const char *video_driver = SDL_GetCurrentVideoDriver();
+	fprintf(stderr, "Video driver: %s\n", video_driver ? video_driver : "(null)");
+	if (video_driver && strcmp(video_driver, "KMSDRM") == 0)
+		window_flags = SDL_WINDOW_FULLSCREEN;
+
+	if (!SDL_CreateWindowAndRenderer("TFT Dash", SCREEN_WIDTH, SCREEN_HEIGHT, window_flags, &window, &renderer)) {
+		fprintf(stderr, "Could not create window & renderer: %s\n", SDL_GetError());
+		return false;
+	}
+
+	const char *renderer_name = SDL_GetRendererName(renderer);
+	fprintf(stderr, "Renderer: %s\n", renderer_name ? renderer_name : "(null)");
+
+	SDL_HideCursor();
+
+	g_assets = asset_store_create(renderer);
+	if (!g_assets) {
+		fprintf(stderr, "Failed to create asset store\n");
+		return false;
+	}
+
+	int total = 0;
+	for (int i = 0; i < THEME_COUNT; i++) {
+		char dir[256];
+		snprintf(dir, sizeof(dir), "assets/themes/%s", THEME_NAMES[i]);
+		int n = asset_store_load_theme(g_assets, THEME_NAMES[i], dir);
+		if (n < 0)
+			fprintf(stderr, "Failed to load theme: %s (dir: %s)\n", THEME_NAMES[i], dir);
+		else
+			total += n;
+	}
+	fprintf(stderr, "Loaded %d assets across %d themes\n", total, THEME_COUNT);
+
+	draw_dashboard_init_rects();
+	dashboard_anims_init();
+
+	return true;
+}
+
+void draw_cleanup(void) {
+	asset_store_destroy(g_assets);
+	if (renderer) SDL_DestroyRenderer(renderer);
+	if (window) SDL_DestroyWindow(window);
+	SDL_Quit();
+}
+
+void draw_update(const dashboard_state *d, const menu_state *m, const nav_state *n, const tpms_state *t) {
+	dash = d;
+	menu = m;
+	nav = n;
+	tpms = t;
+
+	if (dash->theme != currenttheme) {
+		currenttheme = dash->theme;
+		g_current_theme = theme_name_from_id(dash->theme);
+	}
+
+	/* Set initial theme on first frame */
+	if (g_current_theme == NULL || currenttheme == 0)
+		g_current_theme = theme_name_from_id(dash->theme);
+}
+
+void draw_frame(void) {
+	/* Pump SDL events */
+	SDL_Event e;
+	while (SDL_PollEvent(&e)) {
+		if (e.type == SDL_EVENT_QUIT) {
+			draw_cleanup();
+			exit(0);
+		}
+	}
+
+	if (dash->choice_state == 0) {
+		if (!anim_is_done(&anim_startup))
+			dashboard_startup();
+		else
+			draw_dashboard();
+	} else {
+		draw_menu(dash->choice_state);
+	}
+
+	SDL_Delay(5);
 }

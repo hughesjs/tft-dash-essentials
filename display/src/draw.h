@@ -1,33 +1,47 @@
 /*
- * draw.h — Shared rendering state and drawing primitives for TFT Dash
+ * draw.h — Rendering system for TFT Dash
  *
- * Provides access to the SDL renderer, asset store, theme, and sensor state
- * plus glyph-based text drawing functions used by all rendering modules.
+ * Owns SDL initialisation, asset loading, event pumping, and all
+ * drawing primitives. No SDL types leak into the public interface
+ * except through the sub-module headers (draw_dashboard.h, draw_menu.h).
  */
 
 #ifndef DRAW_H
 #define DRAW_H
 
-#include <SDL3/SDL.h>
 #include <stdbool.h>
 #include "parser.h"
-#include "assets.h"
 #include "tpms_feed.h"
 
-/* Shared rendering state — set once during init, read by all draw modules */
-extern SDL_Renderer *renderer;
-extern asset_store *g_assets;
-extern const char *g_current_theme;
+/* --- Lifecycle (called from main) --- */
 
-/* Sensor state pointers — refreshed each frame in the main loop */
-extern const dashboard_state *dash;
-extern const menu_state *menu;
-extern const nav_state *nav;
-extern const tpms_state *tpms;
+bool draw_init(void);
+void draw_cleanup(void);
+
+/* Update sensor state and theme. Call once per frame before draw_frame(). */
+void draw_update(const dashboard_state *dash, const menu_state *menu, const nav_state *nav, const tpms_state *tpms);
+
+/* Pump events, render the current frame (dashboard or menu), delay. */
+void draw_frame(void);
+
+/* --- Internal interface (used by draw_dashboard.c, draw_menu.c) --- */
+
+#include <SDL3/SDL.h>
+#include "assets.h"
 
 /* Screen dimensions */
 #define SCREEN_WIDTH 1024
 #define SCREEN_HEIGHT 600
+
+/* Shared rendering state — internal to the draw modules */
+extern SDL_Renderer *renderer;
+extern asset_store *g_assets;
+extern const char *g_current_theme;
+
+extern const dashboard_state *dash;
+extern const menu_state *menu;
+extern const nav_state *nav;
+extern const tpms_state *tpms;
 
 /* Theme lookup */
 #define THEME_COUNT 9
@@ -40,11 +54,7 @@ SDL_Texture *tex_from(const char *theme, const char *name);
 
 /* Render a texture at integer coordinates */
 bool render_texture(SDL_Texture *t, int x, int y, int w, int h);
-
-/* Render the top icon bar with oil pressure variant handling */
 bool render_top_icon_grey_texture(int x, int y, int w, int h);
-
-/* Render the oil light with oil pressure variant handling */
 bool render_oil_light_texture(int x, int y, int w, int h);
 
 /* Glyph-based text drawing */
@@ -75,7 +85,6 @@ typedef enum {
 
 void draw_nav_symbol(nav_icon sym, int xpos, int ypos);
 
-/* Navigation symbol lookup */
 typedef struct {
     const char *code;
     nav_icon icon_lhd;
@@ -92,7 +101,6 @@ extern const int g_rpm_lookup[53][2];
 void draw_speed_digit(char digit, int position);
 void draw_speed(const char *speed);
 
-/* Speedometer digit rects */
 extern SDL_FRect spd_digit_one;
 extern SDL_FRect spd_digit_two;
 extern SDL_FRect spd_digit_three;

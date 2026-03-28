@@ -6,7 +6,6 @@
  */
 
 #include "warnings.h"
-#include "draw_dashboard.h"
 #include <stddef.h>
 
 /* --- Internal state --- */
@@ -41,7 +40,7 @@ static bool check_overheat(const dashboard_state *dash, const tpms_state *tpms) 
 
 static bool check_fuel(const dashboard_state *dash, const tpms_state *tpms) {
     (void)tpms;
-    return get_num_fuel_bars(dash->fuel_float) <= 2 && engine_running && dash->info_mode != 3;
+    return dash->fuel_float >= 481 && engine_running && dash->info_mode != 3;
 }
 
 /* --- Flash texture functions --- */

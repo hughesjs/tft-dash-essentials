@@ -10,26 +10,6 @@
 #include <assert.h>
 #include <string.h>
 
-/* Stub for get_num_fuel_bars — the real one lives in draw_dashboard.c
- * which has SDL dependencies. This reproduces the low-fuel threshold. */
-int get_num_fuel_bars(int value) {
-    if (value >= 481) return 2;
-    if (value >= 426) return 3;
-    if (value >= 386) return 4;
-    if (value >= 351) return 5;
-    if (value >= 321) return 6;
-    if (value >= 296) return 7;
-    if (value >= 271) return 8;
-    if (value >= 251) return 9;
-    if (value >= 231) return 10;
-    if (value >= 211) return 11;
-    if (value >= 196) return 12;
-    if (value >= 176) return 13;
-    if (value >= 161) return 14;
-    if (value >= 141) return 15;
-    return 16;
-}
-
 static int test_count = 0;
 static int pass_count = 0;
 

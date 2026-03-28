@@ -161,19 +161,6 @@ SDL_Renderer* renderer = nullptr;
 
 // Surface Rects
 // Rev counter
-SDL_FRect rect_g1213;
-SDL_FRect rect_g11;
-SDL_FRect rect_g10;
-SDL_FRect rect_g9;
-SDL_FRect rect_g8;
-SDL_FRect rect_g7;
-SDL_FRect rect_g6;
-SDL_FRect rect_g5;
-SDL_FRect rect_g4;
-SDL_FRect rectg3;
-SDL_FRect rectg2;
-SDL_FRect rectg1;
-SDL_FRect rectg0;
 SDL_FRect grevline;
 SDL_FRect grrevwhite;
 SDL_FPoint gwhitepoint;
@@ -430,8 +417,6 @@ int ncount = 0;
 // Animation values
 int g_down_arrow_x  = 0;
 int g_up_arrow_x  = 0;
-int startup_anim_count = 0;
-bool startup_done = false;
 
 
 // Display format strings (built each frame from struct data)
@@ -605,19 +590,6 @@ double get_precise_temp (int ohms) {
 void init_rects()
 {
 	// Rev Counter
-	rect_g1213.x = 898; rect_g1213.y = 61; rect_g1213.w = 108; rect_g1213.h = 102;
-	rect_g11.x = 846; rect_g11.y = 78; rect_g11.w = 48; rect_g11.h = 97;
-	rect_g10.x = 796; rect_g10.y = 95; rect_g10.w = 45; rect_g10.h = 96;
-	rect_g9.x = 739; rect_g9.y = 117; rect_g9.w = 52; rect_g9.h = 89;
-	rect_g8.x = 688; rect_g8.y = 145; rect_g8.w = 58; rect_g8.h = 86;
-	rect_g7.x = 641; rect_g7.y = 179; rect_g7.w = 64; rect_g7.h = 80;
-	rect_g6.x = 601; rect_g6.y = 219; rect_g6.w = 72; rect_g6.h = 68;
-	rect_g5.x = 564; rect_g5.y = 258; rect_g5.w = 79; rect_g5.h = 62;
-	rect_g4.x = 533; rect_g4.y = 300; rect_g4.w = 82; rect_g4.h = 58;
-	rectg3.x = 507; rectg3.y = 348; rectg3.w = 87; rectg3.h = 54;
-	rectg2.x = 487; rectg2.y = 401; rectg2.w = 89; rectg2.h = 48;
-	rectg1.x = 475; rectg1.y = 458; rectg1.w = 83; rectg1.h = 44;
-	rectg0.x = 471; rectg0.y = 518; rectg0.w = 88; rectg0.h = 56;
 	// Revline & White covering square
 	grevline.x = 430; grevline.y = 23; grevline.w = 594; grevline.h = 577;
 	grrevwhite.x = 382; grrevwhite.y = 0; grrevwhite.w = 642; grrevwhite.h = 623;
@@ -1191,162 +1163,50 @@ void draw_menu (int state) {
 	SDL_RenderPresent(renderer);
 }
 
+static void render_info_screen(const info_screen *screen, int x_offset, bool using_km);
+
 void dashboard_startup () {
-	startup_anim_count++;
+	int f = anim_frame(&anim_startup);
 
-
-	if (dash->theme == 0 || dash->theme == 7) {
-
-		if (startup_anim_count > 0 && startup_anim_count < 255) {
-			startup_anim_count+=3;
-			SDL_SetRenderDrawColor(renderer, startup_anim_count, startup_anim_count, startup_anim_count, SDL_ALPHA_OPAQUE);
-		}
-
-		if (startup_anim_count >= 255) {
-			SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);	
-		}
-	} else {
-		if (startup_anim_count < 255) {
-			startup_anim_count = 255;
-		}
-	}
-
+	// Phase 1: Background fade from black to white (all themes — invisible on dark ones)
+	int brightness = f < 255 ? f : 255;
+	SDL_SetRenderDrawColor(renderer, brightness, brightness, brightness, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(renderer);
 
-	if (startup_anim_count > 255) {
-		startup_anim_count+=8;
+	// Phase 2: UI panels slide in from the left (frame 255-1000)
+	if (f > 255) {
+		int slide = f < 1000 ? f - 1000 : 0;
 
-		if (startup_anim_count < 1000) {
-			render_top_icon_grey_texture ((0-1000)+startup_anim_count, 0, 627, 138);		
-			render_texture (tex("Topiconedge1.png"), (625-1000)+startup_anim_count, 0, 98, 75);
-			render_texture (tex("Topiconedge2.png"), (721-1000)+startup_anim_count, 0, 84, 24);	
-			
-			// Trip 1 and 2 and Odometer, Ambient Temp and Time section
-			render_texture (tex("Mileinfo.png"), (0-1000)+startup_anim_count, 434, 435, 169);
+		render_top_icon_grey_texture(slide, 0, 627, 138);
+		render_texture(tex("Topiconedge1.png"), 625 + slide, 0, 98, 75);
+		render_texture(tex("Topiconedge2.png"), 721 + slide, 0, 84, 24);
+		render_texture(tex("Mileinfo.png"), slide, 434, 435, 169);
 
-			if (dash->info_mode == 0) {
-				if (dash->using_km) {
-					render_texture (tex("InfotopKM.png"), (0-1000)+startup_anim_count, 176, 510, 97);
-				} else {
-					render_texture (tex("Infotop.png"), (0-1000)+startup_anim_count, 176, 510, 97);	
-				}
-				
-				render_texture (tex("Infobottom.png"), (0-1000)+startup_anim_count, 273, 454, 125);
-			}
-		}
+		if (dash->info_mode == 0)
+			render_info_screen(&INFO_SCREENS[0], slide, dash->using_km);
+	}
 
-		if (startup_anim_count >= 1000) {
-			render_top_icon_grey_texture (0, 0, 627, 138);		
-			render_texture (tex("Topiconedge1.png"), 625, 0, 98, 75);
-			render_texture (tex("Topiconedge2.png"), 721, 0, 84, 24);	
-
-			// Trip 1 and 2 and Odometer, Ambient Temp and Time section
-			render_texture (tex("Mileinfo.png"), 0, 434, 435, 169);
-
-			if (dash->info_mode == 0) {
-				if (dash->using_km) {
-					render_texture (tex("InfotopKM.png"), 0, 176, 510, 97);
-				} else {
-					render_texture (tex("Infotop.png"), 0, 176, 510, 97);	
-				}
-				
-				render_texture (tex("Infobottom.png"), 0, 273, 454, 125);
-			}
-		}
-
-		int revamountinc = 10;
-		int revinc = 100;
-		if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R0.png"), nullptr, &rectg0);
-		}
-		revamountinc+=revinc;
-		if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R1.png"), nullptr, &rectg1);
-		}
-		revamountinc+=revinc;
-		if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R2.png"), nullptr, &rectg2);
-		}
-		revamountinc+=revinc;
-			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R3.png"), nullptr, &rectg3);
-		}
-		revamountinc+=revinc;
-			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R4.png"), nullptr, &rect_g4);
-		}
-		revamountinc+=revinc;
-			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R5.png"), nullptr, &rect_g5);
-		}
-		revamountinc+=revinc;
-			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R6.png"), nullptr, &rect_g6);
-		}
-		revamountinc+=revinc;
-			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R7.png"), nullptr, &rect_g7);
-		}
-		revamountinc+=revinc;
-			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R8.png"), nullptr, &rect_g8);
-		}
-		revamountinc+=revinc;
-			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R9.png"), nullptr, &rect_g9);
-		}
-		revamountinc+=revinc;
-			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R10.png"), nullptr, &rect_g10);
-		}
-		revamountinc+=revinc;
-			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R11.png"), nullptr, &rect_g11);
-		}
-		revamountinc+=revinc;
-			if (startup_anim_count > (100+revamountinc)) {
-			SDL_RenderTexture(renderer, tex("R12-13.png"), nullptr, &rect_g1213);
+	// Phase 3: Rev counter numbers appear at staggered thresholds
+	if (f > 255) {
+		for (int i = 0; i < REV_REVEAL_COUNT; i++) {
+			if (f > REV_REVEAL[i].threshold)
+				SDL_RenderTexture(renderer, tex(REV_REVEAL[i].texture), nullptr, &(SDL_FRect){REV_REVEAL[i].rect.x, REV_REVEAL[i].rect.y, REV_REVEAL[i].rect.w, REV_REVEAL[i].rect.h});
 		}
 	}
 
-	if (startup_anim_count > 500) {
-		
-		if (startup_anim_count < 1000) {
-			// Fuel Gauge		
-			render_texture (tex("Fuelgauge.png"), (676+500)-(startup_anim_count-500), 294, 316, 44);
-			render_texture (tex("Fuelgaugewhite.png"), (714+(spin_angle*3)+500)-(startup_anim_count-500), 303, 274, 28);
+	// Phase 4: Fuel gauge and coolant slide in from the right (frame 500-1000)
+	if (f > 500) {
+		int rslide = f < 1000 ? 1000 - f : 0;
 
-			// Coolant Temp
-			if (dash->using_fh) {
-				render_texture (tex("CoolantF.png"), (808+500)-(startup_anim_count-500), 196, 209, 80);
-			} else {
-				render_texture (tex("Coolant.png"), (808+500)-(startup_anim_count-500), 196, 209, 80);	
-			}
-			
-			render_texture (tex("Coolanticon.png"), (772+500)-(startup_anim_count-500), 221, 41, 39);
-		} else {
-						// Fuel Gauge
-			render_texture (tex("Fuelgauge.png"), 676, 294, 316, 44);
-			render_texture (tex("Fuelgaugewhite.png"), 714+(spin_angle*3), 303, 274, 28);
+		render_texture(tex("Fuelgauge.png"), 676 + rslide, 294, 316, 44);
+		render_texture(tex("Fuelgaugewhite.png"), 714 + (spin_angle * 3) + rslide, 303, 274, 28);
 
-			// Coolant Temp
-			if (dash->using_fh) {
-				render_texture (tex("CoolantF.png"), 808, 196, 209, 80);
-			} else {
-				render_texture (tex("Coolant.png"), 808, 196, 209, 80);	
-			}
-			
-			render_texture (tex("Coolanticon.png"), 772, 221, 41, 39);
-		}
-	}
-
-	if (startup_anim_count > 1000) {
-		startup_done = true;
+		const char *coolant_tex = dash->using_fh ? "CoolantF.png" : "Coolant.png";
+		render_texture(tex(coolant_tex), 808 + rslide, 196, 209, 80);
+		render_texture(tex("Coolanticon.png"), 772 + rslide, 221, 41, 39);
 	}
 
 	SDL_RenderPresent(renderer);
-
-
 }
 
 /* Render an info screen's textures at an x offset */
@@ -1525,19 +1385,8 @@ void draw_dashboard () {
 	
 
 	// Rev counter numbers
-	SDL_RenderTexture(renderer, tex("R12-13.png"), nullptr, &rect_g1213);
-	SDL_RenderTexture(renderer, tex("R11.png"), nullptr, &rect_g11);
-	SDL_RenderTexture(renderer, tex("R10.png"), nullptr, &rect_g10);
-	SDL_RenderTexture(renderer, tex("R9.png"), nullptr, &rect_g9);
-	SDL_RenderTexture(renderer, tex("R8.png"), nullptr, &rect_g8);
-	SDL_RenderTexture(renderer, tex("R7.png"), nullptr, &rect_g7);
-	SDL_RenderTexture(renderer, tex("R6.png"), nullptr, &rect_g6);
-	SDL_RenderTexture(renderer, tex("R5.png"), nullptr, &rect_g5);
-	SDL_RenderTexture(renderer, tex("R4.png"), nullptr, &rect_g4);
-	SDL_RenderTexture(renderer, tex("R3.png"), nullptr, &rectg3);
-	SDL_RenderTexture(renderer, tex("R2.png"), nullptr, &rectg2);
-	SDL_RenderTexture(renderer, tex("R1.png"), nullptr, &rectg1);
-	SDL_RenderTexture(renderer, tex("R0.png"), nullptr, &rectg0);
+	for (int i = 0; i < REV_REVEAL_COUNT; i++)
+		SDL_RenderTexture(renderer, tex(REV_REVEAL[i].texture), nullptr, &(SDL_FRect){REV_REVEAL[i].rect.x, REV_REVEAL[i].rect.y, REV_REVEAL[i].rect.w, REV_REVEAL[i].rect.h});
 
 	snprintf( str_current_speed, sizeof(str_current_speed), "%d", dash->current_speed);
 	snprintf( str_trip1, sizeof(str_trip1), "%.1f", dash->trip1);
@@ -1929,12 +1778,9 @@ int main(int argc, char* args[]) {
 
 		if (dash->choice_state == 0) {
 			//draw_dashboard();
-			if (startup_done == false) {
+			if (!anim_is_done(&anim_startup)) {
 				dashboard_startup();
-			}
-			else {
-
-				//run_rpm_test();
+			} else {
 				draw_dashboard();
 			}
 

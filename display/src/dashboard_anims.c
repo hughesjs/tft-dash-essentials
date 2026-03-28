@@ -6,7 +6,7 @@
 
 /* --- Animation instances --- */
 
-animation anim_startup = { .mode = ANIM_ONESHOT,    .speed = 8,  .limit = 1000 };
+animation anim_startup = { .mode = ANIM_ONESHOT,    .speed = 8,  .limit = 1400 };
 animation anim_info    = { .mode = ANIM_PING_PONG,  .speed = 15, .limit = 600 };
 animation anim_flash   = { .mode = ANIM_LOOP,       .speed = 1,  .limit = 50 };
 animation anim_rpm     = { .mode = ANIM_CHASE,      .speed = 1,  .limit = 100 };

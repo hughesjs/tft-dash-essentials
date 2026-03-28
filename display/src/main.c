@@ -433,11 +433,6 @@ int g_up_arrow_x  = 0;
 int startup_anim_count = 0;
 bool startup_done = false;
 
-// Info mode animation
-bool info_animation_in_progress = false;
-int info_animation_count = 0;
-bool infoanimationreverse = false;
-int currentinfomode = 0;
 
 // Display format strings (built each frame from struct data)
 char str_set_time_digit0[16];
@@ -1354,171 +1349,14 @@ void dashboard_startup () {
 
 }
 
-void animate_info_mode() {
-
-	if (infoanimationreverse == false) {
-		info_animation_count+=15;
-	} else {
-		info_animation_count-=15;
-	}
-	
-	if (info_animation_count > 600) {
-		infoanimationreverse = true;
-	}
-
-	if (dash->info_mode == 3 && currentinfomode == 2) {
-		
-		if (infoanimationreverse == false) {
-			render_texture(tex("tyretop.png"), 0-info_animation_count, 176, 510, 97);
-			render_texture(tex("tyrebottom.png"), 0-info_animation_count, 273, 454, 125);
-		}
-
-		if (infoanimationreverse == true) {
-			render_texture(tex("Navbg.png"), 0 - info_animation_count, 158, 434, 268);
-			//render_texture(tex("Infobottomdiag.png"), 0 - info_animation_count, 273, 454, 125);
-		}
-
-		if (info_animation_count <= 0 && infoanimationreverse == true) {
-			currentinfomode = 3;
-			info_animation_in_progress = false;
-		}
-		return;
-	}
-
-	if (dash->info_mode == 3 && currentinfomode == 1) {
-		
-		if (infoanimationreverse == false) {
-			render_texture(tex("Infotopdiag.png"), 0 - info_animation_count, 176, 510, 97);
-			render_texture(tex("Infobottomdiag.png"), 0 - info_animation_count, 273, 454, 125);
-		}
-
-		if (infoanimationreverse == true) {
-			render_texture(tex("Navbg.png"), 0 - info_animation_count, 158, 434, 268);
-			//render_texture(tex("Infobottomdiag.png"), 0 - info_animation_count, 273, 454, 125);
-		}
-
-		if (info_animation_count <= 0 && infoanimationreverse == true) {
-			currentinfomode = 3;
-			info_animation_in_progress = false;
-		}
-		return;
-	}
-
-	if (dash->info_mode == 3 && currentinfomode == 0) {
-		
-		if (infoanimationreverse == false) {
-			if (dash->using_km) {
-				render_texture(tex("InfotopKM.png"), 0 - info_animation_count, 176, 510, 97);
-			} else {
-				render_texture(tex("Infotop.png"), 0 - info_animation_count, 176, 510, 97);	
-			}
-			
-			render_texture(tex("Infobottom.png"), 0 - info_animation_count, 273, 454, 125);
-		}
-
-		if (infoanimationreverse == true) {
-			render_texture(tex("Navbg.png"), 0 - info_animation_count, 158, 434, 268);
-			//render_texture(tex("Infobottomdiag.png"), 0 - info_animation_count, 273, 454, 125);
-		}
-
-		if (info_animation_count <= 0 && infoanimationreverse == true) {
-			currentinfomode = 3;
-			info_animation_in_progress = false;
-		}
-		return;
-	}
-
-	if (dash->info_mode == 2 && currentinfomode == 1) {
-		
-		if (infoanimationreverse == false) {
-			render_texture(tex("Infotopdiag.png"), 0 - info_animation_count, 176, 510, 97);
-			render_texture(tex("Infobottomdiag.png"), 0 - info_animation_count, 273, 454, 125);
-		}
-
-		if (infoanimationreverse == true) {
-			render_texture(tex("tyretop.png"), 0-info_animation_count, 176, 510, 97);
-			render_texture(tex("tyrebottom.png"), 0-info_animation_count, 273, 454, 125);
-		}
-
-		if (info_animation_count <= 0 && infoanimationreverse == true) {
-			currentinfomode = 2;
-			info_animation_in_progress = false;
-		}
-		return;
-	}
-
-	if (dash->info_mode == 1 && currentinfomode == 0) {
-		
-		if (infoanimationreverse == false) {
-			if (dash->using_km) {
-				render_texture(tex("InfotopKM.png"), 0 - info_animation_count, 176, 510, 97);
-			} else {
-				render_texture(tex("Infotop.png"), 0 - info_animation_count, 176, 510, 97);	
-			}
-			
-			render_texture(tex("Infobottom.png"), 0 - info_animation_count, 273, 454, 125);
-		}
-
-		if (infoanimationreverse == true) {
-			render_texture(tex("Infotopdiag.png"), 0-info_animation_count, 176, 510, 97);
-			render_texture(tex("Infobottomdiag.png"), 0-info_animation_count, 273, 454, 125);
-		}
-
-		if (info_animation_count <= 0 && infoanimationreverse == true) {
-			currentinfomode = 1;
-			info_animation_in_progress = false;
-		}
-		return;
-	}
-
-	if (dash->info_mode == 0 && currentinfomode == 3) {
-		if (infoanimationreverse == false) {
-			//render_texture(tex("Infotopdiag.png"), 0 - info_animation_count, 176, 510, 97);
-			//render_texture(tex("Infobottomdiag.png"), 0 - info_animation_count, 273, 454, 125);
-			render_texture(tex("Navbg.png"), 0 - info_animation_count, 158, 434, 268);
-		}
-
-		if (infoanimationreverse == true) {
-			if (dash->using_km) {
-				render_texture(tex("InfotopKM.png"), 0- info_animation_count, 176, 510, 97);
-			} else {
-				render_texture(tex("Infotop.png"), 0- info_animation_count, 176, 510, 97);	
-			}
-			
-			render_texture(tex("Infobottom.png"), 0- info_animation_count, 273, 454, 125);
-		}
-
-		if (info_animation_count <= 0 && infoanimationreverse == true) {
-			currentinfomode = 0;
-			info_animation_in_progress = false;
-		}
-		return;
-	}
-
-	if (dash->info_mode == 0 && currentinfomode == 2) {
-		
-		// This one goes away
-		if (infoanimationreverse == false) {
-			render_texture(tex("tyretop.png"), 0-info_animation_count, 176, 510, 97);
-			render_texture(tex("tyrebottom.png"), 0-info_animation_count, 273, 454, 125);
-		}
-
-		// This one comes in
-		if (infoanimationreverse == true) {
-			if (dash->using_km) {
-				render_texture(tex("InfotopKM.png"), 0- info_animation_count, 176, 510, 97);
-			} else {
-				render_texture(tex("Infotop.png"), 0- info_animation_count, 176, 510, 97);	
-			}
-			
-			render_texture(tex("Infobottom.png"), 0- info_animation_count, 273, 454, 125);
-		}
-
-		if (info_animation_count <= 0 && infoanimationreverse == true) {
-			currentinfomode = 0;
-			info_animation_in_progress = false;
-		}
-		return;
+/* Render an info screen's textures at an x offset */
+static void render_info_screen(const info_screen *screen, int x_offset, bool using_km) {
+	for (int i = 0; i < INFO_SCREEN_MAX_TEXTURES; i++) {
+		const char *name = (using_km && screen->textures_km[i]) ? screen->textures_km[i] : screen->textures[i];
+		if (!name) break;
+		SDL_FRect r = screen->rects[i];
+		r.x += x_offset;
+		render_texture(tex(name), (int)r.x, (int)r.y, (int)r.w, (int)r.h);
 	}
 }
 
@@ -1545,7 +1383,7 @@ static warning_badge resolve_warning(void) {
 }
 
 void draw_dashboard () {
-	if ((dash->info_mode != currentinfomode && warningbadgeactive)) {		
+	if ((dash->info_mode != info_current_mode && warningbadgeactive)) {		
 		warningbadgecancelled = true;
 		warningbadgeactive = false;
 	}
@@ -1636,47 +1474,24 @@ void draw_dashboard () {
 		render_texture (tex("Highbeamlight.png"), 404, 0, 133, 136);
 	}
 
-	// Middle info section (Tank Range, MPG, etc..)
-	if (dash->info_mode == 0 && !warningbadgeactive) {
-		if (info_animation_in_progress == false) {
-			if (dash->using_km) {
-				render_texture(tex("InfotopKM.png"), 0, 176, 510, 97);
-			} else {
-				render_texture(tex("Infotop.png"), 0, 176, 510, 97);	
+	// Middle info section — static display or animated transition
+	if (!warningbadgeactive) {
+		if (dash->info_mode != info_current_mode) {
+			if (!anim_is_active(&anim_info))
+				anim_start(&anim_info);
+
+			if (!anim_is_reversing(&anim_info))
+				render_info_screen(&INFO_SCREENS[info_current_mode], -anim_frame(&anim_info), dash->using_km);
+			else
+				render_info_screen(&INFO_SCREENS[dash->info_mode], -anim_frame(&anim_info), dash->using_km);
+
+			if (anim_is_done(&anim_info)) {
+				info_current_mode = dash->info_mode;
+				anim_stop(&anim_info);
 			}
-			
-			render_texture(tex("Infobottom.png"), 0, 273, 454, 125);
-		} 
-	}
-
-	if (dash->info_mode == 1 && !warningbadgeactive) {
-		if (info_animation_in_progress == false) {
-			render_texture(tex("Infotopdiag.png"), 0, 176, 510, 97);
-			render_texture(tex("Infobottomdiag.png"), 0, 273, 454, 125);
-		} 
-	}
-
-	if (dash->info_mode == 2 && !warningbadgeactive) {
-		if (info_animation_in_progress == false) {
-			render_texture(tex("tyretop.png"), 0, 176, 510, 97);
-			render_texture(tex("tyrebottom.png"), 0, 273, 454, 125);
-		} 
-	}
-
-	if (dash->info_mode == 3 && !warningbadgeactive) {
-		if (info_animation_in_progress == false) {			
-			render_texture(tex("Navbg.png"), 0, 158, 434, 268);
-		} 
-	}
-
-	if ((dash->info_mode != currentinfomode && !warningbadgeactive)) {		
-		if (info_animation_in_progress == false) {
-			info_animation_count = 0;
-			infoanimationreverse = false;
-			info_animation_in_progress = true;
-		}		
-
-		animate_info_mode();
+		} else {
+			render_info_screen(&INFO_SCREENS[info_current_mode], 0, dash->using_km);
+		}
 	}
 
 	/*
@@ -1809,14 +1624,14 @@ void draw_dashboard () {
 	draw_medium_string (str_coolant_temp, 873, 224);
 
 	// Middle Info
-	if (dash->info_mode == 0 && info_animation_in_progress == false && !warningbadgeactive) {
+	if (dash->info_mode == 0 && (!anim_is_active(&anim_info) || anim_is_done(&anim_info)) && !warningbadgeactive) {
 		draw_medium_string (str_mpg, 60, 224);
 		draw_medium_string (str_range, 292, 224);
 		draw_medium_string (str_trip_time, 17, 332);
 		draw_medium_string (str_max_speed, 246, 332);
 	}
 
-	if (dash->info_mode == 1 && info_animation_in_progress == false && !warningbadgeactive) {
+	if (dash->info_mode == 1 && (!anim_is_active(&anim_info) || anim_is_done(&anim_info)) && !warningbadgeactive) {
 		// RPM, FUEL, BATT, SPEED CORRECTION %
 		//char str_rpm[16];
 		//char str_fuel[16];
@@ -1831,14 +1646,14 @@ void draw_dashboard () {
 	}
 
 	//g_sensor2_psi
-	if (dash->info_mode == 2 && info_animation_in_progress == false && !warningbadgeactive) {
+	if (dash->info_mode == 2 && (!anim_is_active(&anim_info) || anim_is_done(&anim_info)) && !warningbadgeactive) {
 		draw_medium_string (str_sensor2_psi, 40, 224);
 		draw_medium_string (str_sensor4_psi, 304, 224);
 		draw_medium_string (str_sensor2_temp, 37, 342);
 		draw_medium_string (str_sensor4_temp, 246, 342);
 	}
 
-	if (dash->info_mode == 3 && info_animation_in_progress == false && !warningbadgeactive) {
+	if (dash->info_mode == 3 && (!anim_is_active(&anim_info) || anim_is_done(&anim_info)) && !warningbadgeactive) {
 		
 
 		if (nav->nav_active == true) {

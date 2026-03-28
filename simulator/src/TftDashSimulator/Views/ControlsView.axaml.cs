@@ -55,6 +55,7 @@ public partial class ControlsView : UserControl
         RightCheck.IsChecked = _state.Right != 0;
 
         ThemeControl.Value = _state.Theme;
+        InfoModeControl.Value = _state.InfoMode;
         UnitsControl.Value = _state.Km;
 
         // Sync menu controls from model
@@ -91,6 +92,7 @@ public partial class ControlsView : UserControl
         else if (sender == HourControl) _state.Hour = (int)e.NewValue.Value;
         else if (sender == MinuteControl) _state.Minute = (int)e.NewValue.Value;
         else if (sender == ThemeControl) _state.Theme = (int)e.NewValue.Value;
+        else if (sender == InfoModeControl) _state.InfoMode = (int)e.NewValue.Value;
         else if (sender == UnitsControl) _state.Km = (int)e.NewValue.Value;
     }
 

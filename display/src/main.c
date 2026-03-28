@@ -21,6 +21,7 @@
 #include "draw.h"
 #include "draw_dashboard.h"
 #include "draw_menu.h"
+#include "warnings.h"
 
 static sensor_feed *feed = NULL;
 static SDL_Window *window = NULL;
@@ -119,14 +120,7 @@ static void render_frame(void) {
 }
 
 static void update_warnings(void) {
-	fuelwarning = get_num_fuel_bars(dash->fuel_float) <= 2;
-	overheatwarning = dash->coolant_temp >= 120;
-
-	if (dash->rpm > 2000) enginerunning = true;
-	if (dash->rpm < 1000) enginerunning = false;
-
-	int ms_since = sensor_feed_ms_since_update(feed);
-	comms_stale = (ms_since > 1000) || (ms_since == -1);
+	warnings_update(dash, tpms, sensor_feed_ms_since_update(feed));
 }
 
 static void cleanup(void) {

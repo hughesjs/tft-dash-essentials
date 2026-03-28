@@ -10,6 +10,7 @@
 #include "draw_dashboard.h"
 #include "draw.h"
 #include "dashboard_anims.h"
+#include "warnings.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -65,12 +66,7 @@ char str_nav_dest_miles[16];
 char str_nav_dest_km[16];
 
 /* Warning flags */
-bool fuelwarning = false;
-bool overheatwarning = false;
-bool enginerunning = false;
-bool warningbadgeactive = false;
-bool warningbadgecancelled = false;
-bool comms_stale = false;
+static bool warningbadgeactive = false;
 
 /* Oil pressure lookup tables */
 int barohms[11];
@@ -426,29 +422,6 @@ static void render_info_screen(const info_screen *screen, int x_offset, bool usi
 	}
 }
 
-/* --- Warning badge resolution --- */
-
-typedef struct { bool active; const char *badge_bmp; const char *flash_bmp; int fx, fy, fw, fh; } warning_badge;
-
-static warning_badge resolve_warning(void) {
-	if (comms_stale)
-		return (warning_badge){ true, "Commsbadge.png", "Nocomms.png", 222, 236, 160, 105 };
-
-	bool front_tyre_low = tpms->connected && tpms->front.received && tpms->front.psi <= dash->front_pressure_low;
-	bool rear_tyre_low  = tpms->connected && tpms->rear.received  && tpms->rear.psi  <= dash->rear_pressure_low;
-
-	if (front_tyre_low || rear_tyre_low) {
-		const char *detail = front_tyre_low && rear_tyre_low ? "Frontrearlow.png" : front_tyre_low ? "Fronttyrelow.png" : "Reartyrelow.png";
-		return (warning_badge){ true, "Lowtyrebadge.png", detail, 168, 244, 257, 76 };
-	}
-	if (dash->oil_warning && enginerunning)
-		return (warning_badge){ true, "Lowoilbadge.png", "Lowoil.png", 222, 236, 134, 105 };
-	if (overheatwarning && enginerunning)
-		return (warning_badge){ true, "Overheatbadge.png", "Engineoverheat.png", 189, 237, 212, 95 };
-	if (fuelwarning && enginerunning && dash->info_mode != 3)
-		return (warning_badge){ true, "Fuelwarningbadge.png", "Lowfuel.png", 222, 236, 134, 105 };
-	return (warning_badge){ false, NULL, NULL, 0, 0, 0, 0 };
-}
 
 /* --- Startup animation --- */
 
@@ -499,10 +472,8 @@ void dashboard_startup(void) {
 /* --- Main dashboard rendering --- */
 
 void draw_dashboard(void) {
-	if ((dash->info_mode != info_current_mode && warningbadgeactive)) {
-		warningbadgecancelled = true;
-		warningbadgeactive = false;
-	}
+	if (dash->info_mode != info_current_mode && warningbadgeactive)
+		warnings_cancel();
 
 	if (dash->theme == 0 || dash->theme == 7) {
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
@@ -529,32 +500,17 @@ void draw_dashboard(void) {
 	/* Trip 1 and 2 and Odometer, Ambient Temp and Time section */
 	render_texture (tex("Mileinfo.png"), 0, 434, 435, 169);
 
-	/* Fuel Gauge */
-	if (fuelwarning == true && enginerunning == true) {
-		if (anim_is_reversing(&anim_flash))
-		{
-			render_texture (tex("Fuelgauge.png"), 676, 294, 316, 44);
-			render_texture (tex("Fuelgaugewhite.png"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(dash->fuel_float)), 303, 274, 28);
-		}
-	} else {
-		render_texture (tex("Fuelgauge.png"), 676, 294, 316, 44);
-		render_texture (tex("Fuelgaugewhite.png"), 714+get_fuel_reveal_from_bars (get_num_fuel_bars(dash->fuel_float)), 303, 274, 28);
+	/* Fuel Gauge — flash when low fuel and engine running */
+	bool fuel_flash = get_num_fuel_bars(dash->fuel_float) <= 2 && warnings_engine_running();
+	if (!fuel_flash || anim_is_reversing(&anim_flash)) {
+		render_texture(tex("Fuelgauge.png"), 676, 294, 316, 44);
+		render_texture(tex("Fuelgaugewhite.png"), 714 + get_fuel_reveal_from_bars(get_num_fuel_bars(dash->fuel_float)), 303, 274, 28);
 	}
-	/* Coolant Temp */
-	if (overheatwarning == true && enginerunning == true) {
-		if (anim_is_reversing(&anim_flash)) {
-			if (dash->using_fh) {
-				render_texture (tex("CoolantF.png"), 808, 196, 209, 80);
-			} else {
-				render_texture (tex("Coolant.png"), 808, 196, 209, 80);
-			}
-		}
-	} else {
-		if (dash->using_fh) {
-			render_texture (tex("CoolantF.png"), 808, 196, 209, 80);
-		} else {
-			render_texture (tex("Coolant.png"), 808, 196, 209, 80);
-		}
+	/* Coolant Temp — flash when overheating and engine running */
+	bool coolant_flash = dash->coolant_temp >= 120 && warnings_engine_running();
+	if (!coolant_flash || anim_is_reversing(&anim_flash)) {
+		const char *coolant_tex = dash->using_fh ? "CoolantF.png" : "Coolant.png";
+		render_texture(tex(coolant_tex), 808, 196, 209, 80);
 	}
 
 	render_texture (tex("Coolanticon.png"), 772, 221, 41, 39);
@@ -610,13 +566,14 @@ void draw_dashboard(void) {
 		}
 	}
 
-	/* Warning badges — checked in priority order (highest first) */
-	if (!warningbadgecancelled) {
-		warning_badge w = resolve_warning();
-		warningbadgeactive = w.active;
-		if (w.active) {
-			render_texture(tex(w.badge_bmp), 0, 163, 444, 249);
-			if (anim_is_reversing(&anim_flash) && w.flash_bmp) render_texture(tex(w.flash_bmp), w.fx, w.fy, w.fw, w.fh);
+	/* Warning badges */
+	const warning_def *w = warnings_active();
+	warningbadgeactive = (w != NULL);
+	if (w) {
+		render_texture(tex(w->badge), 0, 163, 444, 249);
+		if (anim_is_reversing(&anim_flash) && w->flash) {
+			const char *ft = w->flash(dash, tpms);
+			if (ft) render_texture(tex(ft), w->flash_x, w->flash_y, w->flash_w, w->flash_h);
 		}
 	}
 

@@ -18,8 +18,8 @@
 bool draw_init(void);
 void draw_cleanup(void);
 
-/* Update sensor state and theme. Call once per frame before draw_frame(). */
-void draw_update(const dashboard_state *dash, const menu_state *menu, const nav_state *nav, const tpms_state *tpms);
+/* Set sensor state pointers. Call once after feeds are started. */
+void draw_set_state(const dashboard_state *dash, const menu_state *menu, const nav_state *nav, const tpms_state *tpms);
 
 /* Pump events, render the current frame (dashboard or menu), delay. */
 void draw_frame(void);

@@ -479,23 +479,21 @@ void draw_cleanup(void) {
 	SDL_Quit();
 }
 
-void draw_update(const dashboard_state *d, const menu_state *m, const nav_state *n, const tpms_state *t) {
+void draw_set_state(const dashboard_state *d, const menu_state *m, const nav_state *n, const tpms_state *t) {
 	dash = d;
 	menu = m;
 	nav = n;
 	tpms = t;
+	g_current_theme = theme_name_from_id(dash->theme);
+}
 
+void draw_frame(void) {
+	/* Update theme if changed */
 	if (dash->theme != currenttheme) {
 		currenttheme = dash->theme;
 		g_current_theme = theme_name_from_id(dash->theme);
 	}
 
-	/* Set initial theme on first frame */
-	if (g_current_theme == NULL || currenttheme == 0)
-		g_current_theme = theme_name_from_id(dash->theme);
-}
-
-void draw_frame(void) {
 	/* Pump SDL events */
 	SDL_Event e;
 	while (SDL_PollEvent(&e)) {
